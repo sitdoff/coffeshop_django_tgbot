@@ -1,0 +1,48 @@
+# Сборка для разработки
+# Помни, что папка в контейнере заменяется твоей папкой с компа, поэтому всё, что ты туда скопируешь при билде не будет видно.
+# Файлы по типу entrypoint.sh и whait-for-it.sh надо копировать в папку проекта руками.
+services:
+    db:
+        image: postgres
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        volumes:
+            - coffeshop_postgres_data:/var/lib/postgresql/data/
+        ports:
+            - 5432:5432
+
+    web:
+        build:
+            context: .
+            dockerfile: ./coffeshop_api/Dockerfile
+        entrypoint: ./entrypoint.sh python manage.py runserver 0.0.0.0:8000
+        # entrypoint: python manage.py runserver 0.0.0.0:8000
+        volumes:
+            - ./coffeshop_api:/code
+        ports:
+            - 8000:8000
+        depends_on:
+            - db
+volumes:
+    coffeshop_postgres_data:
+# Финальная сборка
+# services:
+#     db:
+#         image: postgres
+#         environment:
+#             - POSTGRES_DB=postgres
+#             - POSTGRES_USER=postgres
+#             - POSTGRES_PASSWORD=postgres
+#     web:
+#         build: .
+#         command: ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+#         ports:
+#             - "8000:8000"
+#         environment:
+#             - POSTGRES_NAME=postgres
+#             - POSTGRES_USER=postgres
+#             - POSTGRES_PASSWORD=postgres
+#         depends_on:
+#             - db
