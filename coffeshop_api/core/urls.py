@@ -21,9 +21,11 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("goods/", include("goods.urls")),
 ]
 
 if settings.DEBUG:
     urlpatterns += [
+        path("api-auth/", include("rest_framework.urls")),
         path("__debug__/", include("debug_toolbar.urls")),
     ]

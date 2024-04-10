@@ -14,6 +14,7 @@ class CategoryModel(MPTTModel):
         return self.name
 
 
+
 class ProductModel(models.Model):
     name = models.CharField(max_length=100, blank=False, verbose_name="Название продукта")
     category = models.ForeignKey(

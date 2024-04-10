@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "debug_toolbar",
     "goods.apps.GoodsConfig",
+    "orders.apps.OrdersConfig",
 ]
 
 MIDDLEWARE = [
