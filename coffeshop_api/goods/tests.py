@@ -93,3 +93,28 @@ class TestCategorySerializer(TestCase):
             reverse("categorymodel-detail", kwargs={"pk": self.category_parent_1.pk})
         )
         self.assertEqual(serializer_child_1.data["parent"], parent_url)
+
+
+class TestSubCategorySerializer(TestCase):
+    """
+    Test SubCategorySerializer
+    """
+
+    def setUp(self) -> None:
+        self.request_factory = APIRequestFactory()
+        self.sub_category = CategoryModel.objects.create(name="sub_category")
+
+    def test_sub_cateory_serializer(self):
+        request = self.request_factory.get("/category/")
+        subcategory_serializer = SubCategorySerializer(instance=self.sub_category, context={"request": request})
+        subcategory_url = request.build_absolute_uri(
+            reverse("categorymodel-detail", kwargs={"pk": self.sub_category.pk})
+        )
+        self.assertEqual(subcategory_serializer.data["url"], subcategory_url)
+        self.assertEqual(subcategory_serializer.data["name"], self.sub_category.name)
+
+
+class TestProductSerializer(TestCase):
+    def setUp(self) -> None:
+        self.request_factory = APIRequestFactory()
+        self.sub_category = CategoryModel.objects.create(name="sub_category")
