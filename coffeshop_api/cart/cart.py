@@ -35,7 +35,7 @@ class Cart:
             raise ValueError("Quantity cannot be less than 1")
         product_id = str(product.pk)
         if product_id not in self.cart:
-            self.cart[product_id] = {"quantity": 0, "price": str(product.price)}
+            self.cart[product_id] = {"quantity": 0, "price": str(product.price), "product_name": product.name}
         if override_quantity:
             self.cart[product_id]["quantity"] = quantity
         else:

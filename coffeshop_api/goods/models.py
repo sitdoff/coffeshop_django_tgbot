@@ -34,4 +34,4 @@ class ProductModel(models.Model):
     price = models.DecimalField(blank=False, max_digits=5, decimal_places=2, verbose_name="Цена")
 
     def __str__(self) -> str:
-        return self.name
+        return f"{self.name} {self.price:.2f}"

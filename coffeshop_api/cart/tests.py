@@ -98,12 +98,14 @@ class TestCart(TestCase):
                 "quantity": 1,
                 "price": Decimal(self.product1.price),
                 "product": self.product1,
+                "product_name": self.product1.name,
                 "total_price": Decimal(self.product1.price) * 1,
             },
             {
                 "quantity": 2,
                 "price": Decimal(self.product2.price),
                 "product": self.product2,
+                "product_name": self.product2.name,
                 "total_price": Decimal(self.product2.price) * 2,
             },
         ]
