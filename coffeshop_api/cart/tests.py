@@ -7,6 +7,7 @@ from goods.models import CategoryModel, ProductModel
 from rest_framework.test import APIRequestFactory
 
 from .cart import Cart
+from .serializers import CartSerializer
 
 # Create your tests here.
 
@@ -30,6 +31,9 @@ class TestCart(TestCase):
         self.request.session.save()
 
     def test_init_cart(self):
+        """
+        Test cart initiation.
+        """
         self.assertNotIn("cart", self.request.session)
 
         cart = Cart(self.request)
@@ -38,6 +42,9 @@ class TestCart(TestCase):
         self.assertIn("cart", self.request.session)
 
     def test_cart_add_product(self):
+        """
+        Test adding products to cart.
+        """
         cart = Cart(self.request)
 
         with self.assertRaises(ValueError):
@@ -78,6 +85,9 @@ class TestCart(TestCase):
         self.assertEqual(cart.cart[product1_pk_str]["quantity"], 2)
 
     def test_cart_remove_product(self):
+        """
+        Test the removal of products from the cart.
+        """
         cart = Cart(self.request)
         cart.add(self.product1, quantity=1)
         cart.add(self.product2, quantity=2)
@@ -89,6 +99,9 @@ class TestCart(TestCase):
         self.assertEqual(cart.cart, {})
 
     def test_cart_iter(self):
+        """
+        Test cart iteration.
+        """
         cart = Cart(self.request)
         cart.add(self.product1, quantity=1)
         cart.add(self.product2, quantity=2)
@@ -112,6 +125,9 @@ class TestCart(TestCase):
         self.assertEqual(product_list, reference)
 
     def test_car_len(self):
+        """
+        Test getting cart size.
+        """
         cart = Cart(self.request)
         self.assertEqual(len(cart), 0)
 
@@ -123,6 +139,9 @@ class TestCart(TestCase):
         self.assertEqual(len(cart), 4)
 
     def test_cart_get_total_price(self):
+        """
+        Test getting the total cart value.
+        """
         cart = Cart(self.request)
         self.assertEqual(cart.get_total_price(), 0)
 
@@ -133,9 +152,62 @@ class TestCart(TestCase):
         self.assertEqual(cart.get_total_price(), Decimal(self.product1.price) * 1 + Decimal(self.product2.price) * 2)
 
     def test_cart_clear(self):
+        """
+        Test emptying the cart.
+        """
         cart = Cart(self.request)
         cart.add(self.product1, quantity=1)
         cart.add(self.product2, quantity=2)
         cart.clear()
         with self.assertRaises(KeyError):
             self.request.session[settings.CART_SESSION_ID]
+
+
+class TestCartSerializer(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.category = CategoryModel.objects.create(name="category")
+        cls.product1 = ProductModel.objects.create(name="poduct1", category=cls.category, price=10.5)
+        cls.product2 = ProductModel.objects.create(name="poduct2", category=cls.category, price=11.5)
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.request_factory = APIRequestFactory()
+        request_factory = APIRequestFactory()
+        self.request = request_factory.get("/cart/")
+        middleware = SessionMiddleware(lambda request: None)
+        middleware.process_request(self.request)
+        self.request.session.save()
+
+    def test_cart_serialization(self):
+        """
+        Test cart serialization.
+        """
+        cart = Cart(self.request)
+        serializer = CartSerializer(cart)
+        reference = {
+            "goods": {},
+            "total_price": "0.00",
+        }
+        self.assertEqual(serializer.data, reference)
+
+        cart.add(self.product1, quantity=1)
+        cart.add(self.product2, quantity=2)
+        serializer = CartSerializer(cart)
+        reference = {
+            "goods": {
+                str(self.product1.pk): {
+                    "quantity": 1,
+                    "price": "10.5",
+                    "product_name": "poduct1",
+                },
+                str(self.product2.pk): {
+                    "quantity": 2,
+                    "price": "11.5",
+                    "product_name": "poduct2",
+                },
+            },
+            "total_price": "33.50",
+        }
+        self.assertEqual(serializer.data, reference)
