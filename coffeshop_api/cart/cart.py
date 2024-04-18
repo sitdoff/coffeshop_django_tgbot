@@ -30,16 +30,26 @@ class Cart:
         Add the product to the cart in the specified quantity.
 
         If the parameter "override_quantity" is True, then replace the initial quantity with the specified one. Otherwise, add.
+
+        If the "override_quantity" parameter is True and the "quantity" value is 0, then the product is removed from the cart.
         """
-        if quantity <= 0:
-            raise ValueError("Quantity cannot be less than 1")
+        if quantity < 0:
+            raise ValueError("Quantity cannot be less than 0")
+
         product_id = str(product.pk)
         if product_id not in self.cart:
             self.cart[product_id] = {"quantity": 0, "price": str(product.price), "product_name": product.name}
+
         if override_quantity:
+            if quantity == 0:
+                self.remove(product)
+                self.save()
+                return
+
             self.cart[product_id]["quantity"] = quantity
         else:
             self.cart[product_id]["quantity"] += quantity
+
         self.save()
 
     def remove(self, product: ProductModel) -> None:
