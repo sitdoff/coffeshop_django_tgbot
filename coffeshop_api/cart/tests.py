@@ -1,10 +1,12 @@
+import json
 from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase
+from django.urls import reverse
 from goods.models import CategoryModel, ProductModel
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIClient, APIRequestFactory
 
 from .cart import Cart
 from .serializers import CartSerializer
@@ -159,6 +161,7 @@ class TestCart(TestCase):
         cart.add(self.product1, quantity=1)
         cart.add(self.product2, quantity=2)
         cart.clear()
+
         with self.assertRaises(KeyError):
             self.request.session[settings.CART_SESSION_ID]
 
@@ -211,3 +214,154 @@ class TestCartSerializer(TestCase):
             "total_price": "33.50",
         }
         self.assertEqual(serializer.data, reference)
+
+
+class TestCartView(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.category = CategoryModel.objects.create(name="category")
+        cls.product1 = ProductModel.objects.create(name="poduct1", category=cls.category, price=10.5)
+        cls.product2 = ProductModel.objects.create(name="poduct2", category=cls.category, price=11.5)
+
+    def setUp(self) -> None:
+        self.client = APIClient()
+        super().setUp()
+
+    def test_get_cart(self):
+        """
+        Test get a cart
+        """
+        response = self.client.get(reverse("cart:cart_view"))
+        self.assertEqual(response.status_code, 200)
+        reference = {
+            "goods": {},
+            "total_price": "0.00",
+        }
+        self.assertEqual(response.json(), reference)
+
+    def test_put_cart(self):
+        """
+        Test put a item in the cart
+        """
+        data = {
+            "id": self.product1.pk,
+        }
+        response = self.client.put(reverse("cart:cart_view"), data=data)
+        reference = {
+            "goods": {
+                str(self.product1.pk): {
+                    "quantity": 1,
+                    "price": "10.50",
+                    "product_name": "poduct1",
+                }
+            },
+            "total_price": "10.50",
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), reference)
+
+        data = {
+            "id": self.product1.pk,
+            "quantity": 2,
+        }
+        response = self.client.put(reverse("cart:cart_view"), data=data)
+        reference = {
+            "goods": {
+                str(self.product1.pk): {
+                    "quantity": 3,
+                    "price": "10.50",
+                    "product_name": "poduct1",
+                }
+            },
+            "total_price": "31.50",
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), reference)
+
+        data = {
+            "id": self.product1.pk,
+            "quantity": 0,
+        }
+        response = self.client.put(reverse("cart:cart_view"), data=data)
+        reference = {
+            "goods": {
+                str(self.product1.pk): {
+                    "quantity": 3,
+                    "price": "10.50",
+                    "product_name": "poduct1",
+                }
+            },
+            "total_price": "31.50",
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), reference)
+
+        data = {
+            "id": self.product1.pk,
+            "quantity": -1,
+        }
+        with self.assertRaises(ValueError):
+            response = self.client.put(reverse("cart:cart_view"), data=data)
+
+    def test_patch_cart(self):
+        """
+        Test change the quantity of an item.
+        """
+        self.client.put(reverse("cart:cart_view"), data={"id": 1})
+        self.client.put(reverse("cart:cart_view"), data={"id": 2})
+
+        data = {
+            "id": self.product1.pk,
+            "quantity": 2,
+        }
+        response = self.client.patch(reverse("cart:cart_view"), data=data)
+        reference = {
+            "goods": {
+                str(self.product1.pk): {
+                    "quantity": 2,
+                    "price": "10.50",
+                    "product_name": "poduct1",
+                },
+            },
+            "total_price": "21.00",
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), reference)
+
+        data = {
+            "id": self.product2.pk,
+            "quantity": 0,
+        }
+        response = self.client.patch(reverse("cart:cart_view"), data=data)
+        reference = {
+            "goods": {
+                str(self.product1.pk): {
+                    "quantity": 2,
+                    "price": "10.50",
+                    "product_name": "poduct1",
+                },
+            },
+            "total_price": "21.00",
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), reference)
+
+        data = {
+            "id": self.product1.pk,
+            "quantity": -1,
+        }
+        with self.assertRaises(ValueError):
+            response = self.client.patch(reverse("cart:cart_view"), data=data)
+
+    def test_delete_cart(self):
+        """
+        Test clear the cart
+        """
+        self.client.put(reverse("cart:cart_view"), data={"id": 1})
+        self.client.put(reverse("cart:cart_view"), data={"id": 2})
+
+        response = self.client.delete(reverse("cart:cart_view"))
+        referense = {"goods": {}, "total_price": "0.00"}
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), referense)

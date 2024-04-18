@@ -22,6 +22,7 @@ from django.urls import include, path
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("goods/", include("goods.urls")),
+    path("cart/", include("cart.urls", namespace="cart")),
 ]
 
 if settings.DEBUG:
