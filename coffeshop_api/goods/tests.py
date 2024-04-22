@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase
 from django.urls import reverse
 from goods.models import CategoryModel, ProductModel
@@ -8,7 +10,7 @@ from goods.serializers import (
 )
 from goods.urls import router
 from goods.views import CategoryViewSet
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIClient, APIRequestFactory
 
 
 # Create your tests here.
@@ -118,3 +120,33 @@ class TestProductSerializer(TestCase):
     def setUp(self) -> None:
         self.request_factory = APIRequestFactory()
         self.sub_category = CategoryModel.objects.create(name="sub_category")
+
+
+class TestCategoryViewSet(TestCase):
+    """
+    Test CategoryViewSet
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.category_parent_1 = CategoryModel.objects.create(name="category_parent_1")
+        cls.category_child_1 = CategoryModel.objects.create(name="category_child_1", parent=cls.category_parent_1)
+        cls.category_child_2 = CategoryModel.objects.create(name="category_child_2", parent=cls.category_parent_1)
+        cls.category_child_3 = CategoryModel.objects.create(name="category_child_3", parent=cls.category_parent_1)
+        return super().setUpClass()
+
+    def setUp(self) -> None:
+        self.client = APIClient()
+        return super().setUp()
+
+    def test_categories_root(self):
+        """
+        Test method list override.
+
+        Instead of displaying all categories, the root directory should be displayed.
+        """
+        response = self.client.get(reverse("categorymodel-list"))
+        serializer = CategorySerializer(self.category_parent_1, context={"request": response.wsgi_request})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), serializer.data)
