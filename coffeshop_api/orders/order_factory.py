@@ -30,7 +30,7 @@ class TelegramOrderFactory(OrderFactory):
             items = self.get_items(request)
             for item in items:
                 order.items.add(item)
-            print(order)
+            return order
 
     def check_cart(self, request: HttpRequest):
         if settings.CART_SESSION_ID not in request.session:
@@ -50,4 +50,5 @@ class TelegramOrderFactory(OrderFactory):
                 quantity=item_data["quantity"],
             )
             items.append(item)
+        cart.clear()
         return items

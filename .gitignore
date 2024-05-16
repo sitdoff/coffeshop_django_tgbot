@@ -23,3 +23,4 @@ query_debugger.py
 .env
 todo
 coffeshop_api/orders/migrations/*
+test_fixture.json
