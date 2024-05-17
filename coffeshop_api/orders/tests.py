@@ -2,16 +2,20 @@ from cart.cart import Cart
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 from goods.models import CategoryModel, ProductModel
-from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
+from rest_framework.test import APIRequestFactory
 
 from .models import OrderItemModel, OrderModel
-from .order_factory import OrderFactory, TelegramOrderFactory
+from .order_factory import TelegramOrderFactory
 
 
 # Create your tests here.
 class TestOrderItemModel(TestCase):
+    """
+    Testing OrderItemModel.
+    """
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.category = CategoryModel.objects.create(name="category_test_order_item_model")
@@ -25,11 +29,17 @@ class TestOrderItemModel(TestCase):
         return super().setUpClass()
 
     def test_create_order_item(self):
+        """
+        Test create ordet item
+        """
         self.assertEqual(self.order_item.product, self.product1)
         self.assertEqual(self.order_item.price, self.product1.price)
         self.assertEqual(self.order_item.quantity, 1)
 
     def test_order_item_method_get_cost(self):
+        """
+        Test method get_cost.
+        """
         self.assertEqual(self.order_item.get_cost(), self.product1.price)
 
         old_price = self.order_item.price
@@ -42,6 +52,10 @@ class TestOrderItemModel(TestCase):
 
 
 class TestOrderModel(TestCase):
+    """
+    Testing OrderModel.
+    """
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.user = get_user_model().objects.create(
@@ -74,6 +88,9 @@ class TestOrderModel(TestCase):
         return super().tearDown()
 
     def test_create_order(self):
+        """
+        Test create OrderModel.
+        """
         self.assertEqual(self.order.owner, self.user)
         self.assertFalse(self.order.items.all())
 
@@ -81,6 +98,9 @@ class TestOrderModel(TestCase):
         self.assertIn(self.order_item_1, self.order.items.all())
 
     def test_order_method_get_total_cost(self):
+        """
+        Test method get_total_cost.
+        """
         self.assertFalse(self.order.items.all())
         self.assertEqual(self.order.get_total_cost(), 0)
 
@@ -91,7 +111,11 @@ class TestOrderModel(TestCase):
         self.assertEqual(self.order.get_total_cost(), self.order_item_1.get_cost() + self.order_item_2.get_cost())
 
 
-class TestOrderFactory(TestCase):
+class TestTelegramOrderFactory(TestCase):
+    """
+    Testing OrderFactory class.
+    """
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.user = get_user_model().objects.create(
@@ -128,6 +152,9 @@ class TestOrderFactory(TestCase):
         super().setUp()
 
     def test_create_order_by_factory(self):
+        """
+        Test create order by factory.
+        """
         cart = Cart(self.request)
         factory = TelegramOrderFactory()
 
@@ -150,12 +177,18 @@ class TestOrderFactory(TestCase):
         self.assertEqual(len(order.items.all()), 2)
 
     def test_create_order_no_cart(self):
+        """
+        Tests raise exception when there is no cart.
+        """
         factory = TelegramOrderFactory()
         with self.assertRaises(Exception) as context:
             factory.create_order(self.request)
         self.assertEqual(str(context.exception), "Нет корзины")
 
     def test_create_order_empty_cart(self):
+        """
+        Test raise exception when cart is empty.
+        """
         Cart(self.request)
         factory = TelegramOrderFactory()
         with self.assertRaises(Exception) as context:
@@ -163,6 +196,9 @@ class TestOrderFactory(TestCase):
         self.assertEqual(str(context.exception), "Корзина пуста")
 
     def test_method_get_items(self):
+        """
+        Test method get_items.
+        """
         cart = Cart(self.request)
         factory = TelegramOrderFactory()
         items = factory.get_items(self.request)
@@ -176,6 +212,9 @@ class TestOrderFactory(TestCase):
         self.assertIsInstance(item, OrderItemModel)
 
     def test_cart_clear_after_order_creation(self):
+        """
+        Test emptying the cart after an order is created.
+        """
         cart = Cart(self.request)
         factory = TelegramOrderFactory()
 

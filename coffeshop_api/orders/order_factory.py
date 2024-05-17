@@ -8,6 +8,9 @@ from .models import OrderItemModel, OrderModel
 
 
 class OrderFactory(ABC):
+    """
+    Abstract class for order factory.
+    """
 
     @abstractmethod
     def create_order(self):
@@ -23,8 +26,14 @@ class OrderFactory(ABC):
 
 
 class TelegramOrderFactory(OrderFactory):
+    """
+    Class for creating orders from telegram.
+    """
 
     def create_order(self, request: HttpRequest):
+        """
+        Creates and returns an order object.
+        """
         if self.check_cart(request):
             order = OrderModel.objects.create(owner=request.user)
             items = self.get_items(request)
@@ -33,6 +42,9 @@ class TelegramOrderFactory(OrderFactory):
             return order
 
     def check_cart(self, request: HttpRequest):
+        """
+        Checks the presence of a cart in the session and the presence of goods in it.
+        """
         if settings.CART_SESSION_ID not in request.session:
             raise Exception("Нет корзины")
         if len(request.session[settings.CART_SESSION_ID]) == 0:
@@ -40,6 +52,11 @@ class TelegramOrderFactory(OrderFactory):
         return True
 
     def get_items(self, request):
+        """
+        Returns ordered items objects from the cart to be attached to the order.
+
+        At the end, clears the order cart.
+        """
         cart = Cart(request)
         items = []
         for item_data in cart:
