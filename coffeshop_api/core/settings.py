@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "mptt",
     "django_extensions",
     "debug_toolbar",
+    "users.apps.UsersConfig",
     "goods.apps.GoodsConfig",
     "orders.apps.OrdersConfig",
     "cart.apps.CartConfig",
@@ -149,3 +150,5 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CART_SESSION_ID = "cart"
+
+AUTH_USER_MODEL = "users.TelegramUser"
