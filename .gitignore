@@ -22,5 +22,8 @@ todo.txt
 query_debugger.py
 .env
 todo
-coffeshop_api/orders/migrations/*
 test_fixture.json
+test_fixture.json.bak
+coffeshop_api/orders/migrations/*
+coffeshop_api/goods/migrations/*
+coffeshop_api/users/migrations/*
