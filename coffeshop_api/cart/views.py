@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, render
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+
+# from drf_yasg import openapi
+# from drf_yasg.utils import swagger_auto_schema
 from goods.models import ProductModel
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -14,10 +15,10 @@ from .serializers import CartSerializer
 
 class CartView(APIView):
 
-    @swagger_auto_schema(
-        operation_description="Get cart",
-        responses={200: CartSerializer()},
-    )
+    # @swagger_auto_schema(
+    #     operation_description="Get cart",
+    #     responses={200: CartSerializer()},
+    # )
     def get(self, request: Request, format=None) -> Response:
         """
         Method: GET. Retrieving the contents of the cart.
@@ -28,26 +29,26 @@ class CartView(APIView):
 
     # def post(self, request: Request, *args, **kwargs) -> Response:
     #     ...
-    @swagger_auto_schema(
-        operation_description="Add the item to your cart. If `override_quantity` is True, the new quantity value replaces the old one.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "id": openapi.Schema(type=openapi.TYPE_INTEGER, description="Product ID"),
-                "quantity": openapi.Schema(type=openapi.TYPE_INTEGER, description="Quantity", minimum=1, default=1),
-            },
-            required=["id"],
-        ),
-        responses={
-            200: openapi.Response(
-                description="Cart updated successfully",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    # Определите структуру ответа здесь, если нужно
-                ),
-            )
-        },
-    )
+    # @swagger_auto_schema(
+    #     operation_description="Add the item to your cart. If `override_quantity` is True, the new quantity value replaces the old one.",
+    #     request_body=openapi.Schema(
+    #         type=openapi.TYPE_OBJECT,
+    #         properties={
+    #             "id": openapi.Schema(type=openapi.TYPE_INTEGER, description="Product ID"),
+    #             "quantity": openapi.Schema(type=openapi.TYPE_INTEGER, description="Quantity", minimum=1, default=1),
+    #         },
+    #         required=["id"],
+    #     ),
+    #     responses={
+    #         200: openapi.Response(
+    #             description="Cart updated successfully",
+    #             schema=openapi.Schema(
+    #                 type=openapi.TYPE_OBJECT,
+    #                 # Определите структуру ответа здесь, если нужно
+    #             ),
+    #         )
+    #     },
+    # )
     def put(self, request: Request, *args, override_quantity: bool = False, **kwargs) -> Response:
         """
         Method PUT. Add the item to your cart.
