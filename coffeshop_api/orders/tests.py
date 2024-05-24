@@ -1,3 +1,4 @@
+from decimal import Decimal
 from cart.cart import Cart
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -8,6 +9,7 @@ from rest_framework.test import APIRequestFactory
 
 from .models import OrderItemModel, OrderModel
 from .order_factory import TelegramOrderFactory
+from .serializers import OrderItemSerializer, OrderSerializer
 
 
 # Create your tests here.
@@ -222,3 +224,31 @@ class TestTelegramOrderFactory(TestCase):
 
         factory.create_order(self.request)
         self.assertNotIn(settings.CART_SESSION_ID, self.request.session)
+class TestOrderSerializer(TestCase):
+    """
+    Test order serializer.
+    """
+
+    def setUp(self) -> None:
+        self.user = get_user_model().objects.create(username="testuser")
+        self.order = OrderModel.objects.create(owner=self.user)
+        self.category = CategoryModel.objects.create(name="Test Category")
+        self.product = ProductModel.objects.create(name="Test Product", category=self.category, price=Decimal("10.00"))
+        self.order_item = OrderItemModel.objects.create(product=self.product, price=Decimal("10.00"), quantity=2)
+        self.serializer = OrderSerializer(instance=self.order)
+        return super().setUp()
+
+    def test_empty_order(self):
+        self.assertEqual(self.serializer.data["id"], self.order.pk)
+        self.assertEqual(self.serializer.data["items"], [])
+        self.assertEqual(Decimal(self.serializer.data["total_cost"]), Decimal(self.order.get_total_cost()))
+        self.assertEqual(self.serializer.data["paid"], self.order.paid)
+        self.assertEqual(self.serializer.data["owner"], self.order.owner.pk)
+
+    def test_order_with_item(self):
+        self.order.items.add(self.order_item)
+        self.assertEqual(self.serializer.data["id"], self.order.pk)
+        self.assertEqual(self.serializer.data["items"], [OrderItemSerializer(instance=self.order_item).data])
+        self.assertEqual(Decimal(self.serializer.data["total_cost"]), Decimal(self.order.get_total_cost()))
+        self.assertEqual(self.serializer.data["paid"], self.order.paid)
+        self.assertEqual(self.serializer.data["owner"], self.order.owner.pk)
