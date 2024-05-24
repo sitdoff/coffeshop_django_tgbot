@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from cart.cart import Cart
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -224,6 +225,8 @@ class TestTelegramOrderFactory(TestCase):
 
         factory.create_order(self.request)
         self.assertNotIn(settings.CART_SESSION_ID, self.request.session)
+
+
 class TestOrderSerializer(TestCase):
     """
     Test order serializer.
@@ -252,3 +255,27 @@ class TestOrderSerializer(TestCase):
         self.assertEqual(Decimal(self.serializer.data["total_cost"]), Decimal(self.order.get_total_cost()))
         self.assertEqual(self.serializer.data["paid"], self.order.paid)
         self.assertEqual(self.serializer.data["owner"], self.order.owner.pk)
+
+
+class TestOrderItemSerializer(TestCase):
+    """
+    Test order item serializer.
+    """
+
+    def setUp(self) -> None:
+        self.category = CategoryModel.objects.create(name="Test Category")
+        self.product = ProductModel.objects.create(name="Test Product", category=self.category, price=Decimal("10.00"))
+        self.order_item = OrderItemModel.objects.create(product=self.product, price=Decimal("10.00"), quantity=2)
+        self.serializer = OrderItemSerializer(instance=self.order_item)
+        return super().setUp()
+
+    def test_order_item(self):
+        expected_item_data = {
+            "id": self.order_item.pk,
+            "cost": str(self.order_item.get_cost()),
+            "price": str(self.order_item.price),
+            "quantity": self.order_item.quantity,
+            "order": None,
+            "product": self.product.pk,
+        }
+        self.assertEqual(self.serializer.data, expected_item_data)
