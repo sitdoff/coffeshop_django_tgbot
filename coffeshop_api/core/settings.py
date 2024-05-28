@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework.authtoken",
+    "djoser",
     # "drf_yasg",
     "mptt",
     "django_extensions",
@@ -149,10 +151,22 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+}
+
 CART_SESSION_ID = "cart"
 
 AUTH_USER_MODEL = "users.TelegramUser"
+
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "users.backends.TelegramIdBackend",
 ]
+
+DJOSER = {
+    "USER_ID_FIELD": "telegram_id",
+}
