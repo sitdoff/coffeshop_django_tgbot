@@ -190,7 +190,7 @@ class TestCartSerializer(TestCase):
         cart = Cart(self.request)
         serializer = CartSerializer(cart)
         reference = {
-            "goods": {},
+            "items": {},
             "total_price": "0.00",
         }
         self.assertEqual(serializer.data, reference)
@@ -199,7 +199,7 @@ class TestCartSerializer(TestCase):
         cart.add(self.product2, quantity=2)
         serializer = CartSerializer(cart)
         reference = {
-            "goods": {
+            "items": {
                 str(self.product1.pk): {
                     "quantity": 1,
                     "price": "10.5",
@@ -235,7 +235,7 @@ class TestCartView(TestCase):
         response = self.client.get(reverse("cart:cart_view"))
         self.assertEqual(response.status_code, 200)
         reference = {
-            "goods": {},
+            "items": {},
             "total_price": "0.00",
         }
         self.assertEqual(response.json(), reference)
@@ -249,7 +249,7 @@ class TestCartView(TestCase):
         }
         response = self.client.put(reverse("cart:cart_view"), data=data)
         reference = {
-            "goods": {
+            "items": {
                 str(self.product1.pk): {
                     "quantity": 1,
                     "price": "10.50",
@@ -267,7 +267,7 @@ class TestCartView(TestCase):
         }
         response = self.client.put(reverse("cart:cart_view"), data=data)
         reference = {
-            "goods": {
+            "items": {
                 str(self.product1.pk): {
                     "quantity": 3,
                     "price": "10.50",
@@ -285,7 +285,7 @@ class TestCartView(TestCase):
         }
         response = self.client.put(reverse("cart:cart_view"), data=data)
         reference = {
-            "goods": {
+            "items": {
                 str(self.product1.pk): {
                     "quantity": 3,
                     "price": "10.50",
@@ -317,7 +317,7 @@ class TestCartView(TestCase):
         }
         response = self.client.patch(reverse("cart:cart_view"), data=data)
         reference = {
-            "goods": {
+            "items": {
                 str(self.product1.pk): {
                     "quantity": 2,
                     "price": "10.50",
@@ -335,7 +335,7 @@ class TestCartView(TestCase):
         }
         response = self.client.patch(reverse("cart:cart_view"), data=data)
         reference = {
-            "goods": {
+            "items": {
                 str(self.product1.pk): {
                     "quantity": 2,
                     "price": "10.50",
@@ -362,6 +362,6 @@ class TestCartView(TestCase):
         self.client.put(reverse("cart:cart_view"), data={"id": 2})
 
         response = self.client.delete(reverse("cart:cart_view"))
-        referense = {"goods": {}, "total_price": "0.00"}
+        referense = {"items": {}, "total_price": "0.00"}
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), referense)
