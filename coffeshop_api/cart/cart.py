@@ -96,8 +96,13 @@ class Cart:
     Shopping cart for managing ordered goods.
     """
 
-    def __init__(self) -> None:
-        self.cart = {"items": {}, "ordered": set()}
+    def __init__(self, data=None) -> None:
+        if data is None:
+            self.cart = {"items": {}, "ordered": set()}
+        else:
+            print("Data")
+            __import__("pprint").pprint(data)
+            self.cart = data["cart"]
 
     def add(self, product, quantity: int = 1, override_quantity: bool = False) -> None:
         """
