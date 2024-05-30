@@ -9,7 +9,7 @@ class OrderItemSerializer(ModelSerializer):
     OrderItemModel serializer.
     """
 
-    cost = serializers.DecimalField(source="get_cost", max_digits=5, decimal_places=2)
+    cost = serializers.DecimalField(source="get_cost", max_digits=5, decimal_places=2, read_only=True)
 
     class Meta:
         model = OrderItemModel
@@ -22,7 +22,7 @@ class OrderSerializer(ModelSerializer):
     """
 
     items = OrderItemSerializer(many=True, read_only=True)
-    total_cost = serializers.DecimalField(source="get_total_cost", max_digits=5, decimal_places=2)
+    total_cost = serializers.DecimalField(source="get_total_cost", max_digits=5, decimal_places=2, read_only=True)
 
     class Meta:
         model = OrderModel
