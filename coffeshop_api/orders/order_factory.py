@@ -2,10 +2,12 @@ from abc import ABC, abstractmethod
 
 from cart.cart import Cart
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.http import HttpRequest
 from goods.models import ProductModel
 
 from .models import OrderItemModel, OrderModel
+from .serializers import OrderItemSerializer
 
 
 class OrderFactory(ABC):
@@ -50,7 +52,7 @@ class TelegramOrderFactory(OrderFactory):
         """
         if not "items" in cart.cart and not "ordered" in cart.cart:
             raise Exception("Нет корзины")
-        if not cart.cart["ordered"]:
+        if "ordered" in cart.cart and not cart.cart["ordered"]:
             raise Exception("Корзина пуста")
         return True
 
@@ -62,12 +64,9 @@ class TelegramOrderFactory(OrderFactory):
         """
         items = []
         for item_data in cart:
-            item = OrderItemModel.objects.create(
-                order=None,
-                product=ProductModel.objects.get(pk=item_data["product_id"]),
-                price=item_data["price"],
-                quantity=item_data["quantity"],
-            )
-            items.append(item)
+            item_serializer = OrderItemSerializer(data=item_data)
+            if item_serializer.is_valid(raise_exception=True):
+                item = item_serializer.save()
+                items.append(item)
         cart.clear()
         return items
