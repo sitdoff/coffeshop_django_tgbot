@@ -25,7 +25,7 @@ class TestOrderItemModel(TestCase):
         cls.product1 = ProductModel.objects.create(name="poduct_1_test_order_item", category=cls.category, price=10.5)
         cls.product2 = ProductModel.objects.create(name="poduct_2_test_order_item", category=cls.category, price=15.5)
         cls.order_item = OrderItemModel.objects.create(
-            product=cls.product1,
+            product_id=cls.product1,
             price=cls.product1.price,
             quantity=1,
         )
@@ -35,7 +35,7 @@ class TestOrderItemModel(TestCase):
         """
         Test create ordet item
         """
-        self.assertEqual(self.order_item.product, self.product1)
+        self.assertEqual(self.order_item.product_id, self.product1)
         self.assertEqual(self.order_item.price, self.product1.price)
         self.assertEqual(self.order_item.quantity, 1)
 
@@ -72,12 +72,12 @@ class TestOrderModel(TestCase):
 
         cls.order = OrderModel.objects.create(owner=cls.user)
         cls.order_item_1 = OrderItemModel.objects.create(
-            product=cls.product1,
+            product_id=cls.product1,
             price=cls.product1.price,
             quantity=1,
         )
         cls.order_item_2 = OrderItemModel.objects.create(
-            product=cls.product2,
+            product_id=cls.product2,
             price=cls.product2.price,
             quantity=2,
         )
@@ -132,12 +132,12 @@ class TestTelegramOrderFactory(TestCase):
 
         cls.order = OrderModel.objects.create(owner=cls.user)
         cls.order_item_1 = OrderItemModel.objects.create(
-            product=cls.product1,
+            product_id=cls.product1,
             price=cls.product1.price,
             quantity=1,
         )
         cls.order_item_2 = OrderItemModel.objects.create(
-            product=cls.product2,
+            product_id=cls.product2,
             price=cls.product2.price,
             quantity=2,
         )
@@ -169,7 +169,7 @@ class TestTelegramOrderFactory(TestCase):
         self.assertEqual(len(order.items.all()), 1)
 
         item_in_order = order.items.first()
-        self.assertEqual(item_in_order.product, self.product1)
+        self.assertEqual(item_in_order.product_id, self.product1)
         self.assertEqual(item_in_order.price, self.product1.price)
         self.assertEqual(item_in_order.quantity, 1)
 
@@ -237,7 +237,7 @@ class TestOrderSerializer(TestCase):
         self.order = OrderModel.objects.create(owner=self.user)
         self.category = CategoryModel.objects.create(name="Test Category")
         self.product = ProductModel.objects.create(name="Test Product", category=self.category, price=Decimal("10.00"))
-        self.order_item = OrderItemModel.objects.create(product=self.product, price=Decimal("10.00"), quantity=2)
+        self.order_item = OrderItemModel.objects.create(product_id=self.product, price=Decimal("10.00"), quantity=2)
         self.serializer = OrderSerializer(instance=self.order)
         return super().setUp()
 
@@ -265,7 +265,7 @@ class TestOrderItemSerializer(TestCase):
     def setUp(self) -> None:
         self.category = CategoryModel.objects.create(name="Test Category")
         self.product = ProductModel.objects.create(name="Test Product", category=self.category, price=Decimal("10.00"))
-        self.order_item = OrderItemModel.objects.create(product=self.product, price=Decimal("10.00"), quantity=2)
+        self.order_item = OrderItemModel.objects.create(product_id=self.product, price=Decimal("10.00"), quantity=2)
         self.serializer = OrderItemSerializer(instance=self.order_item)
         return super().setUp()
 
@@ -276,6 +276,6 @@ class TestOrderItemSerializer(TestCase):
             "price": str(self.order_item.price),
             "quantity": self.order_item.quantity,
             "order": None,
-            "product": self.product.pk,
+            "product_id": self.product.pk,
         }
         self.assertEqual(self.serializer.data, expected_item_data)
