@@ -110,8 +110,12 @@ class Cart:
 
         If the "override_quantity" parameter is True and the "quantity" value is 0, then the product is removed from the cart.
         """
+
         if quantity < 0:
             raise ValueError("Quantity cannot be less than 0")
+
+        if product.id not in self.cart["ordered"] and quantity == 0:
+            raise ValueError("The product is not in the cart. A value of 0 cannot be applied.")
 
         if product.id not in self.cart["ordered"]:
             self.cart["items"][product.id] = {
@@ -119,10 +123,12 @@ class Cart:
                 "product_name": product.name,
                 "price": product.price,
                 "quantity": 0,
-                "cost": quantity * product.price,
             }
+
+            # Add item id in ordered set
             self.cart["ordered"].add(product.id)
 
+        # Set product quantity
         if override_quantity:
             if quantity == 0:
                 self.remove(product)
@@ -130,6 +136,11 @@ class Cart:
             self.cart["items"][product.id]["quantity"] = quantity
         else:
             self.cart["items"][product.id]["quantity"] += quantity
+
+        # Set product cost
+        self.cart["items"][product.id]["cost"] = (
+            self.cart["items"][product.id]["price"] * self.cart["items"][product.id]["quantity"]
+        )
 
     def remove(self, product) -> None:
         """
