@@ -121,7 +121,7 @@ class Cart:
             self.cart["items"][product.id] = {
                 "product_id": product.id,
                 "product_name": product.name,
-                "price": product.price,
+                "price": Decimal(product.price),
                 "quantity": 0,
             }
 
@@ -138,7 +138,7 @@ class Cart:
             self.cart["items"][product.id]["quantity"] += quantity
 
         # Set product cost
-        self.cart["items"][product.id]["cost"] = (
+        self.cart["items"][product.id]["cost"] = Decimal(
             self.cart["items"][product.id]["price"] * self.cart["items"][product.id]["quantity"]
         )
 
@@ -169,4 +169,4 @@ class Cart:
         """
         Remove cart from session.
         """
-        self.cart = {"items": {}, "ordered": set()}
+        self.__init__(data=None)
