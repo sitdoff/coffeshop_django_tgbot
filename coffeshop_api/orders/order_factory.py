@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from decimal import Decimal
 
 from cart.cart import Cart
 from django.conf import settings
@@ -41,10 +42,14 @@ class TelegramOrderFactory(OrderFactory):
             raise Exception("Нет корзины")
         if self.check_cart(cart):
             order = OrderModel.objects.create(owner=request.user)
-            items = self.get_items(cart)
-            for item in items:
-                order.items.add(item)
-            return order
+            try:
+                items = self.get_items(cart)
+                for item in items:
+                    order.items.add(item)
+                return order
+            except ValueError as e:
+                order.delete()
+                raise e
 
     def check_cart(self, cart: Cart):
         """
@@ -63,7 +68,11 @@ class TelegramOrderFactory(OrderFactory):
         At the end, clears the order cart.
         """
         items = []
+        queryset = ProductModel.objects.filter(pk__in=cart.cart["ordered"])
         for item_data in cart:
+            item: ProductModel = queryset.filter(pk=item_data["product_id"]).first()
+            if item.price != Decimal(item_data["price"]):
+                raise ValueError("Item price is wrong!")
             item_serializer = OrderItemSerializer(data=item_data)
             if item_serializer.is_valid(raise_exception=True):
                 item = item_serializer.save()

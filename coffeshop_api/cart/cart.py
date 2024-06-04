@@ -101,6 +101,7 @@ class Cart:
             self.cart = {"items": {}, "ordered": set()}
         else:
             self.cart = data["cart"]
+            self.cart["ordered"] = set(self.cart["items"])
 
     def add(self, product, quantity: int = 1, override_quantity: bool = False) -> None:
         """
