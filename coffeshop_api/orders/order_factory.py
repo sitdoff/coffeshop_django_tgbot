@@ -2,13 +2,13 @@ from abc import ABC, abstractmethod
 from decimal import Decimal
 
 from cart.cart import Cart
-from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from goods.models import ProductModel
 
 from .models import OrderItemModel, OrderModel
-from .serializers import OrderItemSerializer
 
 
 class OrderFactory(ABC):
@@ -34,48 +34,57 @@ class TelegramOrderFactory(OrderFactory):
     Class for creating orders from telegram.
     """
 
-    def create_order(self, request: HttpRequest, cart: Cart):
+    def create_order(self, request: HttpRequest, cart: Cart) -> OrderModel | None:
         """
         Creates and returns an order object.
+
+        At the end, clears the order cart.
         """
-        if cart is None:
-            raise Exception("Нет корзины")
-        if self.check_cart(cart):
+        if not isinstance(cart, Cart):
+            raise ValueError("The cart argument is not an instance of Cart")
+
+        self.check_cart(cart)
+
+        with transaction.atomic():
             order = OrderModel.objects.create(owner=request.user)
             try:
-                items = self.get_items(cart)
-                for item in items:
-                    order.items.add(item)
+                items = self.get_items(cart, order)
+                OrderItemModel.objects.bulk_create(items)
+                cart.clear()
                 return order
             except ValueError as e:
                 order.delete()
                 raise e
 
-    def check_cart(self, cart: Cart):
+    def check_cart(self, cart: Cart) -> bool | None:
         """
         Checks the presence of a cart in the session and the presence of goods in it.
         """
-        if not "items" in cart.cart and not "ordered" in cart.cart:
-            raise Exception("Нет корзины")
-        if "ordered" in cart.cart and not cart.cart["ordered"]:
-            raise Exception("Корзина пуста")
+        if cart.cart.get("items") is None or cart.cart.get("ordered") is None:
+            raise ValueError("The cart is corrupted")
+        if not cart.cart["ordered"]:
+            raise ValueError("The cart is empty")
         return True
 
-    def get_items(self, cart: Cart):
+    def get_items(self, cart: Cart, order: OrderModel) -> list[OrderItemModel]:
         """
         Returns ordered items objects from the cart to be attached to the order.
-
-        At the end, clears the order cart.
         """
+        product_ids = [item["product_id"] for item in cart]
+        products: QuerySet[ProductModel] = ProductModel.objects.filter(pk__in=product_ids)
+        product_dict = {product.pk: product for product in products}
+
         items = []
-        queryset = ProductModel.objects.filter(pk__in=cart.cart["ordered"])
-        for item_data in cart:
-            item: ProductModel = queryset.filter(pk=item_data["product_id"]).first()
-            if item.price != Decimal(item_data["price"]):
-                raise ValueError("Item price is wrong!")
-            item_serializer = OrderItemSerializer(data=item_data)
-            if item_serializer.is_valid(raise_exception=True):
-                item = item_serializer.save()
-                items.append(item)
-        cart.clear()
+        for item_data_from_cart in cart:
+            product_id = item_data_from_cart["product_id"]
+            product = product_dict.get(product_id)
+            if not product:
+                raise ObjectDoesNotExist(f"Product with id {product_id} does not exist.")
+            if product.price != Decimal(item_data_from_cart["price"]):
+                raise ValueError(f"Item {item_data_from_cart['product_name']} price is wrong!")
+            item = OrderItemModel(
+                order=order, product_id=product, price=product.price, quantity=item_data_from_cart["quantity"]
+            )
+            items.append(item)
+
         return items
