@@ -184,9 +184,9 @@ class TestTelegramOrderFactory(TestCase):
         Tests raise exception when there is no cart.
         """
         factory = TelegramOrderFactory()
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(ValueError) as context:
             factory.create_order(self.request, None)
-        self.assertEqual(str(context.exception), "Нет корзины")
+        self.assertEqual(str(context.exception), "The cart argument is not an instance of Cart")
 
     def test_create_order_empty_cart(self):
         """
@@ -194,9 +194,30 @@ class TestTelegramOrderFactory(TestCase):
         """
         cart = Cart()
         factory = TelegramOrderFactory()
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(ValueError) as context:
             factory.create_order(self.request, cart)
-        self.assertEqual(str(context.exception), "Корзина пуста")
+        self.assertEqual(str(context.exception), "The cart is empty")
+
+    def test_create_order_corrupted_cart(self):
+        """
+        Test raise exception when cart is corrupted.
+        """
+
+        factory = TelegramOrderFactory()
+
+        cart = Cart()
+        del cart.cart["items"]
+
+        with self.assertRaises(ValueError) as context:
+            factory.create_order(self.request, cart)
+        self.assertEqual(str(context.exception), "The cart is corrupted")
+
+        cart = Cart()
+        del cart.cart["ordered"]
+
+        with self.assertRaises(ValueError) as context:
+            factory.create_order(self.request, cart)
+        self.assertEqual(str(context.exception), "The cart is corrupted")
 
     def test_method_get_items(self):
         """
@@ -204,12 +225,14 @@ class TestTelegramOrderFactory(TestCase):
         """
         cart = Cart()
         factory = TelegramOrderFactory()
-        items = factory.get_items(cart)
+        order = OrderModel.objects.create(owner=self.request.user)
+        items = factory.get_items(cart, order)
         self.assertEqual(items, [])
 
         cart = Cart()
         cart.add(self.product1)
-        items = factory.get_items(cart)
+        items = factory.get_items(cart, order)
+        self.assertIsInstance(items, list)
         self.assertEqual(len(items), 1)
         item = items[0]
         self.assertIsInstance(item, OrderItemModel)
@@ -222,9 +245,10 @@ class TestTelegramOrderFactory(TestCase):
         factory = TelegramOrderFactory()
 
         cart.add(self.product1)
+        self.assertEqual(len(cart), 1)
 
         factory.create_order(self.request, cart)
-        self.assertNotIn(settings.CART_SESSION_ID, self.request.session)
+        self.assertEqual(len(cart), 0)
 
 
 class TestOrderSerializer(TestCase):
