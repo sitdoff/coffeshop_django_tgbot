@@ -31,7 +31,7 @@ class OrderViewSet(ModelViewSet):
     pagination_class = OrderPagination
 
     def get_queryset(self):
-        queryset = OrderModel.objects.filter(owner=self.request.user.pk)
+        queryset = OrderModel.objects.filter(owner=self.request.user.pk).prefetch_related("items")
         return queryset
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
