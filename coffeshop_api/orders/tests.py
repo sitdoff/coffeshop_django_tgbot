@@ -1,7 +1,6 @@
 from decimal import Decimal
 
 from cart.cart import Cart
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase

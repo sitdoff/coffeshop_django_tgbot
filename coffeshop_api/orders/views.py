@@ -22,6 +22,7 @@ class OrderViewSet(ModelViewSet):
     queryset = OrderModel.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "post"]
 
     def get_queryset(self):
         queryset = OrderModel.objects.filter(owner=self.request.user.pk)
