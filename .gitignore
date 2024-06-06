@@ -27,3 +27,5 @@ test_fixture.json.bak
 coffeshop_api/orders/migrations/*
 coffeshop_api/goods/migrations/*
 coffeshop_api/users/migrations/*
+coffeshop_api/cart_test.py
+coffeshop_api/order_create_test.py
