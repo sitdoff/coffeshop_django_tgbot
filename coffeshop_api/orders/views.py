@@ -2,6 +2,7 @@ from typing import Any
 
 from cart.serializers import CartSerializer
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -11,7 +12,11 @@ from .models import OrderModel
 from .order_factory import TelegramOrderFactory
 from .serializers import OrderSerializer
 
+
 # Create your views here.
+class OrderPagination(PageNumberPagination):
+    page_size = 5
+    page_query_param = "page"
 
 
 class OrderViewSet(ModelViewSet):
@@ -23,6 +28,7 @@ class OrderViewSet(ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ["get", "post"]
+    pagination_class = OrderPagination
 
     def get_queryset(self):
         queryset = OrderModel.objects.filter(owner=self.request.user.pk)
