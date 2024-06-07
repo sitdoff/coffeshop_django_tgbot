@@ -1,7 +1,11 @@
+import json
+
 from django.contrib.auth import get_user_model
 from django.http import HttpRequest
 from django.test import TestCase
+from django.urls import reverse
 from rest_framework.exceptions import ValidationError
+from rest_framework.test import APIClient
 
 from .backends import TelegramIdBackend
 from .models import TelegramUser
@@ -85,3 +89,62 @@ class TestCreateTelegramUserSerializer(TestCase):
         with self.assertRaises(ValidationError):
             if serializer.is_valid(raise_exception=True):
                 user = serializer.save()
+
+
+class TestCreateUserView(TestCase):
+    def setUp(self) -> None:
+        self.client = APIClient()
+
+    def test_view_method_post_whith_valid_data(self):
+        data = {
+            "telegram_id": "12345",
+            "username": "test_user_create_user_view",
+        }
+        reference = data
+
+        with self.assertRaises(get_user_model().DoesNotExist):
+            user = get_user_model().objects.get(telegram_id=data["telegram_id"], username=data["username"])
+
+        response = self.client.post(reverse("create_user"), data=data)
+
+        self.assertEqual(json.loads(response.content.decode()), reference)
+        user = get_user_model().objects.get(telegram_id=data["telegram_id"], username=data["username"])
+        self.assertIsNotNone(user)
+
+    def test_view_method_post_whith_invalid_data(self):
+        data = {
+            "telegram_id": "12345",
+        }
+        reference = {"username": ["This field is required."]}
+        response = self.client.post(reverse("create_user"), data=data)
+        self.assertEqual(json.loads(response.content.decode()), reference)
+
+        data = {
+            "username": "test_user_create_user_view",
+        }
+        reference = {"telegram_id": ["This field is required."]}
+        response = self.client.post(reverse("create_user"), data=data)
+        self.assertEqual(json.loads(response.content.decode()), reference)
+
+    def test_view_method_get(self):
+        response = self.client.get(reverse("create_user"))
+        reference = {"detail": 'Method "GET" not allowed.'}
+        self.assertEqual(json.loads(response.content.decode()), reference)
+
+    def test_view_method_put(self):
+        data = {}
+        response = self.client.put(reverse("create_user"), data=data)
+        reference = {"detail": 'Method "PUT" not allowed.'}
+        self.assertEqual(json.loads(response.content.decode()), reference)
+
+    def test_view_method_patch(self):
+        data = {}
+        response = self.client.patch(reverse("create_user"), data=data)
+        reference = {"detail": 'Method "PATCH" not allowed.'}
+        self.assertEqual(json.loads(response.content.decode()), reference)
+
+    def test_view_method_delete(self):
+        data = {}
+        response = self.client.delete(reverse("create_user"), data=data)
+        reference = {"detail": 'Method "DELETE" not allowed.'}
+        self.assertEqual(json.loads(response.content.decode()), reference)
