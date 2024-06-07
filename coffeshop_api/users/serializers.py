@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
@@ -20,3 +22,17 @@ class TelegramAuthSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid Telegram ID")
         data["user"] = user
         return data
+
+
+class CreateTelegramUserSerializer(serializers.ModelSerializer):
+
+    username = serializers.CharField(max_length=150, required=True)
+    telegram_id = serializers.CharField(max_length=15, required=True)
+
+    class Meta:
+        model = TelegramUser
+        fields = ["telegram_id", "username"]
+
+    def create(self, validated_data: Any):
+        user = TelegramUser.objects.create(**validated_data)
+        return user
