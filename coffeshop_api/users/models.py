@@ -5,4 +5,4 @@ from django.db import models
 
 
 class TelegramUser(AbstractUser):
-    telegram_id = models.CharField(max_length=15, unique=True, null=True, blank=True, verbose_name="Telegram ID")
+    telegram_id = models.CharField(max_length=15, unique=True, verbose_name="Telegram ID")

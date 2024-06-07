@@ -121,8 +121,7 @@ class TestTelegramOrderFactory(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.user = get_user_model().objects.create(
-            username="user_test_order_factory",
-            email="user@mail.com",
+            username="user_test_order_factory", email="user@mail.com", telegram_id="1234"
         )
         cls.user.set_password("password")
         cls.category = CategoryModel.objects.create(name="category_test_order_factory")
@@ -256,7 +255,7 @@ class TestOrderSerializer(TestCase):
     """
 
     def setUp(self) -> None:
-        self.user = get_user_model().objects.create(username="testuser")
+        self.user = get_user_model().objects.create(username="testuser", telegram_id="1")
         self.order = OrderModel.objects.create(owner=self.user)
         self.category = CategoryModel.objects.create(name="Test Category")
         self.product = ProductModel.objects.create(name="Test Product", category=self.category, price=Decimal("10.00"))
@@ -302,3 +301,7 @@ class TestOrderItemSerializer(TestCase):
             "product_id": self.product.pk,
         }
         self.assertEqual(self.serializer.data, expected_item_data)
+
+
+class TestOrderViewSet(TestCase):
+    pass
