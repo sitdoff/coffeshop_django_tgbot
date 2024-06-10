@@ -160,8 +160,6 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
-CART_SESSION_ID = "cart"
-
 AUTH_USER_MODEL = "users.TelegramUser"
 
 AUTHENTICATION_BACKENDS = [
