@@ -63,7 +63,9 @@ class Cart:
             self.cart["ordered"].remove(product_id)
 
     def __iter__(self):
-        """ """
+        """
+        Provides data about the items in the cart.
+        """
         for item in self.cart["items"].values():
             yield item
 
@@ -74,6 +76,9 @@ class Cart:
         return sum(item["quantity"] for item in self.cart["items"].values())
 
     def get_total_price(self):
+        """
+        Returns the total cost of items in the cart.
+        """
         return sum(Decimal(item["price"]) * item["quantity"] for item in self.cart["items"].values())
 
     def clear(self):
