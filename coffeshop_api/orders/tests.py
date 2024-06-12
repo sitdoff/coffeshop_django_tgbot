@@ -1,11 +1,14 @@
+import json
 from decimal import Decimal
 
 from cart.cart import Cart
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase
+from django.urls import reverse
 from goods.models import CategoryModel, ProductModel
-from rest_framework.test import APIRequestFactory
+from rest_framework.authtoken.models import Token
+from rest_framework.test import APIClient, APIRequestFactory
 
 from .models import OrderItemModel, OrderModel
 from .order_factory import TelegramOrderFactory
@@ -304,4 +307,89 @@ class TestOrderItemSerializer(TestCase):
 
 
 class TestOrderViewSet(TestCase):
-    pass
+    def setUp(self) -> None:
+        self.client = APIClient()
+        self.user = get_user_model().objects.create(
+            username="test_user_order_view_set", email="user@mail.com", telegram_id="123456"
+        )
+        self.auth_token, _ = Token.objects.get_or_create(user=self.user)
+        self.headers = {"Authorization": f"Token {self.auth_token}"}
+        self.category = CategoryModel.objects.create(name="test_category")
+        self.product1 = ProductModel.objects.create(name="test_product1", category=self.category, price=100)
+        self.product2 = ProductModel.objects.create(name="test_product2", category=self.category, price=120)
+
+    def test_get_method(self):
+        response = self.client.get(reverse("order-list"))
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.content.decode(), '{"detail":"Authentication credentials were not provided."}')
+
+        response = self.client.get(reverse("order-list"), headers=self.headers)
+        response_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("count", response_data)
+        self.assertEqual(response_data["count"], 0)
+        self.assertIn("results", response_data)
+        self.assertEqual(response_data["results"], [])
+
+    def test_post_method(self):
+        # Общая стоимость подуктов специально указана неправильно. В дальнейшем, когда добавятся проверки, это будет исправленно.
+        # По идее, если общая стоимость товаров в корзине не совпадает с общей стоимостью заказа, то должна выбрасываться ошибка.
+        data = {
+            "items": {
+                self.product1.pk: {
+                    "product_id": self.product1.pk,
+                    "product_name": "Экспресса",
+                    "price": self.product1.price,
+                    "quantity": 3,
+                    "cost": "100.00",
+                },
+                self.product2.pk: {
+                    "product_id": self.product2.pk,
+                    "product_name": "Американа",
+                    "price": self.product2.price,
+                    "quantity": 2,
+                    "cost": "240.00",
+                },
+            },
+            "total_cost": "220.00",
+            "telegram_id": self.user.telegram_id,
+        }
+        response = self.client.post(path=reverse("order-list"), data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.content.decode(), '{"detail":"Authentication credentials were not provided."}')
+
+        response = self.client.post(path=reverse("order-list"), data=data, headers=self.headers, format="json")
+        response_data = json.loads(response.content)
+        self.assertEqual(response.status_code, 201)
+        self.assertIn("id", response_data)
+        self.assertIn("items", response_data)
+        self.assertIn("owner", response_data)
+        self.assertIn("paid", response_data)
+        self.assertIn("total_cost", response_data)
+        self.assertEqual(response_data["owner"], self.user.pk)
+        self.assertFalse(response_data["paid"])
+        self.assertEqual(
+            Decimal(response_data["total_cost"]),
+            sum(Decimal(item["price"]) * Decimal(item["quantity"]) for item in response_data["items"]),
+        )
+        products = OrderItemModel.objects.filter(order=response_data["id"])
+
+        reference = [
+            {
+                "cost": str(self.product1.price * data["items"][self.product1.pk]["quantity"]) + ".00",
+                "id": products.get(product_id=self.product1.pk).pk,
+                "order": response_data["id"],
+                "price": str(self.product1.price) + ".00",
+                "product_id": self.product1.pk,
+                "quantity": data["items"][self.product1.pk]["quantity"],
+            },
+            {
+                "cost": str(self.product2.price * data["items"][self.product2.pk]["quantity"]) + ".00",
+                "id": products.get(product_id=self.product2.pk).pk,
+                "order": response_data["id"],
+                "price": str(self.product2.price) + ".00",
+                "product_id": self.product2.pk,
+                "quantity": data["items"][self.product2.pk]["quantity"],
+            },
+        ]
+        self.assertEqual(response_data["items"], reference)
