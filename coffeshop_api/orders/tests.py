@@ -331,7 +331,36 @@ class TestOrderViewSet(TestCase):
         self.assertIn("results", response_data)
         self.assertEqual(response_data["results"], [])
 
-    def test_post_method(self):
+    def test_post_method_with_invalid_data(self):
+        # Invalid price
+        data = {
+            "items": {
+                self.product1.pk: {
+                    "product_id": self.product1.pk,
+                    "product_name": "Экспресса",
+                    "price": self.product1.price - 5,
+                    "quantity": 3,
+                    "cost": "100.00",
+                },
+                self.product2.pk: {
+                    "product_id": self.product2.pk,
+                    "product_name": "Американа",
+                    "price": self.product2.price,
+                    "quantity": 2,
+                    "cost": "240.00",
+                },
+            },
+            "total_cost": "220.00",
+            "telegram_id": self.user.telegram_id,
+        }
+
+        response = self.client.post(reverse("order-list"), data=data, headers=self.headers, format="json")
+        self.assertEqual(
+            response.content.decode(),
+            '{"error":"Item %s price is wrong!"}' % (data["items"][self.product1.pk]["product_name"]),
+        )
+
+    def test_post_method_with_valid_data(self):
         # Общая стоимость подуктов специально указана неправильно. В дальнейшем, когда добавятся проверки, это будет исправленно.
         # По идее, если общая стоимость товаров в корзине не совпадает с общей стоимостью заказа, то должна выбрасываться ошибка.
         data = {
@@ -393,3 +422,19 @@ class TestOrderViewSet(TestCase):
             },
         ]
         self.assertEqual(response_data["items"], reference)
+
+    def test_put_method(self):
+        response = self.client.put(reverse("order-list"), headers=self.headers, format="json")
+        self.assertEqual(response.json(), {"detail": 'Method "PUT" not allowed.'})
+
+    def test_patch_method(self):
+        response = self.client.patch(reverse("order-list"), headers=self.headers, format="json")
+        self.assertEqual(response.json(), {"detail": 'Method "PATCH" not allowed.'})
+
+    def test_delete_method(self):
+        response = self.client.delete(reverse("order-list"), headers=self.headers, format="json")
+        self.assertEqual(response.json(), {"detail": 'Method "DELETE" not allowed.'})
+
+    def test_options_method(self):
+        response = self.client.options(reverse("order-list"), headers=self.headers, format="json")
+        self.assertTrue(response.content)
