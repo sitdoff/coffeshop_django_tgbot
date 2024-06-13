@@ -15,6 +15,10 @@ from .serializers import OrderSerializer
 
 # Create your views here.
 class OrderPagination(PageNumberPagination):
+    """
+    TODO
+    """
+
     page_size = 5
     page_query_param = "page"
 
@@ -27,14 +31,20 @@ class OrderViewSet(ModelViewSet):
     queryset = OrderModel.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "post"]
+    http_method_names = ["get", "post", "options"]
     pagination_class = OrderPagination
 
     def get_queryset(self):
+        """
+        TODO
+        """
         queryset = OrderModel.objects.filter(owner=self.request.user.pk).prefetch_related("items")
         return queryset
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        TODO
+        """
         cart_serializer = CartSerializer(data=request.data)
         if cart_serializer.is_valid():
             cart = cart_serializer.save()
