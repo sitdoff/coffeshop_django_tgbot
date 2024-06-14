@@ -18,6 +18,8 @@ services:
             context: .
             dockerfile: ./coffeshop_api/Dockerfile
         entrypoint: ./entrypoint.sh python manage.py runserver 0.0.0.0:8000
+        environment:
+            - DJANGO_SETTINGS_MODULE=core.settings.development
         # entrypoint: python manage.py runserver 0.0.0.0:8000
         volumes:
             - ./coffeshop_api:/code
