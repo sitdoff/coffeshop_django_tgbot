@@ -106,7 +106,10 @@ class TestSubCategorySerializer(TestCase):
         self.request_factory = APIRequestFactory()
         self.sub_category = CategoryModel.objects.create(name="sub_category")
 
-    def test_sub_cateory_serializer(self):
+    def test_sub_category_serializer(self):
+        """
+        Test subcategory serializer.
+        """
         request = self.request_factory.get("/category/")
         subcategory_serializer = SubCategorySerializer(instance=self.sub_category, context={"request": request})
         subcategory_url = request.build_absolute_uri(
