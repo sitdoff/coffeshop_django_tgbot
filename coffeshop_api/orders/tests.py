@@ -267,6 +267,9 @@ class TestOrderSerializer(TestCase):
         return super().setUp()
 
     def test_empty_order(self):
+        """
+        Test serialization of an empty order.
+        """
         self.assertEqual(self.serializer.data["id"], self.order.pk)
         self.assertEqual(self.serializer.data["items"], [])
         self.assertEqual(Decimal(self.serializer.data["total_cost"]), Decimal(self.order.get_total_cost()))
@@ -274,6 +277,9 @@ class TestOrderSerializer(TestCase):
         self.assertEqual(self.serializer.data["owner"], self.order.owner.pk)
 
     def test_order_with_item(self):
+        """
+        Test serialization of an order with items.
+        """
         self.order.items.add(self.order_item)
         self.assertEqual(self.serializer.data["id"], self.order.pk)
         self.assertEqual(self.serializer.data["items"], [OrderItemSerializer(instance=self.order_item).data])
@@ -295,6 +301,9 @@ class TestOrderItemSerializer(TestCase):
         return super().setUp()
 
     def test_order_item(self):
+        """
+        Testing order item serialization.
+        """
         expected_item_data = {
             "id": self.order_item.pk,
             "cost": str(self.order_item.get_cost()),
