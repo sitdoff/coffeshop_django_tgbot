@@ -12,6 +12,9 @@ class TelegramIdBackend(BaseBackend):
     """
 
     def authenticate(self, request: HttpRequest | None, telegram_id=None, **kwargs):
+        """
+        User authentication using telegram_id
+        """
         try:
             user = User.objects.get(telegram_id=telegram_id)
             return user
@@ -19,6 +22,9 @@ class TelegramIdBackend(BaseBackend):
             return None
 
     def get_user(self, user_id):
+        """
+        Return user object.
+        """
         try:
             return User.objects.get(pk=user_id)
         except User.DoesNotExist:
