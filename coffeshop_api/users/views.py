@@ -8,9 +8,16 @@ from .serializers import CreateTelegramUserSerializer, TelegramAuthSerializer
 
 # Create your views here.
 class TelegramAuthView(generics.GenericAPIView):
+    """
+    Authenticates the user using the serializer.
+    """
+
     serializer_class = TelegramAuthSerializer
 
     def post(self, request, *args, **kwargs):
+        """
+        Passes data to the serializer, gets a user token from it and returns it.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
@@ -19,4 +26,8 @@ class TelegramAuthView(generics.GenericAPIView):
 
 
 class CreateUserView(generics.CreateAPIView):
+    """
+    Creates a user using a serializer.
+    """
+
     serializer_class = CreateTelegramUserSerializer
