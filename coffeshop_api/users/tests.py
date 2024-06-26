@@ -14,33 +14,52 @@ from .serializers import CreateTelegramUserSerializer, TelegramUserSerializer
 
 # Create your tests here.
 class TestTelegramIdBackend(TestCase):
+    """
+    Test the user authentication backend using Telegram ID.
+    """
+
     def setUp(self):
         self.backend = TelegramIdBackend()
         self.telegram_id = 1234567
         self.user = get_user_model().objects.create(username="test_user", telegram_id=self.telegram_id)
 
     def test_authenticate_with_valid_data(self):
+        """
+        Testing the authentication method with the correct data.
+        """
         request = HttpRequest()
         user = self.backend.authenticate(request, telegram_id=self.telegram_id)
         self.assertIsNotNone(user)
         self.assertEqual(user, self.user)
 
     def test_authenticate_with_invalid_telegram_id(self):
+        """
+        Testing the authentication method with the wrong Telegram ID.
+        """
         request = HttpRequest()
         user = self.backend.authenticate(request, telegram_id=111111)
         self.assertIsNone(user)
 
     def test_authenticate_without_telegram_id(self):
+        """
+        Testing the authentication method without Telegram ID.
+        """
         request = HttpRequest()
         user = self.backend.authenticate(request)
         self.assertIsNone(user)
 
     def test_get_user_with_valid_user_id(self):
+        """
+        Testing getting a user using a valid user ID.
+        """
         user = self.backend.get_user(self.user.pk)
         self.assertIsNotNone(user)
         self.assertEqual(user, self.user)
 
     def test_get_user_with_invalid_user_id(self):
+        """
+        Testing getting a user using an invalid user ID.
+        """
         user = self.backend.get_user(999999)
         self.assertIsNone(user)
 
