@@ -25,7 +25,7 @@ class TestTelegramIdBackend(TestCase):
 
     def test_authenticate_with_valid_data(self):
         """
-        Testing the authentication method with the correct data.
+        Test the authentication method with the correct data.
         """
         request = HttpRequest()
         user = self.backend.authenticate(request, telegram_id=self.telegram_id)
@@ -34,7 +34,7 @@ class TestTelegramIdBackend(TestCase):
 
     def test_authenticate_with_invalid_telegram_id(self):
         """
-        Testing the authentication method with the wrong Telegram ID.
+        Test the authentication method with the wrong Telegram ID.
         """
         request = HttpRequest()
         user = self.backend.authenticate(request, telegram_id=111111)
@@ -42,7 +42,7 @@ class TestTelegramIdBackend(TestCase):
 
     def test_authenticate_without_telegram_id(self):
         """
-        Testing the authentication method without Telegram ID.
+        Test the authentication method without Telegram ID.
         """
         request = HttpRequest()
         user = self.backend.authenticate(request)
@@ -50,7 +50,7 @@ class TestTelegramIdBackend(TestCase):
 
     def test_get_user_with_valid_user_id(self):
         """
-        Testing getting a user using a valid user ID.
+        Test getting a user using a valid user ID.
         """
         user = self.backend.get_user(self.user.pk)
         self.assertIsNotNone(user)
@@ -58,13 +58,17 @@ class TestTelegramIdBackend(TestCase):
 
     def test_get_user_with_invalid_user_id(self):
         """
-        Testing getting a user using an invalid user ID.
+        Test getting a user using an invalid user ID.
         """
         user = self.backend.get_user(999999)
         self.assertIsNone(user)
 
 
 class TestTelegraUserSerializer(TestCase):
+    """
+    Test the user's serializer.
+    """
+
     def setUp(self) -> None:
         self.user = TelegramUser.objects.create(username="Test user", email="test_user@mail.com", telegram_id="123456")
         self.user.set_password("password")
@@ -72,6 +76,9 @@ class TestTelegraUserSerializer(TestCase):
         return super().setUp()
 
     def test_user_serialization(self):
+        """
+        Test the user's serializer.
+        """
         self.assertEqual(self.serializer.data["username"], self.user.username)
         self.assertEqual(self.serializer.data["email"], self.user.email)
         self.assertEqual(self.serializer.data["telegram_id"], self.user.telegram_id)
