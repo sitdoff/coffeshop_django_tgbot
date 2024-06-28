@@ -88,7 +88,14 @@ class TestTelegraUserSerializer(TestCase):
 
 
 class TestCreateTelegramUserSerializer(TestCase):
+    """
+    Test the serializer to create a user.
+    """
+
     def test_with_valid_data(self):
+        """
+        Test serializer with valid data.
+        """
         data = {
             "telegram_id": "123456",
             "username": "user",
@@ -100,6 +107,9 @@ class TestCreateTelegramUserSerializer(TestCase):
             self.assertEqual(user.telegram_id, data["telegram_id"])
 
     def test_with_invalid_data(self):
+        """
+        Test serializer with invalid data.
+        """
         data = {
             "telegram_id": "123456",
         }
