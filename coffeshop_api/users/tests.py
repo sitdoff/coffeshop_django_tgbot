@@ -128,10 +128,17 @@ class TestCreateTelegramUserSerializer(TestCase):
 
 
 class TestCreateUserView(TestCase):
+    """
+    Test view for create user.
+    """
+
     def setUp(self) -> None:
         self.client = APIClient()
 
     def test_view_method_post_whith_valid_data(self):
+        """
+        Test POST method with valid data.
+        """
         data = {
             "telegram_id": "12345",
             "username": "test_user_create_user_view",
@@ -148,6 +155,9 @@ class TestCreateUserView(TestCase):
         self.assertIsNotNone(user)
 
     def test_view_method_post_whith_invalid_data(self):
+        """
+        Test POST method with invalid data.
+        """
         data = {
             "telegram_id": "12345",
         }
@@ -163,23 +173,35 @@ class TestCreateUserView(TestCase):
         self.assertEqual(json.loads(response.content.decode()), reference)
 
     def test_view_method_get(self):
+        """
+        Test GET method.
+        """
         response = self.client.get(reverse("create_user"))
         reference = {"detail": 'Method "GET" not allowed.'}
         self.assertEqual(json.loads(response.content.decode()), reference)
 
     def test_view_method_put(self):
+        """
+        Test PUT method.
+        """
         data = {}
         response = self.client.put(reverse("create_user"), data=data)
         reference = {"detail": 'Method "PUT" not allowed.'}
         self.assertEqual(json.loads(response.content.decode()), reference)
 
     def test_view_method_patch(self):
+        """
+        Test PATCH method.
+        """
         data = {}
         response = self.client.patch(reverse("create_user"), data=data)
         reference = {"detail": 'Method "PATCH" not allowed.'}
         self.assertEqual(json.loads(response.content.decode()), reference)
 
     def test_view_method_delete(self):
+        """
+        Test DELETE method.
+        """
         data = {}
         response = self.client.delete(reverse("create_user"), data=data)
         reference = {"detail": 'Method "DELETE" not allowed.'}
