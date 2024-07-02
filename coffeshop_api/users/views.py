@@ -1,6 +1,10 @@
+from typing import Any
+
+from django.core.exceptions import BadRequest
 from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from .serializers import CreateTelegramUserSerializer, TelegramAuthSerializer
@@ -31,3 +35,12 @@ class CreateUserView(generics.CreateAPIView):
     """
 
     serializer_class = CreateTelegramUserSerializer
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Create User. If user already exists, returns 400.
+        """
+        try:
+            return super().post(request, *args, **kwargs)
+        except BadRequest as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

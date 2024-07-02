@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import BadRequest
 from django.http import HttpRequest
 from django.test import TestCase
 from django.urls import reverse
@@ -106,6 +107,21 @@ class TestCreateTelegramUserSerializer(TestCase):
             self.assertEqual(user.username, data["username"])
             self.assertEqual(user.telegram_id, data["telegram_id"])
 
+    def test_with_valid_data_when_user_already_exists(self):
+        """
+        Test serializer with valid data when user already exists.
+        """
+        data = {
+            "telegram_id": "123456",
+            "username": "user",
+        }
+        get_user_model().objects.create(**data)
+
+        serializer = CreateTelegramUserSerializer(data=data)
+        if serializer.is_valid(raise_exception=True):
+            with self.assertRaises(BadRequest):
+                user = serializer.save()
+
     def test_with_invalid_data(self):
         """
         Test serializer with invalid data.
@@ -153,6 +169,20 @@ class TestCreateUserView(TestCase):
         self.assertEqual(json.loads(response.content.decode()), reference)
         user = get_user_model().objects.get(telegram_id=data["telegram_id"], username=data["username"])
         self.assertIsNotNone(user)
+
+    def test_view_method_post_whith_valid_data_when_user_already_exists(self):
+        """
+        Test POST method with valid data when user already exists.
+        """
+        data = {
+            "telegram_id": "12345",
+            "username": "test_user_create_user_view",
+        }
+        reference = {"error": "User with this Telegram ID already exists."}
+        get_user_model().objects.create(**data)
+
+        response = self.client.post(reverse("create_user"), data=data)
+        self.assertEqual(response.json(), reference)
 
     def test_view_method_post_whith_invalid_data(self):
         """

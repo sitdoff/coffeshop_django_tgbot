@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.contrib.auth import authenticate
+from django.core.exceptions import BadRequest
 from rest_framework import serializers
 
 from .models import TelegramUser
@@ -51,6 +52,10 @@ class CreateTelegramUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data: Any):
         """
         The method creates and returns a user with the specified data.
+
+        If user already exists, an exception is raised.
         """
-        user = TelegramUser.objects.create(**validated_data)
-        return user
+        if not TelegramUser.objects.filter(telegram_id=validated_data["telegram_id"]).exists():
+            user = TelegramUser.objects.create(**validated_data)
+            return user
+        raise BadRequest("User with this Telegram ID already exists.")
