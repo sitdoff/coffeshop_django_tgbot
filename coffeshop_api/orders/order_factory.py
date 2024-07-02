@@ -50,6 +50,9 @@ class TelegramOrderFactory(OrderFactory):
             try:
                 items = self.get_items(cart, order)
                 OrderItemModel.objects.bulk_create(items)
+
+                self.check_order(order, cart)
+
                 cart.clear()
                 return order
             except ValueError as e:
@@ -64,6 +67,14 @@ class TelegramOrderFactory(OrderFactory):
             raise ValueError("The cart is corrupted")
         if not cart.cart["ordered"]:
             raise ValueError("The cart is empty")
+        return True
+
+    def check_order(self, order: OrderModel, cart: Cart) -> bool | None:
+        """
+        Checks the order.
+        """
+        if order.get_total_cost() != cart.get_total_price():
+            raise ValueError("The total order value and the total cart value do not match.")
         return True
 
     def get_items(self, cart: Cart, order: OrderModel) -> list[OrderItemModel]:
