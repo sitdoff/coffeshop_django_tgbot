@@ -115,6 +115,18 @@ class TestOrderModel(TestCase):
         self.order.items.add(self.order_item_2)
         self.assertEqual(self.order.get_total_cost(), self.order_item_1.get_cost() + self.order_item_2.get_cost())
 
+    def test_order_method_len(self):
+        """
+        Testing the method for returning the quantity of goods in an order.
+        """
+        self.assertEqual(len(self.order), 0)
+
+        self.order.items.add(self.order_item_1)
+        self.assertEqual(len(self.order), self.order_item_1.quantity)
+
+        self.order.items.add(self.order_item_2)
+        self.assertEqual(len(self.order), (self.order_item_1.quantity + self.order_item_2.quantity))
+
 
 class TestTelegramOrderFactory(TestCase):
     """
