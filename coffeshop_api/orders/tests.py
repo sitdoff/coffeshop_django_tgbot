@@ -374,7 +374,7 @@ class TestOrderViewSet(TestCase):
         self.assertEqual(response.content.decode(), '{"detail":"Authentication credentials were not provided."}')
 
         response = self.client.get(reverse("order-list"), headers=self.headers)
-        response_data = json.loads(response.content)
+        response_data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertIn("count", response_data)
         self.assertEqual(response_data["count"], 0)
@@ -438,7 +438,7 @@ class TestOrderViewSet(TestCase):
         self.assertEqual(response.content.decode(), '{"detail":"Authentication credentials were not provided."}')
 
         response = self.client.post(path=reverse("order-list"), data=data, headers=self.headers, format="json")
-        response_data = json.loads(response.content)
+        response_data = response.json()
         self.assertEqual(response.status_code, 201)
         self.assertIn("id", response_data)
         self.assertIn("items", response_data)

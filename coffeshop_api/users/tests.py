@@ -166,7 +166,7 @@ class TestCreateUserView(TestCase):
 
         response = self.client.post(reverse("create_user"), data=data)
 
-        self.assertEqual(json.loads(response.content.decode()), reference)
+        self.assertEqual(response.json(), reference)
         user = get_user_model().objects.get(telegram_id=data["telegram_id"], username=data["username"])
         self.assertIsNotNone(user)
 
@@ -193,14 +193,14 @@ class TestCreateUserView(TestCase):
         }
         reference = {"username": ["This field is required."]}
         response = self.client.post(reverse("create_user"), data=data)
-        self.assertEqual(json.loads(response.content.decode()), reference)
+        self.assertEqual(response.json(), reference)
 
         data = {
             "username": "test_user_create_user_view",
         }
         reference = {"telegram_id": ["This field is required."]}
         response = self.client.post(reverse("create_user"), data=data)
-        self.assertEqual(json.loads(response.content.decode()), reference)
+        self.assertEqual(response.json(), reference)
 
     def test_view_method_get(self):
         """
@@ -208,7 +208,7 @@ class TestCreateUserView(TestCase):
         """
         response = self.client.get(reverse("create_user"))
         reference = {"detail": 'Method "GET" not allowed.'}
-        self.assertEqual(json.loads(response.content.decode()), reference)
+        self.assertEqual(response.json(), reference)
 
     def test_view_method_put(self):
         """
@@ -217,7 +217,7 @@ class TestCreateUserView(TestCase):
         data = {}
         response = self.client.put(reverse("create_user"), data=data)
         reference = {"detail": 'Method "PUT" not allowed.'}
-        self.assertEqual(json.loads(response.content.decode()), reference)
+        self.assertEqual(response.json(), reference)
 
     def test_view_method_patch(self):
         """
@@ -226,7 +226,7 @@ class TestCreateUserView(TestCase):
         data = {}
         response = self.client.patch(reverse("create_user"), data=data)
         reference = {"detail": 'Method "PATCH" not allowed.'}
-        self.assertEqual(json.loads(response.content.decode()), reference)
+        self.assertEqual(response.json(), reference)
 
     def test_view_method_delete(self):
         """
@@ -235,4 +235,4 @@ class TestCreateUserView(TestCase):
         data = {}
         response = self.client.delete(reverse("create_user"), data=data)
         reference = {"detail": 'Method "DELETE" not allowed.'}
-        self.assertEqual(json.loads(response.content.decode()), reference)
+        self.assertEqual(response.json(), reference)
