@@ -75,6 +75,8 @@ class TelegramOrderFactory(OrderFactory):
         """
         if order.get_total_cost() != cart.get_total_price():
             raise ValueError("The total order value and the total cart value do not match.")
+        if len(order) != len(cart):
+            raise ValueError("The number of items in the order does not match the number of items in the cart.")
         return True
 
     def get_items(self, cart: Cart, order: OrderModel) -> list[OrderItemModel]:
