@@ -1,5 +1,6 @@
 import json
 from decimal import Decimal
+from pprint import pprint
 
 from cart.cart import Cart
 from django.contrib.auth import get_user_model
@@ -262,6 +263,34 @@ class TestTelegramOrderFactory(TestCase):
 
         factory.create_order(self.request, cart)
         self.assertEqual(len(cart), 0)
+
+    def test_method_check_order(self):
+        """
+        Testing the method of checking an order for compliance with a cart.
+        """
+        cart = Cart()
+        factory = TelegramOrderFactory()
+
+        cart.add(self.product1)
+        order = factory.create_order(self.request, cart)
+
+        cart.add(self.product1)
+        cart.cart["items"][self.product1.pk]["price"] += 1
+
+        with self.assertRaises(ValueError) as context:
+            factory.check_order(order, cart)
+        self.assertEqual(str(context.exception), "The total order value and the total cart value do not match.")
+
+        cart.cart["items"][self.product1.pk]["price"] -= 1
+        cart.add(self.product2)
+        cart.cart["items"][self.product2.pk]["price"] = self.product1.price / 2
+        cart.cart["items"][self.product1.pk]["price"] = self.product1.price / 2
+
+        with self.assertRaises(ValueError) as context:
+            factory.check_order(order, cart)
+        self.assertEqual(
+            str(context.exception), "The number of items in the order does not match the number of items in the cart."
+        )
 
 
 class TestOrderSerializer(TestCase):
