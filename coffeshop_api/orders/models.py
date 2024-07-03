@@ -22,6 +22,9 @@ class OrderModel(models.Model):
     def __str__(self) -> str:
         return f"Order {self.pk}"
 
+    def __len__(self) -> int:
+        return sum(order_item.quantity for order_item in self.items.all())
+
     def get_total_cost(self):
         return sum(item.get_cost() for item in self.items.all())
 
