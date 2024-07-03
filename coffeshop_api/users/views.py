@@ -4,6 +4,7 @@ from django.core.exceptions import BadRequest
 from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -42,5 +43,5 @@ class CreateUserView(generics.CreateAPIView):
         """
         try:
             return super().post(request, *args, **kwargs)
-        except BadRequest as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)

@@ -119,7 +119,7 @@ class TestCreateTelegramUserSerializer(TestCase):
 
         serializer = CreateTelegramUserSerializer(data=data)
         if serializer.is_valid(raise_exception=True):
-            with self.assertRaises(BadRequest):
+            with self.assertRaises(ValidationError):
                 user = serializer.save()
 
     def test_with_invalid_data(self):
