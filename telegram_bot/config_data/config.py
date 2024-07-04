@@ -8,12 +8,21 @@ logger = logging.getLogger(__name__)
 
 
 class BotConfig(BaseSettings):
-    bot_token: SecretStr | None = None
+    bot_token: SecretStr
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+
+class RedisConfig(BaseSettings):
+    redis_password: SecretStr
+    redis_host: str
+    redis_port: int
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 class Config(BaseSettings):
     bot: BotConfig
+    redis: RedisConfig
 
 
 def load_config() -> Config:
@@ -23,6 +32,12 @@ def load_config() -> Config:
     bot_config = BotConfig()
     logging.info(LEXICON_RU["system"]["bot_config_loaded"])
 
-    config = Config(bot=bot_config)
+    redis_config = RedisConfig()
+    logging.info(LEXICON_RU["system"]["redis_config_loaded"])
+
+    config = Config(
+        bot=bot_config,
+        redis=redis_config,
+    )
 
     return config
