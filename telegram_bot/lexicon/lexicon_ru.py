@@ -1,6 +1,6 @@
-from typing import Literal
+from typing import Any, Literal
 
-LEXICON_RU: dict[Literal["system"], dict | str] = {
+LEXICON_RU: dict[Literal["system"], Any] = {
     "system": {
         "config_loaded": "Configuration loaded.",
         "bot_created": "Bot created.",
