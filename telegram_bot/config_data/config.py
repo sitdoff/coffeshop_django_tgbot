@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class BotConfig(BaseSettings):
-    bot_token: SecretStr
+    bot_token: SecretStr | None = None
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
