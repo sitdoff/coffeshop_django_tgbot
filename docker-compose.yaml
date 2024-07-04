@@ -37,6 +37,13 @@ services:
             - ./telegram_bot:/code
         ports:
             - "8080:8080"
+
+    redis:
+        image: redis:latest
+        environment:
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - REDIS_PORT=${REDIS_PORT}
+
 volumes:
     coffeshop_postgres_data:
 # Финальная сборка
