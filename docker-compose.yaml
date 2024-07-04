@@ -20,7 +20,6 @@ services:
         entrypoint: ./entrypoint.sh python manage.py runserver 0.0.0.0:8000
         environment:
             - DJANGO_SETTINGS_MODULE=core.settings.development
-        # entrypoint: python manage.py runserver 0.0.0.0:8000
         volumes:
             - ./coffeshop_api:/code
         ports:
@@ -40,28 +39,10 @@ services:
 
     redis:
         image: redis:latest
+        env_file:
+            - ./.env
         environment:
-            - REDIS_PASSWORD=${REDIS_PASSWORD}
             - REDIS_PORT=${REDIS_PORT}
 
 volumes:
     coffeshop_postgres_data:
-# Финальная сборка
-# services:
-#     db:
-#         image: postgres
-#         environment:
-#             - POSTGRES_DB=postgres
-#             - POSTGRES_USER=postgres
-#             - POSTGRES_PASSWORD=postgres
-#     web:
-#         build: .
-#         command: ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
-#         ports:
-#             - "8000:8000"
-#         environment:
-#             - POSTGRES_NAME=postgres
-#             - POSTGRES_USER=postgres
-#             - POSTGRES_PASSWORD=postgres
-#         depends_on:
-#             - db

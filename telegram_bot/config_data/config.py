@@ -13,7 +13,6 @@ class BotConfig(BaseSettings):
 
 
 class RedisConfig(BaseSettings):
-    redis_password: SecretStr
     redis_host: str
     redis_port: int
 

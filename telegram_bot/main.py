@@ -1,10 +1,10 @@
 import asyncio
 import logging
 
+import redis
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
 from lexicon.lexicon_ru import LEXICON_RU
-from redis import Redis
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +20,12 @@ async def main():
     logging.info(LEXICON_RU["system"]["config_loaded"])
 
     # Get Redis connection.
-    redis_connection: Redis = Redis(
+    redis_connection: redis.Redis = redis.Redis(
         host=config.redis.redis_host,
         port=config.redis.redis_port,
-        password=config.redis.redis_password.get_secret_value(),
+        decode_responses=True,
     )
+    logging.info(f"Ping Redis: {redis_connection.ping()}")
     logging.info(LEXICON_RU["system"]["redis_connection_created"])
 
     # Create Bot
@@ -36,7 +37,7 @@ async def main():
     logging.info(LEXICON_RU["system"]["dispatcher_created"])
 
     # Update workflow data.
-    dp.workflow_data.update({"redis": redis_connection})
+    dp.workflow_data.update({"redis_connection": redis_connection})
     logging.info(LEXICON_RU["system"]["workflow_data_updated"])
 
     # Start polling.
