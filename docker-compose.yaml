@@ -27,6 +27,16 @@ services:
             - 8000:8000
         depends_on:
             - db
+
+    bot:
+        build:
+            context: .
+            dockerfile: ./telegram_bot/Dockerfile
+        entrypoint: python main.py
+        volumes:
+            - ./telegram_bot:/code
+        ports:
+            - "8080:8080"
 volumes:
     coffeshop_postgres_data:
 # Финальная сборка
