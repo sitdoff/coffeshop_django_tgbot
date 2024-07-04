@@ -37,7 +37,7 @@ async def main():
     logging.info(LEXICON_RU["system"]["dispatcher_created"])
 
     # Update workflow data.
-    dp.workflow_data.update({"redis": redis_connection})
+    dp.workflow_data.update({"redis_connection": redis_connection})
     logging.info(LEXICON_RU["system"]["workflow_data_updated"])
 
     # Start polling.
