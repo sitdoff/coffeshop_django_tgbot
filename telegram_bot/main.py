@@ -4,6 +4,7 @@ import logging
 import redis
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
+from handlers import command_handlers
 from lexicon.lexicon_ru import LEXICON_RU
 
 logger = logging.getLogger(__name__)
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 async def main():
     # Logger basic configuration
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
     )
 
     # Get config.
@@ -35,6 +36,10 @@ async def main():
     # Create Dispatcher.
     dp: Dispatcher = Dispatcher()
     logging.info(LEXICON_RU["system"]["dispatcher_created"])
+
+    # Register routers.
+    dp.include_router(command_handlers.router)
+    logging.info(LEXICON_RU["system"]["routers_registred"])
 
     # Update workflow data.
     dp.workflow_data.update({"redis_connection": redis_connection})
