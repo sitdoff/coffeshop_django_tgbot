@@ -5,6 +5,7 @@ from django.core.exceptions import BadRequest
 from django.http import HttpRequest
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIClient
 
@@ -159,12 +160,12 @@ class TestCreateUserView(TestCase):
             "telegram_id": "12345",
             "username": "test_user_create_user_view",
         }
-        reference = data
 
         with self.assertRaises(get_user_model().DoesNotExist):
             user = get_user_model().objects.get(telegram_id=data["telegram_id"], username=data["username"])
 
         response = self.client.post(reverse("create_user"), data=data)
+        reference = {"token": Token.objects.get(user__telegram_id=data["telegram_id"]).key}
 
         self.assertEqual(response.json(), reference)
         user = get_user_model().objects.get(telegram_id=data["telegram_id"], username=data["username"])

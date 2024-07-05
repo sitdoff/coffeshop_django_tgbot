@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.contrib.auth import authenticate
 from django.core.exceptions import BadRequest
 from django.shortcuts import render
 from rest_framework import generics, status
@@ -41,7 +42,12 @@ class CreateUserView(generics.CreateAPIView):
         """
         Create User. If user already exists, returns 400.
         """
+        serializer = self.get_serializer(data=request.data)
         try:
-            return super().post(request, *args, **kwargs)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
         except ValidationError as exc:
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+        user = authenticate(telegram_id=serializer.validated_data["telegram_id"])
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({"token": token.key}, status=status.HTTP_201_CREATED)
