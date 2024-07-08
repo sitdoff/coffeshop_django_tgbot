@@ -11,11 +11,17 @@ def get_auth_token(message: Message, redis_connection: redis.Redis) -> str:
     return redis_connection.get(f"token:{message.from_user.id}")
 
 
-async def authorize_user(message: Message, redis_connection: redis.Redis, session: aiohttp.ClientSession) -> str:
+def delete_auth_token(message: Message, redis_connection: redis.Redis) -> None:
+    redis_connection.delete(f"token:{message.from_user.id}")
+
+
+async def authorize_user(
+    message: Message, redis_connection: redis.Redis, session: aiohttp.ClientSession, api_url: str
+) -> str:
     token = get_auth_token(message, redis_connection)
     if not token:
         async with session.post(
-            "http://web:8080/auth/telegram/",
+            f"{api_url}/users/auth/telegram/",
             json={"telegram_id": message.from_user.id},
         ) as response:
             response_data = await response.json()
