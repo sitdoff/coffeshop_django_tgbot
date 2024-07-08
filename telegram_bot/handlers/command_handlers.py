@@ -26,7 +26,7 @@ async def process_start_command(message: Message, redis_connection: redis.Redis,
             logger.debug("Successfully. The user has been created.")
         if response.status == 400:
             await services.authorize_user(message, redis_connection, session, api_url)
-            logger.debug(f"Unsuccessful. The user may already exist. Error message: {response_data.get('error')}")
+            logger.debug(f"Unsuccessful. Error message: {response_data.get('error')}")
 
     token = redis_connection.get(f"token:{message.from_user.id}")
     logger.debug(f"User: {message.from_user.username}:{message.from_user.id}. Auth token: {token}")
