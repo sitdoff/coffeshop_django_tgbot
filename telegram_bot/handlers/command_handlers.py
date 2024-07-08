@@ -36,3 +36,8 @@ async def process_start_command(message: Message, redis_connection: redis.Redis,
     else:
         logger.error(f"User {message.from_user.username}:{message.from_user.id} can't start bot. Token is {token}.")
         await message.answer(LEXICON_RU["system"]["wrong"])
+
+
+@router.message(Command(commands=["help"]))
+async def process_help_command(message: Message):
+    await message.answer(LEXICON_RU["commands"]["help"])
