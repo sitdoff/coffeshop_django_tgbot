@@ -4,7 +4,7 @@ import logging
 import redis
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
-from handlers import command_handlers
+from handlers import callback_handlers, command_handlers
 from keyboards.set_main_menu import set_main_menu
 from lexicon.lexicon_ru import LEXICON_RU
 
@@ -40,6 +40,7 @@ async def main():
 
     # Register routers.
     dp.include_router(command_handlers.router)
+    dp.include_router(callback_handlers.router)
     logging.info(LEXICON_RU["system"]["routers_registred"])
 
     # Update workflow data.
