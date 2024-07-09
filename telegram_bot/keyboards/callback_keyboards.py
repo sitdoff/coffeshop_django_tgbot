@@ -1,9 +1,14 @@
 import logging
 
+from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from lexicon.lexicon_ru import LEXICON_RU
 
 logger = logging.getLogger(__name__)
+
+
+class CategoryCallbackFactory(CallbackData, prefix="category"):
+    category_id: int
 
 
 async def get_start_keyboard() -> InlineKeyboardMarkup:
@@ -23,7 +28,12 @@ async def get_categories_inline_keyboard(data: dict) -> InlineKeyboardMarkup | N
     if data:
         if data["children"]:
             buttons = [
-                [InlineKeyboardButton(text=child_category["name"], callback_data=str(child_category["id"]))]
+                [
+                    InlineKeyboardButton(
+                        text=child_category["name"],
+                        callback_data=CategoryCallbackFactory(category_id=child_category["id"]).pack(),
+                    )
+                ]
                 for child_category in data["children"]
             ]
 
@@ -32,7 +42,14 @@ async def get_categories_inline_keyboard(data: dict) -> InlineKeyboardMarkup | N
             pass
 
         if data["parent_id"]:
-            buttons.append([InlineKeyboardButton(text=LEXICON_RU["inline"]["back"], callback_data=data["parent_id"])])
+            buttons.append(
+                [
+                    InlineKeyboardButton(
+                        text=LEXICON_RU["inline"]["back"],
+                        callback_data=CategoryCallbackFactory(category_id=data["parent_id"]).pack(),
+                    )
+                ]
+            )
 
         keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
         return keyboard
