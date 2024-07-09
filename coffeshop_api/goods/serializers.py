@@ -30,7 +30,8 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
 
     children = SubCategorySerializer(many=True, read_only=True)
     products = ProductSerializer(many=True, read_only=True)
+    parent_id = serializers.CharField(source="parent.id", default=None)
 
     class Meta:
         model = CategoryModel
-        fields = ["id", "name", "url", "children", "products", "parent"]
+        fields = ["id", "name", "url", "children", "products", "parent", "parent_id"]
