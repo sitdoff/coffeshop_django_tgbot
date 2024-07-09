@@ -5,7 +5,6 @@ import redis
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from keyboards.callback_keyboards import get_categories_inline_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
-from services import services
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +41,7 @@ async def get_data_for_answer_category_callback(
     redis_connection: redis.Redis,
     api_url: str,
     category_id: str | None = None,
-) -> tuple[str | InlineKeyboardMarkup] | None:
+) -> tuple[str, InlineKeyboardMarkup] | None:
     if category_id:
         url = f"{api_url}/categories/{category_id}/"
     else:
@@ -50,7 +49,7 @@ async def get_data_for_answer_category_callback(
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {services.get_auth_token(callback, redis_connection)}",
+        "Authorization": f"Token {get_auth_token(callback, redis_connection)}",
     }
 
     async with aiohttp.ClientSession() as session:
@@ -60,7 +59,7 @@ async def get_data_for_answer_category_callback(
                 logger.debug("Response data is %s", data)
             else:
                 logger.error(LEXICON_RU["system"]["wrong"])
-                logger.debug("Response status is %s", response.status)
+                logger.error("Response status is %s", response.status)
                 return
 
     description = f"Category {data['name']}"
