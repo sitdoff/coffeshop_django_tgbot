@@ -5,6 +5,7 @@ import redis
 from aiogram import Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message
+from keyboards.callback_keyboards import set_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
 from services import services
 
@@ -32,7 +33,7 @@ async def process_start_command(message: Message, redis_connection: redis.Redis,
     logger.debug(f"User: {message.from_user.username}:{message.from_user.id}. Auth token: {token}")
 
     if token:
-        await message.answer(LEXICON_RU["commands"]["start"])
+        await message.answer(LEXICON_RU["commands"]["start"], reply_markup=await set_start_keyboard())
     else:
         logger.error(f"User {message.from_user.username}:{message.from_user.id} can't start bot. Token is {token}.")
         await message.answer(LEXICON_RU["system"]["wrong"])

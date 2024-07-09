@@ -1,6 +1,6 @@
 from typing import Any, Literal
 
-LEXICON_RU: dict[Literal["system", "commands"], Any] = {
+LEXICON_RU: dict[Literal["system", "commands", "inline"], Any] = {
     "system": {
         "config_loaded": "Configuration loaded.",
         "bot_created": "Bot created.",
@@ -15,8 +15,12 @@ LEXICON_RU: dict[Literal["system", "commands"], Any] = {
         "wrong": "Something went wrong. ❌",
     },
     "commands": {
-        "start": "Start.",
+        "start": "Приветствуем вас в нашей кофейне.\n\nХотите сделать заказ, который будет готов к вашему приходу?",
         "help": "Help.",
+    },
+    "inline": {
+        "make_order": "Сделать заказ",
+        "my_orders": "Мои заказы",
     },
 }
 
