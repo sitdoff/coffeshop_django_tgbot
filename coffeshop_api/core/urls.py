@@ -51,3 +51,7 @@ if settings.DEBUG:
         path("api-auth/", include("rest_framework.urls")),
         path("__debug__/", include("debug_toolbar.urls")),
     ]
+    from django.conf.urls.static import static
+
+    if settings.DEBUG:
+        urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

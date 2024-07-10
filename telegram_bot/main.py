@@ -4,7 +4,8 @@ import logging
 import redis
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
-from handlers import command_handlers
+from handlers import callback_handlers, command_handlers
+from keyboards.set_main_menu import set_main_menu
 from lexicon.lexicon_ru import LEXICON_RU
 
 logger = logging.getLogger(__name__)
@@ -39,11 +40,23 @@ async def main():
 
     # Register routers.
     dp.include_router(command_handlers.router)
+    dp.include_router(callback_handlers.router)
     logging.info(LEXICON_RU["system"]["routers_registred"])
 
     # Update workflow data.
-    dp.workflow_data.update({"redis_connection": redis_connection})
+    dp.workflow_data.update(
+        {
+            "extra": {
+                "redis_connection": redis_connection,
+                "api_url": config.api.get_api_url(),
+            }
+        }
+    )
     logging.info(LEXICON_RU["system"]["workflow_data_updated"])
+
+    # Install main menu.
+    await set_main_menu(bot)
+    logging.info(LEXICON_RU["system"]["main_menu_set"])
 
     # Start polling.
     await dp.start_polling(bot)

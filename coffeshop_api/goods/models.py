@@ -11,6 +11,8 @@ class CategoryModel(MPTTModel):
     """
 
     name = models.CharField(max_length=100, blank=False, null=False, unique=True)
+    description = models.TextField(max_length=1000, blank=True, null=True)
+    picture = models.ImageField(upload_to="images/categories", blank=True, null=True)
     parent = TreeForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
 
     class MPTTMeta:
