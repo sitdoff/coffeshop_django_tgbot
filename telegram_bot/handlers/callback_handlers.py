@@ -19,14 +19,17 @@ async def process_category_callback(
     extra: dict[Literal["redis_connection", "api_url"], Any],
     callback_data: CategoryCallbackFactory | None = None,
 ):
-
     category_id = callback_data.category_id if callback_data else None
     logger.debug("Callback data: %s", callback_data)
 
-    category_description, keyboard = await get_data_for_answer_category_callback(
+    category_description, picture, keyboard = await get_data_for_answer_category_callback(
         callback, extra["redis_connection"], extra["api_url"], category_id
     )
-    await callback.message.edit_text(
-        text=category_description,
+
+    await callback.message.edit_media(
+        media=picture,
+    )
+    await callback.message.edit_caption(
+        caption=category_description,
         reply_markup=keyboard,
     )
