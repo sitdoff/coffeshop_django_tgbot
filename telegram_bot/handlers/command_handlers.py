@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Literal
 
 import aiohttp
 import redis
@@ -15,21 +16,24 @@ logger = logging.getLogger(__name__)
 
 
 @router.message(CommandStart())
-async def process_start_command(message: Message, redis_connection: redis.Redis, api_url: str):
+async def process_start_command(
+    message: Message,
+    extra: dict[Literal["redis_connection", "api_url"], Any],
+):
     payload = {"telegram_id": message.from_user.id, "username": message.from_user.username}
     async with aiohttp.ClientSession() as session:
-        async with session.post(f"{api_url}/users/create/", data=payload) as response:
+        async with session.post(f"{extra['api_url']}/users/create/", data=payload) as response:
             response_data = await response.json()
             logger.debug(f"Response status: {response.status}, response data: {response_data}")
 
         if response.status == 201:
-            services.set_auth_token(response_data["token"], message, redis_connection)
+            services.set_auth_token(response_data["token"], message, extra["redis_connection"])
             logger.debug("Successfully. The user has been created.")
         if response.status == 400:
-            await services.authorize_user(message, redis_connection, session, api_url)
+            await services.authorize_user(message, extra["redis_connection"], session, extra["api_url"])
             logger.debug(f"Unsuccessful. Error message: {response_data.get('error')}")
 
-    token = redis_connection.get(f"token:{message.from_user.id}")
+    token = extra["redis_connection"].get(f"token:{message.from_user.id}")
     logger.debug(f"User: {message.from_user.username}:{message.from_user.id}. Auth token: {token}")
 
     if token:

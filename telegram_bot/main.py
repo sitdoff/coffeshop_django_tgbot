@@ -44,8 +44,14 @@ async def main():
     logging.info(LEXICON_RU["system"]["routers_registred"])
 
     # Update workflow data.
-    dp.workflow_data.update({"redis_connection": redis_connection})
-    dp.workflow_data.update({"api_url": config.api.get_api_url()})
+    dp.workflow_data.update(
+        {
+            "extra": {
+                "redis_connection": redis_connection,
+                "api_url": config.api.get_api_url(),
+            }
+        }
+    )
     logging.info(LEXICON_RU["system"]["workflow_data_updated"])
 
     # Install main menu.
