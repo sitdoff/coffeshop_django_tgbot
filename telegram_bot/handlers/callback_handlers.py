@@ -4,6 +4,7 @@ from typing import Any, Literal
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from keyboards.callback_keyboards import CategoryCallbackFactory, ProductCallbackFactory
+from lexicon.lexicon_ru import LEXICON_RU
 from services.services import (
     get_data_for_answer_category_callback,
     get_data_for_answer_product_callback,
@@ -57,3 +58,8 @@ async def process_product_callback(
         caption=data_for_answer["description"],
         reply_markup=data_for_answer["keyboard"],
     )
+
+
+@router.callback_query(F.data == "pass")
+async def process_pass_callback(callback: CallbackQuery):
+    await callback.answer(text=LEXICON_RU["system"]["wip"], show_alert=True)

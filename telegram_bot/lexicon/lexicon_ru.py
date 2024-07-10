@@ -13,6 +13,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline"], Any] = {
         "main_menu_set": "Main menu installed.",
         "routers_registred": "Routers registred.",
         "wrong": "Something went wrong. ❌",
+        "wip": "Work in progress. 🚧",
     },
     "commands": {
         "start": "Приветствуем вас в нашей кофейне.\n\nХотите сделать заказ, который будет готов к вашему приходу?",
@@ -22,7 +23,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline"], Any] = {
         "make_order": "Сделать заказ",
         "my_orders": "Мои заказы",
         "back": "< Назад",
-        "add_cart": "Добавить в корзину",
+        "add_cart": "Добавить в корзину ➕",
     },
 }
 
