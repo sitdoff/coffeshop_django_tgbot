@@ -1,7 +1,7 @@
 import logging
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from filters.callback_factories import CategoryCallbackFactory
+from filters.callback_factories import CategoryCallbackFactory, ProductCallbackFactory
 from lexicon.lexicon_ru import LEXICON_RU
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,8 @@ async def get_categories_inline_keyboard(data: dict) -> InlineKeyboardMarkup | N
             buttons = [
                 [
                     InlineKeyboardButton(
-                        text=set_product_button_text(product), callback_data=set_product_callback(product["id"])
+                        text=set_product_button_text(product),
+                        callback_data=ProductCallbackFactory(product_id=product["id"]).pack(),
                     )
                 ]
                 for product in data["products"]
