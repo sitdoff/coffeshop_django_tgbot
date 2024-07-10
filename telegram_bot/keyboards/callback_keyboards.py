@@ -1,14 +1,12 @@
 import logging
 
-from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from filters.callback_factories import CategoryCallbackFactory
 from lexicon.lexicon_ru import LEXICON_RU
 
 logger = logging.getLogger(__name__)
 
 
-class CategoryCallbackFactory(CallbackData, prefix="category"):
-    category_id: int
 
 
 async def get_start_keyboard() -> InlineKeyboardMarkup:
