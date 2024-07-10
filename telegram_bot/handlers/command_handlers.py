@@ -5,7 +5,7 @@ import aiohttp
 import redis
 from aiogram import Router
 from aiogram.filters import Command, CommandStart
-from aiogram.types import Message
+from aiogram.types import FSInputFile, Message
 from keyboards.callback_keyboards import get_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
 from services import services
@@ -37,7 +37,11 @@ async def process_start_command(
     logger.debug(f"User: {message.from_user.username}:{message.from_user.id}. Auth token: {token}")
 
     if token:
-        await message.answer(LEXICON_RU["commands"]["start"], reply_markup=await get_start_keyboard())
+        await message.answer_photo(
+            photo=FSInputFile("images/welcome.jpg"),
+            caption=LEXICON_RU["commands"]["start"],
+            reply_markup=await get_start_keyboard(),
+        )
     else:
         logger.error(f"User {message.from_user.username}:{message.from_user.id} can't start bot. Token is {token}.")
         await message.answer(LEXICON_RU["system"]["wrong"])
