@@ -27,7 +27,7 @@ async def get_start_keyboard() -> InlineKeyboardMarkup:
     return keyboard
 
 
-async def get_categories_inline_keyboard(data: dict) -> InlineKeyboardMarkup | None:
+def get_categories_inline_keyboard(data: dict) -> InlineKeyboardMarkup | None:
     buttons = []
     if data:
         if data["children"]:
@@ -65,3 +65,17 @@ async def get_categories_inline_keyboard(data: dict) -> InlineKeyboardMarkup | N
 
         keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
         return keyboard
+
+
+def get_product_inline_keyboard(data: dict) -> InlineKeyboardMarkup | None:
+    buttons = [
+        [InlineKeyboardButton(text=LEXICON_RU["inline"]["add_cart"], callback_data="pass")],
+        [
+            InlineKeyboardButton(
+                text=LEXICON_RU["inline"]["back"],
+                callback_data=CategoryCallbackFactory(category_id=data["parent_id"]).pack(),
+            )
+        ],
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
