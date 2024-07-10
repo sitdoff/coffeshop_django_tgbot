@@ -7,6 +7,12 @@ from lexicon.lexicon_ru import LEXICON_RU
 logger = logging.getLogger(__name__)
 
 
+def set_product_callback(product_id: int | str) -> str:
+    return f"product:{product_id}"
+
+
+def set_product_button_text(product: dict) -> str:
+    return f'{product["name"]} - {product["price"]} руб.'
 
 
 async def get_start_keyboard() -> InlineKeyboardMarkup:
@@ -36,7 +42,14 @@ async def get_categories_inline_keyboard(data: dict) -> InlineKeyboardMarkup | N
             ]
 
         if data["products"]:
-            buttons = []
+            buttons = [
+                [
+                    InlineKeyboardButton(
+                        text=set_product_button_text(product), callback_data=set_product_callback(product["id"])
+                    )
+                ]
+                for product in data["products"]
+            ]
             pass
 
         if data["parent_id"]:
