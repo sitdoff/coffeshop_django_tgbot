@@ -2,7 +2,13 @@ import logging
 
 import aiohttp
 import redis
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import (
+    FSInputFile,
+    InlineKeyboardMarkup,
+    InputMediaPhoto,
+    Message,
+    URLInputFile,
+)
 from keyboards.callback_keyboards import get_categories_inline_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
 
@@ -19,6 +25,12 @@ def get_auth_token(message: Message, redis_connection: redis.Redis) -> str:
 
 def delete_auth_token(message: Message, redis_connection: redis.Redis) -> None:
     redis_connection.delete(f"token:{message.from_user.id}")
+
+
+async def get_picture(data: dict) -> InputMediaPhoto:
+    if data["picture"] is None:
+        return InputMediaPhoto(media=FSInputFile("images/default.jpg"))
+    return InputMediaPhoto(media=URLInputFile(data["picture"]))
 
 
 async def authorize_user(
@@ -41,7 +53,7 @@ async def get_data_for_answer_category_callback(
     redis_connection: redis.Redis,
     api_url: str,
     category_id: str | int | None = None,
-) -> tuple[str, InlineKeyboardMarkup] | None:
+) -> tuple | None:
     if category_id:
         url = f"{api_url}/categories/{category_id}/"
     else:
@@ -62,6 +74,10 @@ async def get_data_for_answer_category_callback(
                 logger.error("Response status is %s", response.status)
                 return
 
-    description = f"Category {data['name']}"
+            picture = await get_picture(data)
+
+    description = data["description"]
+    if not description:
+        description = "Нет описания."
     keyboard: InlineKeyboardMarkup = await get_categories_inline_keyboard(data)
-    return (description, keyboard)
+    return (description, picture, keyboard)
