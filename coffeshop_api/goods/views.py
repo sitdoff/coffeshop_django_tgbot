@@ -2,6 +2,7 @@ from typing import Any
 
 from django.shortcuts import get_object_or_404, render
 from rest_framework import viewsets
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -29,7 +30,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
-class ProductViewSet(viewsets.ModelViewSet):
+class ProductView(RetrieveAPIView):
     """
     Vewset for ProductModel
     """
