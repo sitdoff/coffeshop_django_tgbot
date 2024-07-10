@@ -40,7 +40,7 @@ async def get_data_for_answer_category_callback(
     callback,
     redis_connection: redis.Redis,
     api_url: str,
-    category_id: str | None = None,
+    category_id: str | int | None = None,
 ) -> tuple[str, InlineKeyboardMarkup] | None:
     if category_id:
         url = f"{api_url}/categories/{category_id}/"
