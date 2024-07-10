@@ -3,7 +3,10 @@ import logging
 import aiohttp
 import redis
 from aiogram.types import FSInputFile, InputMediaPhoto, Message, URLInputFile
-from keyboards.callback_keyboards import get_categories_inline_keyboard
+from keyboards.callback_keyboards import (
+    get_categories_inline_keyboard,
+    get_product_inline_keyboard,
+)
 from lexicon.lexicon_ru import LEXICON_RU
 
 logger = logging.getLogger(__name__)
@@ -74,6 +77,39 @@ async def get_data_for_answer_category_callback(
     result["description"] = data["description"]
     if not result["description"]:
         result["description"] = "Нет описания."
-    result["keyboard"] = await get_categories_inline_keyboard(data)
+    result["keyboard"] = get_categories_inline_keyboard(data)
+
+    return result
+
+
+async def get_data_for_answer_product_callback(
+    callback,
+    redis_connection: redis.Redis,
+    api_url: str,
+    product_id: str | int | None,
+) -> dict:
+    result = {}
+    url = f"{api_url}/product/{product_id}/"
+    logger.debug("Url is %s", url)
+
+    headers = {
+        "Authorization": f"Token {get_auth_token(callback, redis_connection)}",
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status == 200:
+                response_data = await response.json()
+                logger.debug("Response data is %s", response_data)
+            else:
+                logger.error(LEXICON_RU["system"]["wrong"])
+                logger.error("Response status is %s", response.status)
+                return result
+
+    result["picture"] = await get_picture(response_data)
+    result["description"] = response_data["description"]
+    if not result["description"]:
+        result["description"] = "Нет описания."
+    result["keyboard"] = get_product_inline_keyboard(response_data)
 
     return result

@@ -3,8 +3,12 @@ from typing import Any, Literal
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
-from keyboards.callback_keyboards import CategoryCallbackFactory
-from services.services import get_data_for_answer_category_callback
+from keyboards.callback_keyboards import CategoryCallbackFactory, ProductCallbackFactory
+from lexicon.lexicon_ru import LEXICON_RU
+from services.services import (
+    get_data_for_answer_category_callback,
+    get_data_for_answer_product_callback,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,3 +36,30 @@ async def process_category_callback(
         caption=data_for_answer["description"],
         reply_markup=data_for_answer["keyboard"],
     )
+
+
+@router.callback_query(ProductCallbackFactory.filter())
+async def process_product_callback(
+    callback: CallbackQuery,
+    extra: dict[Literal["redis_connection", "api_url"], Any],
+    callback_data: ProductCallbackFactory,
+):
+    logger.debug("Product callback data: %s", callback_data)
+
+    data_for_answer = await get_data_for_answer_product_callback(
+        callback, extra["redis_connection"], extra["api_url"], callback_data.product_id
+    )
+    logger.debug("Data for answer: %s", data_for_answer)
+
+    await callback.message.edit_media(
+        media=data_for_answer["picture"],
+    )
+    await callback.message.edit_caption(
+        caption=data_for_answer["description"],
+        reply_markup=data_for_answer["keyboard"],
+    )
+
+
+@router.callback_query(F.data == "pass")
+async def process_pass_callback(callback: CallbackQuery):
+    await callback.answer(text=LEXICON_RU["system"]["wip"], show_alert=True)

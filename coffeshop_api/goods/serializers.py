@@ -8,9 +8,11 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
     Serializer for ProductModel
     """
 
+    parent_id = serializers.CharField(source="category.id")
+
     class Meta:
         model = ProductModel
-        fields = ["id", "name", "picture", "description", "category", "price"]
+        fields = ["id", "name", "picture", "description", "category", "price", "parent_id"]
 
 
 class SubCategorySerializer(serializers.HyperlinkedModelSerializer):
