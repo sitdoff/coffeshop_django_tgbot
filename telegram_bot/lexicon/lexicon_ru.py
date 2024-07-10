@@ -22,6 +22,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline"], Any] = {
         "make_order": "Сделать заказ",
         "my_orders": "Мои заказы",
         "back": "< Назад",
+        "add_cart": "Добавить в корзину",
     },
 }
 
