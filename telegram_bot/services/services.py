@@ -2,13 +2,7 @@ import logging
 
 import aiohttp
 import redis
-from aiogram.types import (
-    FSInputFile,
-    InlineKeyboardMarkup,
-    InputMediaPhoto,
-    Message,
-    URLInputFile,
-)
+from aiogram.types import FSInputFile, InputMediaPhoto, Message, URLInputFile
 from keyboards.callback_keyboards import get_categories_inline_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
 

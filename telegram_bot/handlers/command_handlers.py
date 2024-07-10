@@ -2,7 +2,6 @@ import logging
 from typing import Any, Literal
 
 import aiohttp
-import redis
 from aiogram import Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import FSInputFile, Message
