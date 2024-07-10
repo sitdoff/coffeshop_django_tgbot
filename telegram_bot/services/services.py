@@ -53,7 +53,8 @@ async def get_data_for_answer_category_callback(
     redis_connection: redis.Redis,
     api_url: str,
     category_id: str | int | None = None,
-) -> tuple | None:
+) -> dict:
+    result = {}
     if category_id:
         url = f"{api_url}/categories/{category_id}/"
     else:
@@ -72,12 +73,13 @@ async def get_data_for_answer_category_callback(
             else:
                 logger.error(LEXICON_RU["system"]["wrong"])
                 logger.error("Response status is %s", response.status)
-                return
+                return result
 
-            picture = await get_picture(data)
+            result["picture"] = await get_picture(data)
 
-    description = data["description"]
-    if not description:
-        description = "Нет описания."
-    keyboard: InlineKeyboardMarkup = await get_categories_inline_keyboard(data)
-    return (description, picture, keyboard)
+    result["description"] = data["description"]
+    if not result["description"]:
+        result["description"] = "Нет описания."
+    result["keyboard"] = await get_categories_inline_keyboard(data)
+
+    return result
