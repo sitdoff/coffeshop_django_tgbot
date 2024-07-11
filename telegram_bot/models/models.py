@@ -11,19 +11,20 @@ from aiogram.types import (
 from filters.callback_factories import CategoryCallbackFactory, ProductCallbackFactory
 from keyboards.callback_keyboards import set_product_button_text
 from lexicon.lexicon_ru import LEXICON_RU
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProductModel(BaseModel):
-    id: int
-    name: str
-    picture: InputMediaPhoto | str | None
-    description: str | None
-    category: str | None
+    id: int = Field(alias="product_id")
+    name: str = Field(alias="product_name")
+    picture: InputMediaPhoto | str | None = Field(default=None, exclude=True)
+    description: str | None = Field(exclude=True)
+    category: str | None = Field(exclude=True)
     price: Decimal
     quantity: int | None = None
-    parent_id: int | None = None
-    keyboard: InlineKeyboardMarkup | None = None
+    parent_id: int | None = Field(default=None, exclude=True)
+    keyboard: InlineKeyboardMarkup | None = Field(default=None, exclude=True)
+    model_config = ConfigDict(populate_by_name=True)
 
     def __init__(self, /, **data: Any) -> None:
         super().__init__(**data)
@@ -34,7 +35,12 @@ class ProductModel(BaseModel):
     def cost(self) -> Decimal | None:
         if self.quantity is None:
             return
-        return Decimal(self.price * self.quantity)
+        return Decimal(self.price) * self.quantity
+
+    def model_dump(self, **kwargs: Any) -> Any:
+        data = super().model_dump(**kwargs)
+        data["cost"] = self.cost
+        return data
 
     def get_product_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup:
         buttons = [
