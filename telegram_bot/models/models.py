@@ -21,6 +21,7 @@ class ProductModel(BaseModel):
     description: str | None
     category: str | None
     price: Decimal
+    quantity: int | None = None
     parent_id: int | None = None
     keyboard: InlineKeyboardMarkup | None = None
 
@@ -28,6 +29,12 @@ class ProductModel(BaseModel):
         super().__init__(**data)
         self.picture = self.get_picture(data)
         self.keyboard = self.get_product_inline_keyboard(data)
+
+    @property
+    def cost(self) -> Decimal | None:
+        if self.quantity is None:
+            return
+        return Decimal(self.price * self.quantity)
 
     def get_product_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup:
         buttons = [
