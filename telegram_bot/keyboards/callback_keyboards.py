@@ -17,7 +17,7 @@ def set_product_button_text(product: dict) -> str:
 
 async def get_start_keyboard() -> InlineKeyboardMarkup:
     make_order_button = InlineKeyboardButton(text=LEXICON_RU["inline"]["make_order"], callback_data="make_order")
-    my_orders_button = InlineKeyboardButton(text=LEXICON_RU["inline"]["my_orders"], callback_data="my_orders")
+    my_orders_button = InlineKeyboardButton(text=LEXICON_RU["inline"]["my_orders"], callback_data="pass")
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [make_order_button],
