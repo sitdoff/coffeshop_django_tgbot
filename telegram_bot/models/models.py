@@ -8,7 +8,11 @@ from aiogram.types import (
     InputMediaPhoto,
     URLInputFile,
 )
-from filters.callback_factories import CategoryCallbackFactory, ProductCallbackFactory
+from filters.callback_factories import (
+    AddToCartCallbackFactory,
+    CategoryCallbackFactory,
+    ProductCallbackFactory,
+)
 from keyboards.callback_keyboards import set_product_button_text
 from lexicon.lexicon_ru import LEXICON_RU
 from pydantic import BaseModel, ConfigDict, Field
@@ -47,7 +51,12 @@ class ProductModel(BaseModel):
 
     def get_product_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup | None:
         buttons = [
-            [InlineKeyboardButton(text=LEXICON_RU["inline"]["add_cart"], callback_data="pass")],
+            [
+                InlineKeyboardButton(
+                    text=LEXICON_RU["inline"]["add_cart"],
+                    callback_data=AddToCartCallbackFactory(**self.model_dump()).pack(),
+                )
+            ],
             [
                 InlineKeyboardButton(
                     text=LEXICON_RU["inline"]["back"],
