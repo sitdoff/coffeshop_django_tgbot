@@ -20,7 +20,7 @@ class ProductModel(BaseModel):
     picture: InputMediaPhoto | str | None = Field(default=None, exclude=True)
     description: str | None = Field(exclude=True)
     category: str | None = Field(exclude=True)
-    price: Decimal
+    price: str
     quantity: int | None = None
     parent_id: int | None = Field(default=None, exclude=True)
     keyboard: InlineKeyboardMarkup | None = Field(default=None, exclude=True)
@@ -32,10 +32,10 @@ class ProductModel(BaseModel):
         self.keyboard = self.get_product_inline_keyboard(data)
 
     @property
-    def cost(self) -> Decimal | None:
+    def cost(self) -> str | None:
         if self.quantity is None:
             return
-        return Decimal(self.price) * self.quantity
+        return str(Decimal(self.price) * self.quantity)
 
     def model_dump(self, **kwargs: Any) -> Any:
         data = super().model_dump(**kwargs)
