@@ -18,12 +18,13 @@ class ProductModel(BaseModel):
     id: int = Field(alias="product_id")
     name: str = Field(alias="product_name")
     picture: InputMediaPhoto | str | None = Field(default=None, exclude=True)
-    description: str | None = Field(exclude=True)
-    category: str | None = Field(exclude=True)
+    description: str | None = Field(default=None, exclude=True)
+    category: str | None = Field(default=None, exclude=True)
     price: str
-    quantity: int | None = None
+    quantity: int | None = 1
     parent_id: int | None = Field(default=None, exclude=True)
     keyboard: InlineKeyboardMarkup | None = Field(default=None, exclude=True)
+    is_data_from_redis: bool = Field(default=False, exclude=True)
     model_config = ConfigDict(populate_by_name=True)
 
     def __init__(self, /, **data: Any) -> None:
@@ -42,13 +43,16 @@ class ProductModel(BaseModel):
         data["cost"] = self.cost
         return data
 
-    def get_product_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup:
+    def get_product_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup | None:
+        if self.is_data_from_redis:
+            return
+
         buttons = [
             [InlineKeyboardButton(text=LEXICON_RU["inline"]["add_cart"], callback_data="pass")],
             [
                 InlineKeyboardButton(
                     text=LEXICON_RU["inline"]["back"],
-                    callback_data=CategoryCallbackFactory(category_id=data["parent_id"]).pack(),
+                    callback_data=(CategoryCallbackFactory(category_id=data["parent_id"]).pack()),
                 )
             ],
         ]
@@ -56,7 +60,9 @@ class ProductModel(BaseModel):
         return keyboard
 
     def get_picture(self, data):
-        if data["picture"] is None:
+        if self.is_data_from_redis:
+            return
+        if data.get("picture", None) is None:
             return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.description)
         return InputMediaPhoto(media=URLInputFile(data["picture"]), caption=self.description)
 
