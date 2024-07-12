@@ -54,3 +54,9 @@ async def process_product_callback(
 @router.callback_query(F.data == "pass")
 async def process_pass_callback(callback: CallbackQuery):
     await callback.answer(text=LEXICON_RU["system"]["wip"], show_alert=True)
+
+
+@router.callback_query()
+async def test_callback(callback: CallbackQuery):
+    print(callback.data)
+    await callback.answer()
