@@ -1,3 +1,6 @@
+from models.models import ProductModel
+
+
 def get_product_str_for_redis(
     product_dict: dict, template: str = "id:name:price:quantity:cost", delimeter: str = ":"
 ) -> str:
@@ -12,3 +15,7 @@ def get_product_dict_from_redis(
     keys = template.split(delimeter)
     values = product_str.split(delimeter)
     return dict(zip(keys, values))
+
+
+def get_product_model_from_redis(product_dict: dict) -> ProductModel:
+    return ProductModel(**product_dict, is_data_from_redis=True)
