@@ -29,8 +29,10 @@ class ProductModel(BaseModel):
 
     def __init__(self, /, **data: Any) -> None:
         super().__init__(**data)
-        self.picture = self.get_picture(data)
-        self.keyboard = self.get_product_inline_keyboard(data)
+
+        if not data.get("is_data_from_redis"):
+            self.picture = self.get_picture(data)
+            self.keyboard = self.get_product_inline_keyboard(data)
 
     @property
     def cost(self) -> str | None:
@@ -44,9 +46,6 @@ class ProductModel(BaseModel):
         return data
 
     def get_product_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup | None:
-        if self.is_data_from_redis:
-            return
-
         buttons = [
             [InlineKeyboardButton(text=LEXICON_RU["inline"]["add_cart"], callback_data="pass")],
             [
@@ -60,8 +59,6 @@ class ProductModel(BaseModel):
         return keyboard
 
     def get_picture(self, data):
-        if self.is_data_from_redis:
-            return
         if data.get("picture", None) is None:
             return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.description)
         return InputMediaPhoto(media=URLInputFile(data["picture"]), caption=self.description)
