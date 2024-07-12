@@ -1,7 +1,7 @@
 import logging
 
 import aiohttp
-import redis
+import redis.asyncio as redis
 from aiogram.types import FSInputFile, InputMediaPhoto, Message, URLInputFile
 from keyboards.callback_keyboards import (
     get_categories_inline_keyboard,
@@ -13,16 +13,16 @@ from models.models import CategoryModel, ProductModel
 logger = logging.getLogger(__name__)
 
 
-def set_auth_token(token: str, message: Message, redis_connection: redis.Redis) -> None:
-    redis_connection.set(f"token:{message.from_user.id}", token)
+async def set_auth_token(token: str, message: Message, redis_connection: redis.Redis) -> None:
+    await redis_connection.set(f"token:{message.from_user.id}", token)
 
 
-def get_auth_token(message: Message, redis_connection: redis.Redis) -> str:
-    return redis_connection.get(f"token:{message.from_user.id}")
+async def get_auth_token(message: Message, redis_connection: redis.Redis) -> str:
+    return await redis_connection.get(f"token:{message.from_user.id}")
 
 
-def delete_auth_token(message: Message, redis_connection: redis.Redis) -> None:
-    redis_connection.delete(f"token:{message.from_user.id}")
+async def delete_auth_token(message: Message, redis_connection: redis.Redis) -> None:
+    await redis_connection.delete(f"token:{message.from_user.id}")
 
 
 async def get_picture(data: dict) -> InputMediaPhoto:
@@ -34,7 +34,7 @@ async def get_picture(data: dict) -> InputMediaPhoto:
 async def authorize_user(
     message: Message, redis_connection: redis.Redis, session: aiohttp.ClientSession, api_url: str
 ) -> str:
-    token = get_auth_token(message, redis_connection)
+    token = await get_auth_token(message, redis_connection)
     if not token:
         async with session.post(
             f"{api_url}/users/auth/telegram/",
@@ -42,7 +42,7 @@ async def authorize_user(
         ) as response:
             response_data = await response.json()
             token = response_data["token"]
-            set_auth_token(token, message, redis_connection)
+            await set_auth_token(token, message, redis_connection)
     return token
 
 
@@ -59,7 +59,7 @@ async def get_category_model_for_answer_callback(
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {get_auth_token(callback, redis_connection)}",
+        "Authorization": f"Token {await get_auth_token(callback, redis_connection)}",
     }
 
     async with aiohttp.ClientSession() as session:
@@ -82,7 +82,7 @@ async def get_product_model_for_answer_callback(
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {get_auth_token(callback, redis_connection)}",
+        "Authorization": f"Token {await get_auth_token(callback, redis_connection)}",
     }
 
     async with aiohttp.ClientSession() as session:
