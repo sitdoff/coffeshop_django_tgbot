@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-import redis
+import redis.asyncio as redis
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
 from handlers import callback_handlers, command_handlers
@@ -22,12 +22,12 @@ async def main():
     logging.info(LEXICON_RU["system"]["config_loaded"])
 
     # Get Redis connection.
-    redis_connection: redis.Redis = redis.Redis(
+    redis_connection: redis.Redis = await redis.Redis(
         host=config.redis.redis_host,
         port=config.redis.redis_port,
         decode_responses=True,
     )
-    logging.info(f"Ping Redis: {redis_connection.ping()}")
+    logging.info(f"Ping Redis: {await redis_connection.ping()}")
     logging.info(LEXICON_RU["system"]["redis_connection_created"])
 
     # Create Bot

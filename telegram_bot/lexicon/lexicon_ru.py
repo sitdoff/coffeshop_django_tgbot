@@ -14,6 +14,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline"], Any] = {
         "routers_registred": "Routers registred.",
         "wrong": "Something went wrong. ❌",
         "wip": "Work in progress. 🚧",
+        "not_found": "Не найдено",
     },
     "commands": {
         "start": "Приветствуем вас в нашей кофейне.\n\nХотите сделать заказ, который будет готов к вашему приходу?",
@@ -24,6 +25,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline"], Any] = {
         "my_orders": "Мои заказы",
         "back": "< Назад",
         "add_cart": "Добавить в корзину ➕",
+        "added": "Товар добавлен в корзину.",
     },
 }
 

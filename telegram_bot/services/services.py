@@ -1,27 +1,28 @@
 import logging
 
 import aiohttp
-import redis
+import redis.asyncio as redis
 from aiogram.types import FSInputFile, InputMediaPhoto, Message, URLInputFile
 from keyboards.callback_keyboards import (
     get_categories_inline_keyboard,
     get_product_inline_keyboard,
 )
 from lexicon.lexicon_ru import LEXICON_RU
+from models.models import CategoryModel, ProductModel
 
 logger = logging.getLogger(__name__)
 
 
-def set_auth_token(token: str, message: Message, redis_connection: redis.Redis) -> None:
-    redis_connection.set(f"token:{message.from_user.id}", token)
+async def set_auth_token(token: str, message: Message, redis_connection: redis.Redis) -> None:
+    await redis_connection.set(f"token:{message.from_user.id}", token)
 
 
-def get_auth_token(message: Message, redis_connection: redis.Redis) -> str:
-    return redis_connection.get(f"token:{message.from_user.id}")
+async def get_auth_token(message: Message, redis_connection: redis.Redis) -> str:
+    return await redis_connection.get(f"token:{message.from_user.id}")
 
 
-def delete_auth_token(message: Message, redis_connection: redis.Redis) -> None:
-    redis_connection.delete(f"token:{message.from_user.id}")
+async def delete_auth_token(message: Message, redis_connection: redis.Redis) -> None:
+    await redis_connection.delete(f"token:{message.from_user.id}")
 
 
 async def get_picture(data: dict) -> InputMediaPhoto:
@@ -33,7 +34,7 @@ async def get_picture(data: dict) -> InputMediaPhoto:
 async def authorize_user(
     message: Message, redis_connection: redis.Redis, session: aiohttp.ClientSession, api_url: str
 ) -> str:
-    token = get_auth_token(message, redis_connection)
+    token = await get_auth_token(message, redis_connection)
     if not token:
         async with session.post(
             f"{api_url}/users/auth/telegram/",
@@ -41,17 +42,16 @@ async def authorize_user(
         ) as response:
             response_data = await response.json()
             token = response_data["token"]
-            set_auth_token(token, message, redis_connection)
+            await set_auth_token(token, message, redis_connection)
     return token
 
 
-async def get_data_for_answer_category_callback(
+async def get_category_model_for_answer_callback(
     callback,
     redis_connection: redis.Redis,
     api_url: str,
     category_id: str | int | None = None,
-) -> dict:
-    result = {}
+) -> CategoryModel:
     if category_id:
         url = f"{api_url}/categories/{category_id}/"
     else:
@@ -59,57 +59,37 @@ async def get_data_for_answer_category_callback(
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {get_auth_token(callback, redis_connection)}",
+        "Authorization": f"Token {await get_auth_token(callback, redis_connection)}",
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                data = await response.json()
-                logger.debug("Response data is %s", data)
-            else:
-                logger.error(LEXICON_RU["system"]["wrong"])
-                logger.error("Response status is %s", response.status)
-                return result
+        async with session.get(url, headers=headers, raise_for_status=True) as response:
+            response_data = await response.json()
+            logger.debug("Response data is %s", response_data)
 
-            result["picture"] = await get_picture(data)
+    category = CategoryModel(**response_data)
 
-    result["description"] = data["description"]
-    if not result["description"]:
-        result["description"] = "Нет описания."
-    result["keyboard"] = get_categories_inline_keyboard(data)
-
-    return result
+    return category
 
 
-async def get_data_for_answer_product_callback(
+async def get_product_model_for_answer_callback(
     callback,
     redis_connection: redis.Redis,
     api_url: str,
     product_id: str | int | None,
-) -> dict:
-    result = {}
+) -> ProductModel:
     url = f"{api_url}/product/{product_id}/"
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {get_auth_token(callback, redis_connection)}",
+        "Authorization": f"Token {await get_auth_token(callback, redis_connection)}",
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                response_data = await response.json()
-                logger.debug("Response data is %s", response_data)
-            else:
-                logger.error(LEXICON_RU["system"]["wrong"])
-                logger.error("Response status is %s", response.status)
-                return result
+        async with session.get(url, headers=headers, raise_for_status=True) as response:
+            response_data = await response.json()
+            logger.debug("Response data is %s", response_data)
 
-    result["picture"] = await get_picture(response_data)
-    result["description"] = response_data["description"]
-    if not result["description"]:
-        result["description"] = "Нет описания."
-    result["keyboard"] = get_product_inline_keyboard(response_data)
+    product = ProductModel(**response_data)
 
-    return result
+    return product
