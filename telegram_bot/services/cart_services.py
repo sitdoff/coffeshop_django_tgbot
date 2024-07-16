@@ -1,8 +1,15 @@
 import logging
 from typing import Any, Literal
 
-from aiogram.types import CallbackQuery
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
 from filters.callback_factories import AddToCartCallbackFactory
+from lexicon.lexicon_ru import LEXICON_RU
 from models.cart import Cart
 from models.models import ProductModel
 from redis.asyncio import Redis
@@ -39,14 +46,16 @@ class CartManager:
         cart_data_from_redis = await self.get_cart_data_from_redis()
         logger.debug("Cart data: %s", cart_data_from_redis)
         cart_dict = {
-            key: self.get_product_model_from_redis(AddToCartCallbackFactory.unpack_from_redis(product_str).model_dump())
-            for key, product_str in cart_data_from_redis.items()
+            key: self.get_product_model_from_redis(
+                AddToCartCallbackFactory.unpack_from_redis(product_from_redis).model_dump()
+            )
+            for key, product_from_redis in cart_data_from_redis.items()
         }
         logger.debug("Cart info: %s", cart_dict)
         return cart_dict
 
     async def get_cart_from_redis(self) -> Cart:
-        cart = Cart(items=await self.get_cart_dict()) if self.check_cart_exist() else Cart()
+        cart = Cart(items=await self.get_cart_dict()) if await self.check_cart_exist() else Cart()
         logger.debug("Cart is: %s", cart.model_dump())
         return cart
 
@@ -56,3 +65,15 @@ class CartManager:
             "len": len(cart),
             "total_cost": cart.total_cost,
         }
+
+    async def add_cart_button(self, keyboard: list[list[InlineKeyboardButton]]) -> InlineKeyboardMarkup:
+        cart_info = await self.get_cart_info()
+        cart_button = InlineKeyboardButton(
+            text=LEXICON_RU["inline"]["cart"].substitute(size=cart_info["len"], total_cost=cart_info["total_cost"]),
+            callback_data="pass",
+        )
+        keyboard = [
+            inline_button for inline_button in keyboard if inline_button[0].callback_data != cart_button.callback_data
+        ]
+        keyboard.append([cart_button])
+        return InlineKeyboardMarkup(inline_keyboard=keyboard)
