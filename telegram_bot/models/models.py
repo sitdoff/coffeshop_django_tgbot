@@ -60,7 +60,7 @@ class ProductModel(BaseModel):
             [
                 InlineKeyboardButton(
                     text=LEXICON_RU["inline"]["back"],
-                    callback_data=(CategoryCallbackFactory(category_id=data["parent_id"]).pack()),
+                    callback_data=(CategoryCallbackFactory(category_id=data.get("parent_id")).pack()),
                 )
             ],
         ]
