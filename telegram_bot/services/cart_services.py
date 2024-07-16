@@ -11,21 +11,18 @@ logger = logging.getLogger(__name__)
 
 
 class CartManager:
-    def __init__(self, callback: CallbackQuery, callback_data: AddToCartCallbackFactory, redis_connection: Redis):
-        self.callback = callback
-        self.callback_data = callback_data
+    def __init__(self, redis_connection: Redis, user_id: int):
         self.redis_connection = redis_connection
-        self.cart_name = f"cart:{self.callback.from_user.id}"
+        self.user_id = user_id
+        self.cart_name = f"cart:{self.user_id}"
 
-    async def add_product_in_redis_cart(
-        self,
-    ) -> None:
+    async def add_product_in_redis_cart(self, callback_data: AddToCartCallbackFactory) -> None:
         await self.redis_connection.hset(
             name=self.cart_name,
-            key=str(self.callback_data.id),
-            value=self.callback_data.get_product_str_for_redis(),
+            key=str(callback_data.id),
+            value=callback_data.get_product_str_for_redis(),
         )
-        logger.debug("Product % added to cart", self.callback_data.get_product_str_for_redis())
+        logger.debug("Product % added to cart", callback_data.get_product_str_for_redis())
 
     async def check_cart_exist(self) -> bool:
         if self.redis_connection.exists(self.cart_name):
