@@ -44,12 +44,12 @@ class ProductModel(BaseModel):
             return
         return str(Decimal(self.price) * self.quantity)
 
-    def model_dump(self, **kwargs: Any) -> Any:
+    def model_dump(self, **kwargs: Any) -> dict:
         data = super().model_dump(**kwargs)
         data["cost"] = self.cost
         return data
 
-    def get_product_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup | None:
+    def get_product_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup:
         buttons = [
             [
                 InlineKeyboardButton(
@@ -67,7 +67,7 @@ class ProductModel(BaseModel):
         keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
         return keyboard
 
-    def get_picture(self, data):
+    def get_picture(self, data) -> InputMediaPhoto:
         if data.get("picture", None) is None:
             return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.description)
         return InputMediaPhoto(media=URLInputFile(data["picture"]), caption=self.description)
