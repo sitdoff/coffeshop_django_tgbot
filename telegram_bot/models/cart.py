@@ -16,3 +16,6 @@ class Cart(BaseModel):
         data["items"] = {key: item.model_dump(by_alias=True) for key, item in self.items.items()}
         data["total_cost"] = self.total_cost
         return data
+
+    def __len__(self):
+        return sum(item.quantity for item in self.items.values())

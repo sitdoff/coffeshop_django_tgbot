@@ -9,7 +9,7 @@ class ProductCallbackFactory(CallbackData, prefix="product"):
     product_id: int
 
 
-class AddToCartCallbackFactory(CallbackData, prefix="add_to_cart"):
+class AddToCartCallbackFactory(CallbackData, prefix="item"):
     id: int
     name: str
     price: str
@@ -20,3 +20,8 @@ class AddToCartCallbackFactory(CallbackData, prefix="add_to_cart"):
         keys = template.split(self.__separator__)
         values = [str(self.model_dump().get(key, "")) for key in keys]
         return self.__separator__.join(values)
+
+    @classmethod
+    def unpack_from_redis(cls, value: str):
+        value = cls.__prefix__ + cls.__separator__ + value
+        return super().unpack(value)

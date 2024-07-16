@@ -2,10 +2,14 @@ import logging
 from typing import Any, Literal
 
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
-from keyboards.callback_keyboards import CategoryCallbackFactory, ProductCallbackFactory
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup
+from filters.callback_factories import (
+    AddToCartCallbackFactory,
+    CategoryCallbackFactory,
+    ProductCallbackFactory,
+)
 from lexicon.lexicon_ru import LEXICON_RU
-from services import services
+from services import cart_services, services
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +42,7 @@ async def process_product_callback(
     extra: dict[Literal["redis_connection", "api_url"], Any],
     callback_data: ProductCallbackFactory,
 ):
-    logger.debug("Product callback data: %s", callback_data)
+    logger.debug("Product callback data: %s", callback_data.pack())
 
     product = await services.get_product_model_for_answer_callback(
         callback, extra["redis_connection"], extra["api_url"], callback_data.product_id
@@ -56,7 +60,10 @@ async def process_pass_callback(callback: CallbackQuery):
     await callback.answer(text=LEXICON_RU["system"]["wip"], show_alert=True)
 
 
-@router.callback_query()
-async def test_callback(callback: CallbackQuery):
-    print(callback.data)
-    await callback.answer()
+@router.callback_query(AddToCartCallbackFactory.filter())
+async def add_to_cart(callback: CallbackQuery, callback_data: AddToCartCallbackFactory, extra: dict[str, Any]):
+    cart_manager = cart_services.CartManager(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    await cart_manager.add_product_in_redis_cart(callback_data=callback_data)
+    keyboard = await cart_manager.add_cart_button(callback.message.reply_markup.inline_keyboard)
+    await callback.message.edit_reply_markup(reply_markup=keyboard)
+    await callback.answer(text=LEXICON_RU["inline"]["added"])
