@@ -2,7 +2,7 @@ import logging
 from typing import Any, Literal
 
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup
 from filters.callback_factories import (
     AddToCartCallbackFactory,
     CategoryCallbackFactory,
@@ -62,9 +62,8 @@ async def process_pass_callback(callback: CallbackQuery):
 
 @router.callback_query(AddToCartCallbackFactory.filter())
 async def add_to_cart(callback: CallbackQuery, callback_data: AddToCartCallbackFactory, extra: dict[str, Any]):
-    redis_cart_manager = cart_services.CartManager(
-        redis_connection=extra["redis_connection"], user_id=callback.from_user.id
-    )
-    await redis_cart_manager.add_product_in_redis_cart(callback_data=callback_data)
-    print(await redis_cart_manager.get_cart_info())
+    cart_manager = cart_services.CartManager(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    await cart_manager.add_product_in_redis_cart(callback_data=callback_data)
+    keyboard = await cart_manager.add_cart_button(callback.message.reply_markup.inline_keyboard)
+    await callback.message.edit_reply_markup(reply_markup=keyboard)
     await callback.answer(text=LEXICON_RU["inline"]["added"])
