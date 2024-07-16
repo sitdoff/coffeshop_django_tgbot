@@ -9,7 +9,7 @@ class ProductCallbackFactory(CallbackData, prefix="product"):
     product_id: int
 
 
-class AddToCartCallbackFactory(CallbackData, prefix="add_to_cart"):
+class AddToCartCallbackFactory(CallbackData, prefix="item"):
     id: int
     name: str
     price: str
