@@ -91,3 +91,8 @@ class CartManager:
         ]
         keyboard.append([cart_button])
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+    async def edit_product_inline_keyboard(self, keyboard: list[list[InlineKeyboardButton]]) -> InlineKeyboardMarkup:
+        keyboard = self.add_cart_button(keyboard)
+
+        return keyboard
