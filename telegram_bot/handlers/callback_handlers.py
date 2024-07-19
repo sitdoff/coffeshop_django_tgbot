@@ -65,5 +65,6 @@ async def add_to_cart(callback: CallbackQuery, callback_data: AddToCartCallbackF
     cart_manager = cart_services.CartManager(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart_manager.add_product_in_redis_cart(callback_data=callback_data)
     keyboard = await cart_manager.add_cart_button(callback.message.reply_markup.inline_keyboard)
-    await callback.message.edit_reply_markup(reply_markup=keyboard)
+    if callback.message.reply_markup != keyboard:
+        await callback.message.edit_reply_markup(reply_markup=keyboard)
     await callback.answer(text=LEXICON_RU["inline"]["added"])

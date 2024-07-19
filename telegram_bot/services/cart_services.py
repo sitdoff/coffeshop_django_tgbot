@@ -24,15 +24,29 @@ class CartManager:
         self.cart_name = f"cart:{self.user_id}"
 
     async def add_product_in_redis_cart(self, callback_data: AddToCartCallbackFactory) -> None:
+        if await self.redis_connection.hexists(self.cart_name, callback_data.id):
+            await self.change_product_quantity(callback_data)
+            logger.debug("Product %s incremented in cart", callback_data.name)
+        else:
+            await self.redis_connection.hset(
+                name=self.cart_name,
+                key=str(callback_data.id),
+                value=callback_data.get_product_str_for_redis(),
+            )
+            logger.debug("Product % added to cart", callback_data.get_product_str_for_redis())
+
+    async def change_product_quantity(self, callback_data: AddToCartCallbackFactory, quantity_added: int = 1) -> None:
+        string_product_from_redis: str = await self.redis_connection.hget(self.cart_name, callback_data.id)
+        product_from_redis = AddToCartCallbackFactory.unpack_from_redis(string_product_from_redis)
+        product_from_redis.quantity += quantity_added
         await self.redis_connection.hset(
             name=self.cart_name,
-            key=str(callback_data.id),
-            value=callback_data.get_product_str_for_redis(),
+            key=callback_data.id,
+            value=product_from_redis.get_product_str_for_redis(),
         )
-        logger.debug("Product % added to cart", callback_data.get_product_str_for_redis())
 
     async def check_cart_exist(self) -> bool:
-        if self.redis_connection.exists(self.cart_name):
+        if await self.redis_connection.exists(self.cart_name):
             return True
         return False
 
