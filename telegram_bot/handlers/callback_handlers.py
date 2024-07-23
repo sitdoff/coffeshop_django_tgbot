@@ -9,6 +9,7 @@ from filters.callback_factories import (
     ProductCallbackFactory,
 )
 from lexicon.lexicon_ru import LEXICON_RU
+from models.cart import Cart
 from services import cart_services, services
 
 logger = logging.getLogger(__name__)
@@ -49,9 +50,13 @@ async def process_product_callback(
     )
     logger.debug("Data for answer: %s", product)
 
+    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    keyboard = product.keyboard
+    keyboard = await cart.edit_product_inline_keyboard(keyboard_list=keyboard.inline_keyboard)
+
     await callback.message.edit_media(
         media=product.picture,
-        reply_markup=product.keyboard,
+        reply_markup=keyboard,
     )
 
 
@@ -62,8 +67,9 @@ async def process_pass_callback(callback: CallbackQuery):
 
 @router.callback_query(AddToCartCallbackFactory.filter())
 async def add_to_cart(callback: CallbackQuery, callback_data: AddToCartCallbackFactory, extra: dict[str, Any]):
-    cart_manager = cart_services.CartManager(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
-    await cart_manager.add_product_in_redis_cart(callback_data=callback_data)
-    keyboard = await cart_manager.add_cart_button(callback.message.reply_markup.inline_keyboard)
-    await callback.message.edit_reply_markup(reply_markup=keyboard)
+    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    await cart.add_product_in_cart(callback_data)
+    keyboard = await cart.edit_product_inline_keyboard(callback.message.reply_markup.inline_keyboard)
+    if callback.message.reply_markup != keyboard:
+        await callback.message.edit_reply_markup(reply_markup=keyboard)
     await callback.answer(text=LEXICON_RU["inline"]["added"])

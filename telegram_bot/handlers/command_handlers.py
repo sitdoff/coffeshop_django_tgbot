@@ -4,7 +4,7 @@ from typing import Any, Literal
 import aiohttp
 from aiogram import Router
 from aiogram.filters import Command, CommandStart
-from aiogram.types import FSInputFile, Message
+from aiogram.types import FSInputFile, Message, ReplyKeyboardRemove
 from keyboards.callback_keyboards import get_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
 from services import services
@@ -43,7 +43,7 @@ async def process_start_command(
         )
     else:
         logger.error(f"User {message.from_user.username}:{message.from_user.id} can't start bot. Token is {token}.")
-        await message.answer(LEXICON_RU["system"]["wrong"])
+        await message.answer(LEXICON_RU["system"]["wrong"], reply_markup=ReplyKeyboardRemove())
 
 
 @router.message(Command(commands=["help"]))
