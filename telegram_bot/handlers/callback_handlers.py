@@ -7,6 +7,7 @@ from filters.callback_factories import (
     AddToCartCallbackFactory,
     CategoryCallbackFactory,
     ProductCallbackFactory,
+    RemoveFromCartCallbackFactory,
 )
 from lexicon.lexicon_ru import LEXICON_RU
 from models.cart import Cart
@@ -73,3 +74,19 @@ async def add_to_cart(callback: CallbackQuery, callback_data: AddToCartCallbackF
     if callback.message.reply_markup != keyboard:
         await callback.message.edit_reply_markup(reply_markup=keyboard)
     await callback.answer(text=LEXICON_RU["inline"]["added"])
+
+
+@router.callback_query(RemoveFromCartCallbackFactory.filter())
+async def remove_from_cart(
+    callback: CallbackQuery, callback_data: RemoveFromCartCallbackFactory, extra: dict[str, Any]
+):
+    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    await cart.get_items_from_redis()
+    if str(callback_data.id) not in cart.items or cart.items[str(callback_data.id)].quantity <= 0:
+        await callback.answer(text=LEXICON_RU["inline"]["item_is_not_in_cart"])
+    else:
+        await cart.remove_product_from_cart(callback_data)
+        keyboard = await cart.edit_product_inline_keyboard(callback.message.reply_markup.inline_keyboard)
+        if callback.message.reply_markup != keyboard:
+            await callback.message.edit_reply_markup(reply_markup=keyboard)
+        await callback.answer(text=LEXICON_RU["inline"]["removed"])
