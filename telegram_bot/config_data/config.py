@@ -8,11 +8,19 @@ logger = logging.getLogger(__name__)
 
 
 class BotConfig(BaseSettings):
+    """
+    Класс с насроками бота.
+    """
+
     bot_token: SecretStr
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 class ApiConfig(BaseSettings):
+    """
+    Класс с настройками доступа к API.
+    """
+
     api_protocol: str
     api_host: str
     api_port: int
@@ -23,6 +31,10 @@ class ApiConfig(BaseSettings):
 
 
 class RedisConfig(BaseSettings):
+    """
+    Класс с настроками доступа к Redis.
+    """
+
     redis_host: str
     redis_port: int
 
@@ -30,6 +42,10 @@ class RedisConfig(BaseSettings):
 
 
 class Config(BaseSettings):
+    """
+    Совокупный класс настроек.
+    """
+
     bot: BotConfig
     api: ApiConfig
     redis: RedisConfig
@@ -37,7 +53,7 @@ class Config(BaseSettings):
 
 def load_config() -> Config:
     """
-    Creates a class with settings and returns it.
+    Возвращает экземпляр класса Config с настройками.
     """
     bot_config = BotConfig()
     logging.info(LEXICON_RU["system"]["bot_config_loaded"])
