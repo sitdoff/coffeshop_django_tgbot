@@ -1,8 +1,19 @@
+from typing import Any
 from aiogram.filters.callback_data import CallbackData
+from pydantic import field_validator
 
 
 class CategoryCallbackFactory(CallbackData, prefix="category"):
     category_id: int
+
+    @field_validator("category_id", mode="before")
+    def validate_id(cls, value: Any) -> int:
+        if isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                raise ValueError("id must be an integer or a string representing an integer")
+        return value
 
 
 class ProductCallbackFactory(CallbackData, prefix="product"):
