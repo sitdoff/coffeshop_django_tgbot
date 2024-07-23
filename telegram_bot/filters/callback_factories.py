@@ -1,4 +1,5 @@
 from typing import Any
+
 from aiogram.filters.callback_data import CallbackData
 from pydantic import field_validator
 
@@ -36,3 +37,11 @@ class AddToCartCallbackFactory(CallbackData, prefix="item"):
     def unpack_from_redis(cls, value: str):
         value = cls.__prefix__ + cls.__separator__ + value
         return super().unpack(value)
+
+
+class RemoveFromCartCallbackFactory(CallbackData, prefix="remove"):
+    id: int
+    name: str
+    price: str
+    quantity: int = 1
+    cost: str
