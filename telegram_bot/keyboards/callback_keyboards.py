@@ -20,16 +20,4 @@ async def get_start_keyboard() -> InlineKeyboardMarkup:
             [my_orders_button],
         ]
     )
-
-def get_product_inline_keyboard(data: dict) -> InlineKeyboardMarkup | None:
-    buttons = [
-        [InlineKeyboardButton(text=LEXICON_RU["inline"]["add_cart"], callback_data="pass")],
-        [
-            InlineKeyboardButton(
-                text=LEXICON_RU["inline"]["back"],
-                callback_data=CategoryCallbackFactory(category_id=data["parent_id"]).pack(),
-            )
-        ],
-    ]
-    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
