@@ -12,10 +12,11 @@ from filters.callback_factories import (
     AddToCartCallbackFactory,
     CategoryCallbackFactory,
     ProductCallbackFactory,
+    RemoveFromCartCallbackFactory,
 )
 from keyboards.callback_keyboards import set_product_button_text
 from lexicon.lexicon_ru import LEXICON_RU
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ProductModel(BaseModel):
@@ -55,7 +56,11 @@ class ProductModel(BaseModel):
                 InlineKeyboardButton(
                     text=LEXICON_RU["inline"]["add_cart"],
                     callback_data=AddToCartCallbackFactory(**self.model_dump()).pack(),
-                )
+                ),
+            ],
+            [
+                InlineKeyboardButton(text="-", callback_data=RemoveFromCartCallbackFactory(**self.model_dump()).pack()),
+                InlineKeyboardButton(text="+", callback_data=AddToCartCallbackFactory(**self.model_dump()).pack()),
             ],
             [
                 InlineKeyboardButton(
@@ -97,6 +102,15 @@ class CategoryModel(BaseModel):
         super().__init__(**data)
         self.picture = self.get_picture(data)
         self.keyboard = self.get_category_inline_keyboard(data)
+
+    @field_validator("id", mode="before")
+    def validate_id(cls, value: Any) -> int:
+        if isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                raise ValueError("id must be an integer or a string representing an integer")
+        return value
 
     def get_category_inline_keyboard(self, data: dict):
         buttons = []

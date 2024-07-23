@@ -35,7 +35,6 @@ class Cart(BaseModel):
         product_dict = AddToCartCallbackFactory.unpack_from_redis(product_string_from_redis).model_dump()
         return ProductModel(**product_dict, is_data_from_redis=True)
 
-    #
     async def get_items_from_redis(self) -> dict[str | int, ProductModel]:
         product_strings_from_redis = await self._get_cart_data_from_redis()
         items = {
@@ -59,7 +58,6 @@ class Cart(BaseModel):
         if await self.redis_connection.hexists(self.cart_name, callback_data.id):
             await self.change_product_quantity(callback_data)
             logger.debug("Product %s incremented in cart", callback_data.name)
-            pass
         else:
             await self.redis_connection.hset(
                 name=self.cart_name,
@@ -68,39 +66,29 @@ class Cart(BaseModel):
             )
             logger.debug("Product %s added to cart", callback_data.get_product_str_for_redis())
 
-    #
-    async def change_product_quantity(self, callback_data: AddToCartCallbackFactory, quantity_added: int = 1) -> None:
+    async def remove_product_from_cart(self, callback_data: AddToCartCallbackFactory) -> None:
+        if int(callback_data.id) > 0:
+            await self.change_product_quantity(callback_data, quantity=-1)
+
+    async def change_product_quantity(self, callback_data: AddToCartCallbackFactory, quantity: int = 1) -> None:
         string_product_from_redis: str = await self.redis_connection.hget(self.cart_name, callback_data.id)
         product_from_redis = AddToCartCallbackFactory.unpack_from_redis(string_product_from_redis)
-        product_from_redis.quantity += quantity_added
-        await self.redis_connection.hset(
-            name=self.cart_name,
-            key=callback_data.id,
-            value=product_from_redis.get_product_str_for_redis(),
-        )
+        product_from_redis.quantity += quantity
+        if product_from_redis.quantity <= 0:
+            await self.redis_connection.hdel(
+                self.cart_name,
+                callback_data.id,
+            )
+        else:
+            await self.redis_connection.hset(
+                name=self.cart_name,
+                key=callback_data.id,
+                value=product_from_redis.get_product_str_for_redis(),
+            )
 
-    #
     async def _get_cart_data_from_redis(self) -> dict:
         return await self.redis_connection.hgetall(self.cart_name)
 
-    #
-    # async def get_cart_dict(self) -> dict:
-    #     cart_data_from_redis = await self.get_cart_data_from_redis()
-    #     logger.debug("Cart data: %s", cart_data_from_redis)
-    #     cart_dict = {
-    #         key: self.get_product_model_from_redis(
-    #             AddToCartCallbackFactory.unpack_from_redis(product_from_redis).model_dump()
-    #         )
-    #         for key, product_from_redis in cart_data_from_redis.items()
-    #     }
-    #     logger.debug("Cart info: %s", cart_dict)
-    #     return cart_dict
-    #
-    # async def get_cart_from_redis(self):
-    #     cart = Cart(items=await self.get_cart_dict()) if await self.check_cart_exist() else Cart()
-    #     logger.debug("Cart is: %s", cart.model_dump())
-    #     return cart
-    #
     async def get_cart_info(self) -> dict[Literal["len", "total_cost"], Any]:
         await self.get_items_from_redis()
         return {
@@ -139,24 +127,20 @@ class Cart(BaseModel):
         current_product_id = AddToCartCallbackFactory.unpack(product_button.callback_data).id
         current_product = self.items.get(str(current_product_id))
         product_button.text = (
-            LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(count=current_product.quantity)
-            if not current_product is None
-            else LEXICON_RU["inline"]["add_cart"]
+            LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(
+                count=current_product.quantity if not current_product is None else 0
+            )
+            # if not current_product is None
+            # else LEXICON_RU["inline"]["add_cart"]
         )
 
         return buttons_list
 
-    #
-    # async def edit_product_inline_keyboard(self, keyboard: list[list[InlineKeyboardButton]]) -> InlineKeyboardMarkup:
-    #     keyboard = self.add_cart_button(keyboard)
-    #     return keyboard
-    #
     def model_dump(self, **kwargs):
         data = super().model_dump(**kwargs)
         data["items"] = {key: item.model_dump(by_alias=True) for key, item in self.items.items()}
         data["total_cost"] = self.total_cost
         return data
 
-    #
     def __len__(self):
         return sum(item.quantity for item in self.items.values())
