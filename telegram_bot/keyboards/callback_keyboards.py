@@ -7,10 +7,6 @@ from lexicon.lexicon_ru import LEXICON_RU
 logger = logging.getLogger(__name__)
 
 
-def set_product_callback(product_id: int | str) -> str:
-    return f"product:{product_id}"
-
-
 def set_product_button_text(product: dict) -> str:
     return f'{product["name"]} - {product["price"]} руб.'
 
