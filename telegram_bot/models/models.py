@@ -20,6 +20,10 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ProductModel(BaseModel):
+    """
+    Модель товара.
+    """
+
     id: int = Field(alias="product_id")
     name: str = Field(alias="product_name")
     picture: InputMediaPhoto | str | None = Field(default=None, exclude=True)
@@ -41,16 +45,25 @@ class ProductModel(BaseModel):
 
     @property
     def cost(self) -> str | None:
+        """
+        Свойство возвращает общую стоимость товаров.
+        """
         if self.quantity is None:
             return
         return str(Decimal(self.price) * self.quantity)
 
     def model_dump(self, **kwargs: Any) -> dict:
+        """
+        Метод возвращает данные товара в виде словаря.
+        """
         data = super().model_dump(**kwargs)
         data["cost"] = self.cost
         return data
 
     def get_product_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup:
+        """
+        Метод возвращает инлайн-клавиатуру товара.
+        """
         buttons = [
             [
                 InlineKeyboardButton(
@@ -73,12 +86,19 @@ class ProductModel(BaseModel):
         return keyboard
 
     def get_picture(self, data) -> InputMediaPhoto:
+        """
+        Метод возвращает изображение товара. Если его нет, то возвращает изображение-заглушку.
+        """
         if data.get("picture", None) is None:
             return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.description)
         return InputMediaPhoto(media=URLInputFile(data["picture"]), caption=self.description)
 
 
 class NestedCategoryModel(BaseModel):
+    """
+    Модель вложенной категории.
+    """
+
     id: int
     name: str
     url: str
@@ -87,6 +107,10 @@ class NestedCategoryModel(BaseModel):
 
 
 class CategoryModel(BaseModel):
+    """
+    Модель категории.
+    """
+
     id: int
     name: str
     url: str
@@ -105,6 +129,10 @@ class CategoryModel(BaseModel):
 
     @field_validator("id", mode="before")
     def validate_id(cls, value: Any) -> int:
+        """
+        Валидатор значения id модели. Строки переводятся в целые числа.
+        Если значение нельзя перевести в целое число, то выбрасывается исключение.
+        """
         if isinstance(value, str):
             try:
                 return int(value)
@@ -113,6 +141,9 @@ class CategoryModel(BaseModel):
         return value
 
     def get_category_inline_keyboard(self, data: dict):
+        """
+        Метод возвращает инлайн-клавиатуру категории.
+        """
         buttons = []
         if data:
             if data["children"]:
@@ -152,6 +183,9 @@ class CategoryModel(BaseModel):
             return keyboard
 
     def get_picture(self, data):
+        """
+        Метод возвращает изображение категории. Если его нет, то возвращает изображение-заглушку.
+        """
         if data["picture"] is None:
             return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.description)
         return InputMediaPhoto(media=URLInputFile(data["picture"]), caption=self.description)

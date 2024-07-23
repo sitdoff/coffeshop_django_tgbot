@@ -2,7 +2,7 @@ import logging
 from typing import Any, Literal
 
 from aiogram import F, Router
-from aiogram.types import CallbackQuery, InlineKeyboardMarkup
+from aiogram.types import CallbackQuery
 from filters.callback_factories import (
     AddToCartCallbackFactory,
     CategoryCallbackFactory,
@@ -11,7 +11,7 @@ from filters.callback_factories import (
 )
 from lexicon.lexicon_ru import LEXICON_RU
 from models.cart import Cart
-from services import cart_services, services
+from services import services
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,9 @@ async def process_category_callback(
     extra: dict[Literal["redis_connection", "api_url"], Any],
     callback_data: CategoryCallbackFactory | None = None,
 ):
+    """
+    Хэндлер для обработки колбэков кнопок категорий.
+    """
     category_id = callback_data.category_id if callback_data else None
     logger.debug("Callback data: %s", callback_data)
 
@@ -44,6 +47,9 @@ async def process_product_callback(
     extra: dict[Literal["redis_connection", "api_url"], Any],
     callback_data: ProductCallbackFactory,
 ):
+    """
+    Хэндлер для обработки колбэков кнопок товаров.
+    """
     logger.debug("Product callback data: %s", callback_data.pack())
 
     product = await services.get_product_model_for_answer_callback(
@@ -63,11 +69,17 @@ async def process_product_callback(
 
 @router.callback_query(F.data == "pass")
 async def process_pass_callback(callback: CallbackQuery):
+    """
+    Хэндлер для обработки колбэков с кнопок, которые еще не готовы.
+    """
     await callback.answer(text=LEXICON_RU["system"]["wip"], show_alert=True)
 
 
 @router.callback_query(AddToCartCallbackFactory.filter())
 async def add_to_cart(callback: CallbackQuery, callback_data: AddToCartCallbackFactory, extra: dict[str, Any]):
+    """
+    Хэндлер для обработки колбэков кнопок добавления товара в корзину.
+    """
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart.add_product_in_cart(callback_data)
     keyboard = await cart.edit_product_inline_keyboard(callback.message.reply_markup.inline_keyboard)
@@ -80,6 +92,9 @@ async def add_to_cart(callback: CallbackQuery, callback_data: AddToCartCallbackF
 async def remove_from_cart(
     callback: CallbackQuery, callback_data: RemoveFromCartCallbackFactory, extra: dict[str, Any]
 ):
+    """
+    Хэндлер обработки колбэков с кнопок удаления товара из корзины.
+    """
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart.get_items_from_redis()
     if str(callback_data.id) not in cart.items or cart.items[str(callback_data.id)].quantity <= 0:

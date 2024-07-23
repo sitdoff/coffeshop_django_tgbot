@@ -19,6 +19,9 @@ async def process_start_command(
     message: Message,
     extra: dict[Literal["redis_connection", "api_url"], Any],
 ):
+    """
+    Хэндлер для обработки команды /start.
+    """
     payload = {"telegram_id": message.from_user.id, "username": message.from_user.username}
     async with aiohttp.ClientSession() as session:
         async with session.post(f"{extra['api_url']}/users/create/", data=payload) as response:
@@ -48,4 +51,7 @@ async def process_start_command(
 
 @router.message(Command(commands=["help"]))
 async def process_help_command(message: Message):
+    """
+    Хэндлер для обработки команды /help.
+    """
     await message.answer(LEXICON_RU["commands"]["help"])
