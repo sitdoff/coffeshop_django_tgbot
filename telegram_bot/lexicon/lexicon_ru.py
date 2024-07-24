@@ -1,7 +1,7 @@
 from string import Template
 from typing import Any, Literal
 
-LEXICON_RU: dict[Literal["system", "commands", "inline"], Any] = {
+LEXICON_RU: dict[Literal["system", "commands", "inline", "messages"], Any] = {
     "system": {
         "config_loaded": "Configuration loaded.",
         "bot_created": "Bot created.",
@@ -23,6 +23,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline"], Any] = {
     },
     "inline": {
         "make_order": "Сделать заказ",
+        "add_to_order": "Дополнить заказ",
         "my_orders": "Мои заказы",
         "back": "< Назад",
         "cart": Template("🛒 Корзина($total_cost руб.)"),
@@ -31,10 +32,17 @@ LEXICON_RU: dict[Literal["system", "commands", "inline"], Any] = {
         "added": "Товар добавлен в корзину.",
         "removed": "Товар удален из корзины.",
         "item_is_not_in_cart": "Товара нет в корзине.",
+        "edit_cart": "Редактировать корзину",
+        "checkout": "Оформить заказ",
+    },
+    "messages": {
+        "product_info": Template("$name x $quantity шт. - $cost руб.\n\n"),
+        "cart_info": Template("Итого: $total_cost руб.\n"),
     },
 }
 
 LEXICON_MAIN_MENU_RU = {
     "/start": "Start",
     "/help": "Help",
+    "/cart": "Cart",
 }
