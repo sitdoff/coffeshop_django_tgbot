@@ -2,7 +2,8 @@ import logging
 from typing import Any, Literal
 
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
+from aiogram.filters import Command
+from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
 from filters.callback_factories import (
     AddToCartCallbackFactory,
     CategoryCallbackFactory,
@@ -72,6 +73,7 @@ async def process_pass_callback(callback: CallbackQuery):
     """
     Хэндлер для обработки колбэков с кнопок, которые еще не готовы.
     """
+    logger.debug("Callback data: %s", callback.data)
     await callback.answer(text=LEXICON_RU["system"]["wip"], show_alert=True)
 
 
@@ -105,3 +107,16 @@ async def remove_from_cart(
         if callback.message.reply_markup != keyboard:
             await callback.message.edit_reply_markup(reply_markup=keyboard)
         await callback.answer(text=LEXICON_RU["inline"]["removed"])
+
+
+@router.callback_query(F.data == "cart")
+async def process_cart_callback(callback: CallbackQuery, extra: dict[str, Any]):
+    """
+    Хэндлер для обработки колбэков кнопоки корзины.
+    """
+    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    keyboard = cart.get_cart_inline_keyboard()
+    await cart.get_items_from_redis()
+    await callback.message.edit_media(
+        media=InputMediaPhoto(media=FSInputFile("images/cart.jpg"), caption=cart.get_cart_text()), reply_markup=keyboard
+    )
