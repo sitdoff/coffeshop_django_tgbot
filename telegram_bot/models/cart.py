@@ -38,6 +38,35 @@ class Cart(BaseModel):
         """
         return sum(Decimal(item.cost) for item in self.items.values())
 
+    def get_cart_text(self):
+        """
+        Метод возвращает текст с информацией о товарах в корзине.
+        """
+        text = ""
+        for product in self.items.values():
+            text += LEXICON_RU["messages"]["product_info"].substitute(
+                name=product.name, quantity=product.quantity, cost=product.cost
+            )
+        text += LEXICON_RU["messages"]["cart_info"].substitute(total_cost=self.total_cost)
+        return text
+
+    def get_cart_inline_keyboard(self) -> InlineKeyboardMarkup:
+        """
+        Метод возвращает инлайн-клавиатуру при просмотре содержимого корзины.
+        """
+        buttons = [
+            [
+                InlineKeyboardButton(text=LEXICON_RU["inline"]["add_to_order"], callback_data="make_order"),
+            ],
+            [
+                InlineKeyboardButton(text=LEXICON_RU["inline"]["edit_cart"], callback_data="pass"),
+            ],
+            [
+                InlineKeyboardButton(text=LEXICON_RU["inline"]["checkout"], callback_data="pass"),
+            ],
+        ]
+        return InlineKeyboardMarkup(inline_keyboard=buttons)
+
     async def get_product_model_from_string(self, product_string_from_redis) -> ProductModel:
         """
         Метод преобразовывает сроку с данными из Redis в модель товара.
@@ -92,7 +121,7 @@ class Cart(BaseModel):
         """
         Метод уменьшает количество товара в корзине.
         """
-        if int(callback_data.id) > 0:
+        if int(callback_data.quantity) > 0:
             await self.change_product_quantity(callback_data, quantity=-1)
 
     async def change_product_quantity(self, callback_data: AddToCartCallbackFactory, quantity: int = 1) -> None:
@@ -150,7 +179,7 @@ class Cart(BaseModel):
         cart_info = await self.get_cart_info()
         cart_button = InlineKeyboardButton(
             text=LEXICON_RU["inline"]["cart"].substitute(total_cost=cart_info["total_cost"]),
-            callback_data="pass",
+            callback_data="cart",
         )
         buttons_list = [
             inline_button
