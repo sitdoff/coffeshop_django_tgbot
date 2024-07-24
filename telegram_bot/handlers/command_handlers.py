@@ -7,6 +7,7 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import FSInputFile, Message, ReplyKeyboardRemove
 from keyboards.callback_keyboards import get_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
+from models.cart import Cart
 from services import services
 
 router: Router = Router()
@@ -55,3 +56,18 @@ async def process_help_command(message: Message):
     Хэндлер для обработки команды /help.
     """
     await message.answer(LEXICON_RU["commands"]["help"])
+
+
+@router.message(Command(commands=["cart"]))
+async def process_cart_command(message: Message, extra: dict[str, Any]):
+    """
+    Хэндлер для обработки команды /cart.
+    """
+    cart = Cart(redis_connection=extra["redis_connection"], user_id=message.from_user.id)
+    await message.delete()
+    await cart.get_items_from_redis()
+    await message.answer_photo(
+        photo=FSInputFile("images/cart.jpg"),
+        caption=cart.get_cart_text(),
+        reply_markup=cart.get_cart_inline_keyboard(),
+    )
