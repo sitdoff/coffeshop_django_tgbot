@@ -42,13 +42,15 @@ class Cart(BaseModel):
         """
         Метод возвращает текст с информацией о товарах в корзине.
         """
-        line = "`" + "\-" * 33 + "`" + "\n"
+        # Длина строки в мобильном приложении 35 символов.
+        line = "`" + "-" * 33 + "`" + "\n"
         text = line
+        text += f"`{LEXICON_RU['messages']['cart_text_head']:^33}\n`"
+        text += line
         for product in self.items.values():
             text += f"`{product.name:<20s} {product.quantity:^2d} {product.cost:>7s} {LEXICON_RU['messages']['rub_symbol']}`\n"
         text += line
-        fin = f"`{LEXICON_RU['messages']['cart_info']} {self.total_cost:>26} {LEXICON_RU['messages']['rub_symbol']}`"
-        text += fin.replace(".", "\.")
+        text += f"`{LEXICON_RU['messages']['cart_info']} {self.total_cost:>26} {LEXICON_RU['messages']['rub_symbol']}`"
         return text
 
     def get_cart_inline_keyboard(self) -> InlineKeyboardMarkup:
