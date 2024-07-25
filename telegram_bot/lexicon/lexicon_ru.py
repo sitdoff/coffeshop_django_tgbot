@@ -36,8 +36,8 @@ LEXICON_RU: dict[Literal["system", "commands", "inline", "messages"], Any] = {
         "checkout": "Оформить заказ",
     },
     "messages": {
-        "product_info": Template("$name x $quantity шт. - $cost руб.\n\n"),
-        "cart_info": Template("Итого: $total_cost руб.\n"),
+        "cart_info": "Итог",
+        "rub_symbol": "₽",
     },
 }
 
