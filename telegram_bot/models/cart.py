@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Any, Literal
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from filters.callback_factories import AddToCartCallbackFactory
+from filters.callback_factories import AddToCartCallbackFactory, ProductCallbackFactory
 from lexicon.lexicon_ru import LEXICON_RU
 from models.models import ProductModel
 from pydantic import BaseModel, Field
@@ -42,12 +42,15 @@ class Cart(BaseModel):
         """
         Метод возвращает текст с информацией о товарах в корзине.
         """
-        text = ""
+        # Длина строки в мобильном приложении 35 символов.
+        line = "`" + "-" * 33 + "`" + "\n"
+        text = line
+        text += f"`{LEXICON_RU['messages']['cart_text_head']:^35}\n`"
+        text += line
         for product in self.items.values():
-            text += LEXICON_RU["messages"]["product_info"].substitute(
-                name=product.name, quantity=product.quantity, cost=product.cost
-            )
-        text += LEXICON_RU["messages"]["cart_info"].substitute(total_cost=self.total_cost)
+            text += f"`{product.name:<20s} {product.quantity:^2d} {product.cost:>7s} {LEXICON_RU['messages']['rub_symbol']}`\n"
+        text += line
+        text += f"`{LEXICON_RU['messages']['cart_info']} {self.total_cost:>26} {LEXICON_RU['messages']['rub_symbol']}`"
         return text
 
     def get_cart_inline_keyboard(self) -> InlineKeyboardMarkup:
@@ -59,12 +62,29 @@ class Cart(BaseModel):
                 InlineKeyboardButton(text=LEXICON_RU["inline"]["add_to_order"], callback_data="make_order"),
             ],
             [
-                InlineKeyboardButton(text=LEXICON_RU["inline"]["edit_cart"], callback_data="pass"),
+                InlineKeyboardButton(text=LEXICON_RU["inline"]["edit_cart"], callback_data="edit_cart"),
             ],
             [
                 InlineKeyboardButton(text=LEXICON_RU["inline"]["checkout"], callback_data="pass"),
             ],
         ]
+        return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+    async def get_edit_cart_inline_keyboard(self) -> InlineKeyboardMarkup:
+        """
+        Метод возвращает инлайн-клавиатуру при редактировании корзины.
+        """
+        buttons = [
+            [
+                InlineKeyboardButton(
+                    text=product.name,
+                    callback_data=ProductCallbackFactory(product_id=product.id).pack(),
+                )
+            ]
+            for product in self.items.values()
+        ]
+        buttons = await self._add_cart_button(buttons)
+        __import__("pprint").pprint(buttons)
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
     async def get_product_model_from_string(self, product_string_from_redis) -> ProductModel:

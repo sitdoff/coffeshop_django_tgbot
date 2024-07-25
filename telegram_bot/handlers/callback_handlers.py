@@ -120,3 +120,14 @@ async def process_cart_callback(callback: CallbackQuery, extra: dict[str, Any]):
     await callback.message.edit_media(
         media=InputMediaPhoto(media=FSInputFile("images/cart.jpg"), caption=cart.get_cart_text()), reply_markup=keyboard
     )
+
+
+@router.callback_query(F.data == "edit_cart")
+async def process_edit_cart_callback(callback: CallbackQuery, extra: dict[str, Any]):
+    """
+    Хэндлер для обработки колбэков кнопоки редактирования корзины.
+    """
+    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    await cart.get_items_from_redis()
+    keyboard = await cart.get_edit_cart_inline_keyboard()
+    await callback.message.edit_reply_markup(reply_markup=keyboard)
