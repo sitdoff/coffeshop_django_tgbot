@@ -3,6 +3,7 @@ import logging
 
 import redis.asyncio as redis
 from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
 from config_data.config import Config, load_config
 from handlers import callback_handlers, command_handlers
 from keyboards.set_main_menu import set_main_menu
@@ -31,7 +32,10 @@ async def main():
     logging.info(LEXICON_RU["system"]["redis_connection_created"])
 
     # Create Bot
-    bot: Bot = Bot(token=config.bot.bot_token.get_secret_value())
+    bot: Bot = Bot(
+        token=config.bot.bot_token.get_secret_value(),
+        default=DefaultBotProperties(parse_mode="MarkdownV2"),
+    )
     logging.info(LEXICON_RU["system"]["bot_created"])
 
     # Create Dispatcher.
