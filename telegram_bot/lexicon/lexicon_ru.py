@@ -38,6 +38,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline", "messages"], Any] = {
     "messages": {
         "cart_info": "Итог",
         "rub_symbol": "₽",
+        "cart_text_head": "Товары в корзине",
     },
 }
 
