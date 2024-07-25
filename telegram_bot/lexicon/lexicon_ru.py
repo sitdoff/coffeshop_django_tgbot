@@ -18,7 +18,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline", "messages"], Any] = {
         "not_found": "Не найдено",
     },
     "commands": {
-        "start": "Приветствуем вас в нашей кофейне.\n\nХотите сделать заказ, который будет готов к вашему приходу?",
+        "start": "Приветствуем вас в нашей кофейне\.\n\nХотите сделать заказ, который будет готов к вашему приходу?",
         "help": "Help.",
     },
     "inline": {
@@ -38,7 +38,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline", "messages"], Any] = {
     "messages": {
         "cart_info": "Итог",
         "rub_symbol": "₽",
-        "cart_text_head": "Товары в корзине",
+        "cart_text_head": "Товары в вашей корзине",
     },
 }
 
