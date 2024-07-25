@@ -70,7 +70,7 @@ class Cart(BaseModel):
         ]
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-    def get_edit_cart_inline_keyboard(self) -> InlineKeyboardMarkup:
+    async def get_edit_cart_inline_keyboard(self) -> InlineKeyboardMarkup:
         """
         Метод возвращает инлайн-клавиатуру при редактировании корзины.
         """
@@ -83,6 +83,7 @@ class Cart(BaseModel):
             ]
             for product in self.items.values()
         ]
+        buttons = await self._add_cart_button(buttons)
         __import__("pprint").pprint(buttons)
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
