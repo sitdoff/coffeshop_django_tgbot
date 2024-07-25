@@ -129,5 +129,5 @@ async def process_edit_cart_callback(callback: CallbackQuery, extra: dict[str, A
     """
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart.get_items_from_redis()
-    keyboard = cart.get_edit_cart_inline_keyboard()
+    keyboard = await cart.get_edit_cart_inline_keyboard()
     await callback.message.edit_reply_markup(reply_markup=keyboard)
