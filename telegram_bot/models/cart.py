@@ -42,12 +42,13 @@ class Cart(BaseModel):
         """
         Метод возвращает текст с информацией о товарах в корзине.
         """
-        text = ""
+        line = "`" + "\-" * 33 + "`" + "\n"
+        text = line
         for product in self.items.values():
-            text += LEXICON_RU["messages"]["product_info"].substitute(
-                name=product.name, quantity=product.quantity, cost=product.cost
-            )
-        text += LEXICON_RU["messages"]["cart_info"].substitute(total_cost=self.total_cost)
+            text += f"`{product.name:<20s} {product.quantity:^2d} {product.cost:>7s} {LEXICON_RU['messages']['rub_symbol']}`\n"
+        text += line
+        fin = f"`{LEXICON_RU['messages']['cart_info']} {self.total_cost:>26} {LEXICON_RU['messages']['rub_symbol']}`"
+        text += fin.replace(".", "\.")
         return text
 
     def get_cart_inline_keyboard(self) -> InlineKeyboardMarkup:
