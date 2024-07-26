@@ -2,7 +2,13 @@ import logging
 
 import aiohttp
 import redis.asyncio as redis
-from aiogram.types import FSInputFile, InputMediaPhoto, Message, URLInputFile
+from aiogram.types import (
+    CallbackQuery,
+    FSInputFile,
+    InputMediaPhoto,
+    Message,
+    URLInputFile,
+)
 from models.models import CategoryModel, ProductModel
 
 logger = logging.getLogger(__name__)
@@ -15,7 +21,7 @@ async def set_auth_token(token: str, message: Message, redis_connection: redis.R
     await redis_connection.set(f"token:{message.from_user.id}", token)
 
 
-async def get_auth_token(message: Message, redis_connection: redis.Redis) -> str:
+async def get_auth_token(message: Message | CallbackQuery, redis_connection: redis.Redis) -> str:
     """
     Возвращает токен аутентификации из Redis.
     """
@@ -51,7 +57,7 @@ async def authorize_user(
 
 
 async def get_category_model_for_answer_callback(
-    callback,
+    callback: CallbackQuery,
     redis_connection: redis.Redis,
     api_url: str,
     category_id: str | int | None = None,
