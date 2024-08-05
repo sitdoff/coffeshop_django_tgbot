@@ -84,7 +84,6 @@ class Cart(BaseModel):
             for product in self.items.values()
         ]
         buttons = await self._add_cart_button(buttons)
-        __import__("pprint").pprint(buttons)
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
     async def get_product_model_from_string(self, product_string_from_redis) -> ProductModel:
