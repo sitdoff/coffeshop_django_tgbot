@@ -72,3 +72,9 @@ class RemoveFromCartCallbackFactory(CallbackData, prefix="remove"):
     price: str
     quantity: int = 1
     cost: str
+
+
+class EditCartCallbackFactory(CallbackData, prefix="edit_cart"):
+    """ """
+
+    page: int = 1
