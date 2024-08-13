@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from filters.callback_factories import CategoryCallbackFactory
+from filters.callback_factories import CategoryCallbackFactory, EditCartCallbackFactory
 from lexicon.lexicon_ru import LEXICON_RU
 from services.services import pagination_keyboard
 
@@ -60,3 +60,11 @@ def test_pagination_keyboard_function_when_keyboard_size_less_than_constant(keyb
     with patch("config_data.constants.PAGINATION_PAGE_SIZE", 10):
         new_keyboard = pagination_keyboard(keyboard=keyboard, page=2, category_id=1, factory=CategoryCallbackFactory)
         assert new_keyboard.inline_keyboard == keyboard.inline_keyboard
+
+
+def test_pagination_keyboard_function_when_cat_edit(keyboard):
+    with patch("config_data.constants.PAGINATION_PAGE_SIZE", 2):
+        new_keyboard = pagination_keyboard(keyboard=keyboard, page=2, category_id=None, factory=EditCartCallbackFactory)
+        assert new_keyboard.inline_keyboard[-2][0].text == LEXICON_RU["inline"]["previous"]
+        assert new_keyboard.inline_keyboard[-2][1].text == LEXICON_RU["inline"]["next"]
+        assert new_keyboard.inline_keyboard[-1][0].text == LEXICON_RU["inline"]["back"]

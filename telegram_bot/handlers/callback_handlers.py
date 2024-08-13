@@ -7,6 +7,7 @@ from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
 from filters.callback_factories import (
     AddToCartCallbackFactory,
     CategoryCallbackFactory,
+    EditCartCallbackFactory,
     ProductCallbackFactory,
     RemoveFromCartCallbackFactory,
 )
@@ -133,12 +134,22 @@ async def process_cart_callback(callback: CallbackQuery, extra: dict[str, Any]):
     )
 
 
-@router.callback_query(F.data == "edit_cart")
-async def process_edit_cart_callback(callback: CallbackQuery, extra: dict[str, Any]):
+@router.callback_query(EditCartCallbackFactory.filter())
+async def process_edit_cart_callback(
+    callback: CallbackQuery, extra: dict[str, Any], callback_data: EditCartCallbackFactory
+):
     """
     Хэндлер для обработки колбэков кнопоки редактирования корзины.
     """
+    logger.debug("Edit cart callback data: %s", callback_data)
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart.get_items_from_redis()
     keyboard = await cart.get_edit_cart_inline_keyboard()
-    await callback.message.edit_reply_markup(reply_markup=keyboard)
+    await callback.message.edit_reply_markup(
+        reply_markup=services.pagination_keyboard(
+            keyboard=keyboard,
+            page=callback_data.page,
+            category_id=None,
+            factory=EditCartCallbackFactory,
+        )
+    )
