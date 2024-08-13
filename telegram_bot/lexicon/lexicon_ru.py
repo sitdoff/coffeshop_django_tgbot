@@ -25,7 +25,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline", "messages"], Any] = {
         "make_order": "Сделать заказ",
         "add_to_order": "Дополнить заказ",
         "my_orders": "Мои заказы",
-        "back": "< Назад",
+        "back": "< Предыдущая категория",
         "cart": Template("🛒 Корзина($total_cost руб.)"),
         "add_cart": "Добавить 1 шт в корзину ➕",
         "product_quantity_in_cart": Template("в корзине $count шт."),
@@ -34,6 +34,8 @@ LEXICON_RU: dict[Literal["system", "commands", "inline", "messages"], Any] = {
         "item_is_not_in_cart": "Товара нет в корзине.",
         "edit_cart": "Редактировать корзину",
         "checkout": "Оформить заказ",
+        "next": "Еще ➡️",
+        "previous": "⬅️ Назад",
     },
     "messages": {
         "cart_info": "Итог",

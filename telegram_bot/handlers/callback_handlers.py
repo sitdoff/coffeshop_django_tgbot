@@ -36,10 +36,21 @@ async def process_category_callback(
         callback, extra["redis_connection"], extra["api_url"], category_id
     )
 
-    await callback.message.edit_media(
-        media=category.picture,
-        reply_markup=category.keyboard,
-    )
+    if not category_id is None:
+        await callback.message.edit_media(
+            media=category.picture,
+            reply_markup=services.pagination_keyboard(
+                keyboard=category.keyboard,
+                page=callback_data.page if callback_data else 1,
+                category_id=category_id,
+                factory=CategoryCallbackFactory,
+            ),
+        )
+    else:
+        await callback.message.edit_media(
+            media=category.picture,
+            reply_markup=category.keyboard,
+        )
 
 
 @router.callback_query(ProductCallbackFactory.filter())

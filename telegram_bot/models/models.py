@@ -140,7 +140,7 @@ class CategoryModel(BaseModel):
                 raise ValueError("id must be an integer or a string representing an integer")
         return value
 
-    def get_category_inline_keyboard(self, data: dict):
+    def get_category_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup | None:
         """
         Метод возвращает инлайн-клавиатуру категории.
         """
@@ -167,7 +167,6 @@ class CategoryModel(BaseModel):
                     ]
                     for product in data["products"]
                 ]
-                pass
 
             if data["parent_id"]:
                 buttons.append(
