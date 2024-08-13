@@ -10,6 +10,7 @@ class CategoryCallbackFactory(CallbackData, prefix="category"):
     """
 
     category_id: int
+    page: int = 1
 
     @field_validator("category_id", mode="before")
     def validate_id(cls, value: Any) -> int:

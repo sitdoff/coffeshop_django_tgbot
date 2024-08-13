@@ -1,14 +1,21 @@
 import logging
+import math
 
 import aiohttp
 import redis.asyncio as redis
+from aiogram.filters.callback_data import CallbackData
 from aiogram.types import (
     CallbackQuery,
     FSInputFile,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
     InputMediaPhoto,
     Message,
     URLInputFile,
 )
+from config_data import constants
+from filters.callback_factories import CategoryCallbackFactory
+from lexicon.lexicon_ru import LEXICON_RU
 from models.models import CategoryModel, ProductModel
 
 logger = logging.getLogger(__name__)
@@ -113,3 +120,40 @@ async def get_product_model_for_answer_callback(
     product = ProductModel(**response_data)
 
     return product
+
+
+def pagination_keyboard(
+    keyboard: InlineKeyboardMarkup, page: int, category_id: int | None, factory: CallbackData
+) -> InlineKeyboardMarkup:
+    """
+    Функция возвращает инлайн-клавиатуру пагинированую на количество кнопок указанных в констате PAGINATION_PAGE_SIZE.
+
+    В клавиатуку добавляются кнопки навигации по страницам.
+    """
+    logger.debug("Buttons %s", keyboard.inline_keyboard)
+    if len(keyboard.inline_keyboard) > constants.PAGINATION_PAGE_SIZE:
+        if keyboard.inline_keyboard[-1][0].text == LEXICON_RU["inline"]["back"]:
+            back_button = keyboard.inline_keyboard.pop(-1)
+        else:
+            back_button = []
+        start_index = (constants.PAGINATION_PAGE_SIZE * page) - constants.PAGINATION_PAGE_SIZE
+        end_index = start_index + constants.PAGINATION_PAGE_SIZE
+        buttons = keyboard.inline_keyboard[start_index:end_index]
+        if not category_id is None:
+            navigation_buttons = []
+            if page > 1:
+                buttont_previous = InlineKeyboardButton(
+                    text=LEXICON_RU["inline"]["previous"],
+                    callback_data=factory(category_id=category_id, page=page - 1).pack(),
+                )
+                navigation_buttons.append(buttont_previous)
+            if math.ceil(len(keyboard.inline_keyboard) / constants.PAGINATION_PAGE_SIZE) > page:
+                buttont_next = InlineKeyboardButton(
+                    text=LEXICON_RU["inline"]["next"],
+                    callback_data=factory(category_id=category_id, page=page + 1).pack(),
+                )
+                navigation_buttons.append(buttont_next)
+            buttons.append(navigation_buttons)
+        buttons.append(back_button)
+        return InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
