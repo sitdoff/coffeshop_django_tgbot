@@ -3,7 +3,11 @@ from decimal import Decimal
 from typing import Any, Literal
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from filters.callback_factories import AddToCartCallbackFactory, ProductCallbackFactory
+from filters.callback_factories import (
+    AddToCartCallbackFactory,
+    EditCartCallbackFactory,
+    ProductCallbackFactory,
+)
 from lexicon.lexicon_ru import LEXICON_RU
 from models.models import ProductModel
 from pydantic import BaseModel, Field
@@ -62,7 +66,9 @@ class Cart(BaseModel):
                 InlineKeyboardButton(text=LEXICON_RU["inline"]["add_to_order"], callback_data="make_order"),
             ],
             [
-                InlineKeyboardButton(text=LEXICON_RU["inline"]["edit_cart"], callback_data="edit_cart"),
+                InlineKeyboardButton(
+                    text=LEXICON_RU["inline"]["edit_cart"], callback_data=EditCartCallbackFactory().pack()
+                ),
             ],
             [
                 InlineKeyboardButton(text=LEXICON_RU["inline"]["checkout"], callback_data="pass"),

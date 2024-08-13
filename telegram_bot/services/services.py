@@ -14,7 +14,7 @@ from aiogram.types import (
     URLInputFile,
 )
 from config_data import constants
-from filters.callback_factories import CategoryCallbackFactory
+from filters.callback_factories import CategoryCallbackFactory, EditCartCallbackFactory
 from lexicon.lexicon_ru import LEXICON_RU
 from models.models import CategoryModel, ProductModel
 
@@ -134,6 +134,8 @@ def pagination_keyboard(
     if len(keyboard.inline_keyboard) > constants.PAGINATION_PAGE_SIZE:
         if keyboard.inline_keyboard[-1][0].text == LEXICON_RU["inline"]["back"]:
             back_button = keyboard.inline_keyboard.pop(-1)
+        elif factory is EditCartCallbackFactory:
+            back_button = keyboard.inline_keyboard.pop(-1)
         else:
             back_button = []
         start_index = (constants.PAGINATION_PAGE_SIZE * page) - constants.PAGINATION_PAGE_SIZE
@@ -154,6 +156,22 @@ def pagination_keyboard(
                 )
                 navigation_buttons.append(buttont_next)
             buttons.append(navigation_buttons)
+        else:
+            navigation_buttons = []
+            if page > 1:
+                buttont_previous = InlineKeyboardButton(
+                    text=LEXICON_RU["inline"]["previous"],
+                    callback_data=factory(page=page - 1).pack(),
+                )
+                navigation_buttons.append(buttont_previous)
+            if math.ceil(len(keyboard.inline_keyboard) / constants.PAGINATION_PAGE_SIZE) > page:
+                buttont_next = InlineKeyboardButton(
+                    text=LEXICON_RU["inline"]["next"],
+                    callback_data=factory(page=page + 1).pack(),
+                )
+                navigation_buttons.append(buttont_next)
+            buttons.append(navigation_buttons)
         buttons.append(back_button)
         return InlineKeyboardMarkup(inline_keyboard=buttons)
+
     return keyboard
