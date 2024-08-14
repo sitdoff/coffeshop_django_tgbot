@@ -120,7 +120,7 @@ class CategoryModel(BaseModel):
     products: Optional[list[ProductModel]] = None
     parent: str | None = None
     parent_id: int | None = None
-    keyboard: InlineKeyboardMarkup | None = None
+    keyboard: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=[[]])
 
     def __init__(self, /, **data: Any) -> None:
         super().__init__(**data)
@@ -140,7 +140,7 @@ class CategoryModel(BaseModel):
                 raise ValueError("id must be an integer or a string representing an integer")
         return value
 
-    def get_category_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup | None:
+    def get_category_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup:
         """
         Метод возвращает инлайн-клавиатуру категории.
         """
@@ -178,8 +178,8 @@ class CategoryModel(BaseModel):
                     ]
                 )
 
-            keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
-            return keyboard
+        keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+        return keyboard
 
     def get_picture(self, data):
         """

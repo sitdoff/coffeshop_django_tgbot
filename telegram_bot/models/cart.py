@@ -184,6 +184,17 @@ class Cart(BaseModel):
             "total_cost": self.total_cost,
         }
 
+    async def edit_category_inline_keyboard(
+        self, keyboard_list: list[list[InlineKeyboardButton]]
+    ) -> InlineKeyboardMarkup:
+        """
+        Метод изменяет инлайн-клавиатуру категории, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
+        """
+        await self.get_items_from_redis()
+        keyboard_list = await self._add_cart_button(buttons_list=keyboard_list)
+        # keyboard_list = await self._edit_product_button(keyboard_list)
+        return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
+
     async def edit_product_inline_keyboard(
         self, keyboard_list: list[list[InlineKeyboardButton]]
     ) -> InlineKeyboardMarkup:

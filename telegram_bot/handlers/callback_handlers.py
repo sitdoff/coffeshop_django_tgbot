@@ -33,24 +33,30 @@ async def process_category_callback(
     category_id = callback_data.category_id if callback_data else None
     logger.debug("Callback data: %s", callback_data)
 
+    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+
     category = await services.get_category_model_for_answer_callback(
         callback, extra["redis_connection"], extra["api_url"], category_id
     )
+    paginated_keyboard = services.pagination_keyboard(
+        keyboard=category.keyboard,
+        page=callback_data.page if callback_data else 1,
+        category_id=category_id,
+        factory=CategoryCallbackFactory,
+    )
+    keyboard_with_cart_button = await cart.edit_category_inline_keyboard(
+        keyboard_list=paginated_keyboard.inline_keyboard
+    )
 
-    if not category_id is None:
+    if category_id is None:
         await callback.message.edit_media(
             media=category.picture,
-            reply_markup=services.pagination_keyboard(
-                keyboard=category.keyboard,
-                page=callback_data.page if callback_data else 1,
-                category_id=category_id,
-                factory=CategoryCallbackFactory,
-            ),
+            reply_markup=keyboard_with_cart_button,
         )
     else:
         await callback.message.edit_media(
             media=category.picture,
-            reply_markup=category.keyboard,
+            reply_markup=keyboard_with_cart_button,
         )
 
 
