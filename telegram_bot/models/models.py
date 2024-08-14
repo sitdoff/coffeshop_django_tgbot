@@ -1,6 +1,8 @@
 from decimal import Decimal
+from logging import getLogger
 from typing import Any, Optional
 
+import validators
 from aiogram.types import (
     FSInputFile,
     InlineKeyboardButton,
@@ -8,6 +10,7 @@ from aiogram.types import (
     InputMediaPhoto,
     URLInputFile,
 )
+from config_data.constants import PHOTO_FILE_ID_HASH_NAME
 from filters.callback_factories import (
     AddToCartCallbackFactory,
     CategoryCallbackFactory,
@@ -17,6 +20,8 @@ from filters.callback_factories import (
 from keyboards.callback_keyboards import set_product_button_text
 from lexicon.lexicon_ru import LEXICON_RU
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+logger = getLogger(__name__)
 
 
 class ProductModel(BaseModel):
@@ -89,9 +94,14 @@ class ProductModel(BaseModel):
         """
         Метод возвращает изображение товара. Если его нет, то возвращает изображение-заглушку.
         """
-        if data.get("picture", None) is None:
-            return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.description)
-        return InputMediaPhoto(media=URLInputFile(data["picture"]), caption=self.description)
+        if data["picture"] is None:
+            logger.info("Product model: Default image is used. %s", self.name)
+            return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.name)
+        if "http" in data["picture"] or "https" in data["picture"]:
+            logger.info("Product model: Image from URL is used. %s", self.name)
+            return InputMediaPhoto(media=URLInputFile(data["picture"]), caption=self.name)
+        logger.info("Product model: Image from Redis is used. %s", self.name)
+        return InputMediaPhoto(media=data["picture"], caption=self.name)
 
 
 class NestedCategoryModel(BaseModel):
@@ -120,7 +130,7 @@ class CategoryModel(BaseModel):
     products: Optional[list[ProductModel]] = None
     parent: str | None = None
     parent_id: int | None = None
-    keyboard: InlineKeyboardMarkup | None = None
+    keyboard: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=[[]])
 
     def __init__(self, /, **data: Any) -> None:
         super().__init__(**data)
@@ -140,7 +150,7 @@ class CategoryModel(BaseModel):
                 raise ValueError("id must be an integer or a string representing an integer")
         return value
 
-    def get_category_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup | None:
+    def get_category_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup:
         """
         Метод возвращает инлайн-клавиатуру категории.
         """
@@ -178,13 +188,18 @@ class CategoryModel(BaseModel):
                     ]
                 )
 
-            keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
-            return keyboard
+        keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+        return keyboard
 
     def get_picture(self, data):
         """
         Метод возвращает изображение категории. Если его нет, то возвращает изображение-заглушку.
         """
         if data["picture"] is None:
-            return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.description)
-        return InputMediaPhoto(media=URLInputFile(data["picture"]), caption=self.description)
+            logger.info("Category model: Default image is used.")
+            return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.name)
+        if "http" in data["picture"] or "https" in data["picture"]:
+            logger.info("Category model: Image from URL is used.")
+            return InputMediaPhoto(media=URLInputFile(data["picture"]), caption=self.name)
+        logger.info("Category model: Image from Redis is used.")
+        return InputMediaPhoto(media=data["picture"], caption=self.name)

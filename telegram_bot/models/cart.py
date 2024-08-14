@@ -71,6 +71,9 @@ class Cart(BaseModel):
                 ),
             ],
             [
+                InlineKeyboardButton(text=LEXICON_RU["inline"]["clear_cart"], callback_data="clear_cart"),
+            ],
+            [
                 InlineKeyboardButton(text=LEXICON_RU["inline"]["checkout"], callback_data="pass"),
             ],
         ]
@@ -118,6 +121,12 @@ class Cart(BaseModel):
                 await self.redis_connection.hset(
                     self.cart_name, key, AddToCartCallbackFactory(**value.model_dump()).get_product_str_for_redis()
                 )
+
+    async def clear(self) -> None:
+        """
+        Метод очищает корзину.
+        """
+        await self.redis_connection.delete(self.cart_name)
 
     async def check_cart_exist(self) -> bool:
         """
@@ -183,6 +192,17 @@ class Cart(BaseModel):
             "len": len(self.items),
             "total_cost": self.total_cost,
         }
+
+    async def edit_category_inline_keyboard(
+        self, keyboard_list: list[list[InlineKeyboardButton]]
+    ) -> InlineKeyboardMarkup:
+        """
+        Метод изменяет инлайн-клавиатуру категории, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
+        """
+        await self.get_items_from_redis()
+        keyboard_list = await self._add_cart_button(buttons_list=keyboard_list)
+        # keyboard_list = await self._edit_product_button(keyboard_list)
+        return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
 
     async def edit_product_inline_keyboard(
         self, keyboard_list: list[list[InlineKeyboardButton]]
