@@ -71,10 +71,10 @@ class Cart(BaseModel):
                 ),
             ],
             [
-                InlineKeyboardButton(text=LEXICON_RU["inline"]["checkout"], callback_data="pass"),
+                InlineKeyboardButton(text=LEXICON_RU["inline"]["clear_cart"], callback_data="clear_cart"),
             ],
             [
-                InlineKeyboardButton(text=LEXICON_RU["inline"]["clear_cart"], callback_data="clear_cart"),
+                InlineKeyboardButton(text=LEXICON_RU["inline"]["checkout"], callback_data="pass"),
             ],
         ]
         return InlineKeyboardMarkup(inline_keyboard=buttons)
