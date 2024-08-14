@@ -73,6 +73,9 @@ class Cart(BaseModel):
             [
                 InlineKeyboardButton(text=LEXICON_RU["inline"]["checkout"], callback_data="pass"),
             ],
+            [
+                InlineKeyboardButton(text=LEXICON_RU["inline"]["clear_cart"], callback_data="clear_cart"),
+            ],
         ]
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -118,6 +121,12 @@ class Cart(BaseModel):
                 await self.redis_connection.hset(
                     self.cart_name, key, AddToCartCallbackFactory(**value.model_dump()).get_product_str_for_redis()
                 )
+
+    async def clear(self) -> None:
+        """
+        Метод очищает корзину.
+        """
+        await self.redis_connection.delete(self.cart_name)
 
     async def check_cart_exist(self) -> bool:
         """

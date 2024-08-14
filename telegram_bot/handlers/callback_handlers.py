@@ -11,6 +11,7 @@ from filters.callback_factories import (
     ProductCallbackFactory,
     RemoveFromCartCallbackFactory,
 )
+from keyboards.callback_keyboards import get_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
 from models.cart import Cart
 from services import services
@@ -158,4 +159,14 @@ async def process_edit_cart_callback(
             category_id=None,
             factory=EditCartCallbackFactory,
         )
+    )
+
+
+@router.callback_query(F.data == "clear_cart")
+async def process_cart_clear_callback(callback: CallbackQuery, extra: dict[str, Any]):
+    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    await cart.clear()
+    await callback.message.edit_media(
+        media=InputMediaPhoto(media=FSInputFile("images/cart.jpg"), caption="Корзина пуста"),
+        reply_markup=await get_start_keyboard(),
     )

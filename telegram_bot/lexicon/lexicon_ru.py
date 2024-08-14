@@ -36,6 +36,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline", "messages"], Any] = {
         "checkout": "Оформить заказ",
         "next": "Еще ➡️",
         "previous": "⬅️ Назад",
+        "clear_cart": "Очистить корзину",
     },
     "messages": {
         "cart_info": "Итог",
