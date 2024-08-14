@@ -13,12 +13,14 @@ from filters.callback_factories import (
 )
 from keyboards.callback_keyboards import get_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
+from middlewares.middlewares import SavePhotoFileId
 from models.cart import Cart
 from services import services
 
 logger = logging.getLogger(__name__)
 
 router: Router = Router()
+router.callback_query.outer_middleware(SavePhotoFileId())
 
 
 @router.callback_query(F.data == "make_order")
@@ -71,6 +73,7 @@ async def process_product_callback(
     Хэндлер для обработки колбэков кнопок товаров.
     """
     logger.debug("Product callback data: %s", callback_data.pack())
+    logger.debug("Photo info: %s", callback.message.photo)
 
     product = await services.get_product_model_for_answer_callback(
         callback, extra["redis_connection"], extra["api_url"], callback_data.product_id
