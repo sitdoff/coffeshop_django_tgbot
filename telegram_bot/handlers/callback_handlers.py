@@ -13,7 +13,7 @@ from filters.callback_factories import (
 )
 from keyboards.callback_keyboards import get_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
-from middlewares.middlewares import SavePhotoFileId
+from middlewares.callback_middlewares import SavePhotoFileId
 from models.cart import Cart
 from services import services
 
@@ -33,8 +33,10 @@ async def process_category_callback(
     """
     Хэндлер для обработки колбэков кнопок категорий.
     """
+    logger.info("Handler for category")
     category_id = callback_data.category_id if callback_data else None
-    logger.debug("Callback data: %s", callback_data)
+    logger.info("Callback: %s", callback.data)
+    logger.info("Callback data: %s", callback_data)
 
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
 
@@ -72,8 +74,9 @@ async def process_product_callback(
     """
     Хэндлер для обработки колбэков кнопок товаров.
     """
-    logger.debug("Product callback data: %s", callback_data.pack())
-    logger.debug("Photo info: %s", callback.message.photo)
+    logger.info("Handler for product")
+    logger.info("Callback: %s", callback.data)
+    logger.info("Product callback data: %s", callback_data)
 
     product = await services.get_product_model_for_answer_callback(
         callback, extra["redis_connection"], extra["api_url"], callback_data.product_id
@@ -95,7 +98,8 @@ async def process_pass_callback(callback: CallbackQuery):
     """
     Хэндлер для обработки колбэков с кнопок, которые еще не готовы.
     """
-    logger.debug("Callback data: %s", callback.data)
+    logger.info("Handler for pass")
+    logger.info("Callback: %s", callback.data)
     await callback.answer(text=LEXICON_RU["system"]["wip"], show_alert=True)
 
 
@@ -104,6 +108,9 @@ async def add_to_cart(callback: CallbackQuery, callback_data: AddToCartCallbackF
     """
     Хэндлер для обработки колбэков кнопок добавления товара в корзину.
     """
+    logger.info("Handler for add cart")
+    logger.info("Callback: %s", callback.data)
+    logger.info("Callback data: %s", callback_data)
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart.add_product_in_cart(callback_data)
     keyboard = await cart.edit_product_inline_keyboard(callback.message.reply_markup.inline_keyboard)
@@ -119,6 +126,9 @@ async def remove_from_cart(
     """
     Хэндлер обработки колбэков с кнопок удаления товара из корзины.
     """
+    logger.info("Handler for remove from cart")
+    logger.info("Callback: %s", callback.data)
+    logger.info("Callback data: %s", callback_data)
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart.get_items_from_redis()
     if str(callback_data.id) not in cart.items or cart.items[str(callback_data.id)].quantity <= 0:
@@ -136,6 +146,9 @@ async def process_cart_callback(callback: CallbackQuery, extra: dict[str, Any]):
     """
     Хэндлер для обработки колбэков кнопоки корзины.
     """
+    logger.info("Handler for cart button")
+    logger.info("Callback: %s", callback.data)
+
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     keyboard = cart.get_cart_inline_keyboard()
     await cart.get_items_from_redis()
@@ -151,7 +164,9 @@ async def process_edit_cart_callback(
     """
     Хэндлер для обработки колбэков кнопоки редактирования корзины.
     """
-    logger.debug("Edit cart callback data: %s", callback_data)
+    logger.info("Handler for edit cart")
+    logger.info("Callback: %s", callback.data)
+    logger.info("Callback data: %s", callback_data)
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart.get_items_from_redis()
     keyboard = await cart.get_edit_cart_inline_keyboard()
@@ -167,6 +182,11 @@ async def process_edit_cart_callback(
 
 @router.callback_query(F.data == "clear_cart")
 async def process_cart_clear_callback(callback: CallbackQuery, extra: dict[str, Any]):
+    """
+    Хэндлер для обработки колбэка очистки корзины
+    """
+    logger.info("Handler for clear cart")
+    logger.info("Callback: %s", callback.data)
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart.clear()
     await callback.message.edit_media(
