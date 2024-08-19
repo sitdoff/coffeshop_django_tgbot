@@ -2,7 +2,6 @@ from decimal import Decimal
 from logging import getLogger
 from typing import Any, Optional
 
-import validators
 from aiogram.types import (
     FSInputFile,
     InlineKeyboardButton,

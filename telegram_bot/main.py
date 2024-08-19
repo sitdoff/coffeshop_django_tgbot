@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 async def main():
     # Logger basic configuration
     logging.basicConfig(
+        format="%(asctime)s:%(levelname)s:%(name)s:%(filename)s:%(funcName)s:%(message)s",
         level=logging.DEBUG,
     )
 
