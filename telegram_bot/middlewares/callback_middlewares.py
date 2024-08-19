@@ -2,7 +2,8 @@ from logging import getLogger
 from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware
-from aiogram.types import TelegramObject
+from aiogram.types import CallbackQuery, Message, TelegramObject
+from config_data import constants
 from config_data.constants import PHOTO_FILE_ID_HASH_NAME
 from redis.asyncio import Redis
 
@@ -27,12 +28,29 @@ class SavePhotoFileId(BaseMiddleware):
         return result
 
     async def save_photo_file_id(self, event: TelegramObject, data: Dict[str, Any]):
-        photo_caption = event.message.caption
-        file_id = event.message.photo[-1].file_id
+        key, file_id = False, False
         redis_connection: Redis = data["extra"]["redis_connection"]
-        if not await redis_connection.hexists(PHOTO_FILE_ID_HASH_NAME, photo_caption):
-            # Тут должен использоваться метод hexpire для установки времени жизни ключа в хэше вместо hset,
-            # но он будет доступен только в версии Redis 5.1
-            # Сейчас же доступна только версия 5.0.7, так что с этим методом пока облом.
-            await redis_connection.hset(PHOTO_FILE_ID_HASH_NAME, photo_caption, file_id)
-            logger.info('File ID "%s" saved to Redis with key "%s"', file_id, photo_caption)
+        if isinstance(event, CallbackQuery):
+            logger.info("Event is callback query")
+            key = event.message.caption
+            file_id = event.message.photo[-1].file_id
+        else:
+            logger.error("Event is not callback query")
+            raise ValueError("Event is not callback query")
+        logger.debug("Key is %s", key)
+        logger.debug("File id is %s", file_id)
+        if all([key, file_id]):
+            is_key_exist = await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, key)
+            logger.debug("Is key exist %s", is_key_exist)
+            try:
+                if not is_key_exist:
+                    await redis_connection.hset(constants.PHOTO_FILE_ID_HASH_NAME, key, file_id)
+                    logger.info("File ID saved in Redis with key %s", key)
+                else:
+                    logger.info("Key %s already exists", key)
+            except Exception as e:
+                logger.error(str(e))
+        else:
+            logger.error("Key is %s", key)
+            logger.error("File id is %s", file_id)
+            raise ValueError("No key or photo_file_id")

@@ -7,8 +7,9 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import FSInputFile, Message, ReplyKeyboardRemove
 from keyboards.callback_keyboards import get_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
+from middlewares.callback_middlewares import SavePhotoFileId
 from models.cart import Cart
-from services import services
+from services import cache_services, services
 
 router: Router = Router()
 
@@ -40,11 +41,16 @@ async def process_start_command(
     logger.debug(f"User: {message.from_user.username}:{message.from_user.id}. Auth token: {token}")
 
     if token:
-        await message.answer_photo(
-            photo=FSInputFile("images/welcome.jpg"),
+        photo = await cache_services.get_photo_file_id(
+            LEXICON_RU["commands"]["start"], extra["redis_connection"]
+        ) or FSInputFile("images/welcome.jpg")
+        event = await message.answer_photo(
+            photo=photo,
             caption=LEXICON_RU["commands"]["start"],
             reply_markup=await get_start_keyboard(),
         )
+        # logger.debug("Message is %s", message)
+        await cache_services.save_photo_file_id(event, extra["redis_connection"])
     else:
         logger.error(f"User {message.from_user.username}:{message.from_user.id} can't start bot. Token is {token}.")
         await message.answer(LEXICON_RU["system"]["wrong"], reply_markup=ReplyKeyboardRemove())
@@ -64,10 +70,13 @@ async def process_cart_command(message: Message, extra: dict[str, Any]):
     Хэндлер для обработки команды /cart.
     """
     cart = Cart(redis_connection=extra["redis_connection"], user_id=message.from_user.id)
-    await message.delete()
     await cart.get_items_from_redis()
-    await message.answer_photo(
-        photo=FSInputFile("images/cart.jpg"),
+    caption = cart.get_cart_text()
+    photo = await cache_services.get_photo_file_id(caption, extra["redis_connection"]) or FSInputFile("images/cart.jpg")
+    await message.delete()
+    event = await message.answer_photo(
+        photo=photo,
         caption=cart.get_cart_text(),
         reply_markup=cart.get_cart_inline_keyboard(),
     )
+    await cache_services.save_photo_file_id(event, extra["redis_connection"])

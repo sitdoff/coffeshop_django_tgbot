@@ -88,12 +88,12 @@ async def get_category_model_for_answer_callback(
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers, raise_for_status=True) as response:
             response_data = await response.json()
-            logger.debug("Response data is %s", response_data)
+            # logger.debug("Response data is %s", response_data)
 
-    photo_file_id = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name"))
-    logger.debug("Photo file id is %s", photo_file_id)
-    # logger.debug(await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name")))
-    if not photo_file_id is None:
+    if await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name")):
+        logger.info("Photo file id exists in Redis")
+        photo_file_id = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name"))
+        logger.info("Photo file id is %s", photo_file_id)
         response_data["picture"] = photo_file_id
 
     category = CategoryModel(**response_data)
@@ -124,11 +124,11 @@ async def get_product_model_for_answer_callback(
             response_data = await response.json()
             logger.debug("Response data is %s", response_data)
 
-    photo_file_id = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name"))
-    logger.debug("Photo file id is %s", photo_file_id)
-    if not photo_file_id is None:
+    if await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name")):
+        logger.info("Photo file id exists in Redis")
+        photo_file_id = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name"))
+        logger.info("Photo file id is %s", photo_file_id)
         response_data["picture"] = photo_file_id
-
     product = ProductModel(**response_data)
 
     return product
