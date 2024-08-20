@@ -17,18 +17,20 @@ async def get_photo_file_id(key: str, redis_connection: Redis) -> InputMediaPhot
     return None
 
 
-async def save_photo_file_id(event, redis_connection: Redis):
-    key, file_id = False, False
+async def save_photo_file_id(event: Message | CallbackQuery, redis_connection: Redis, key: str | None = None) -> None:
+    file_id = False
     if isinstance(event, CallbackQuery):
         logger.info("Event is callback query")
-        key = event.message.caption
+        if key is None:
+            key = event.message.caption
         file_id = event.message.photo[-1].file_id
     elif isinstance(event, Message):
         logger.info("Event is message")
-        key = event.caption
+        if key is None:
+            key = event.caption
         file_id = event.photo[-1].file_id
     logger.debug("Key is %s", key)
-    logger.debug("File id is %s", file_id)
+    logger.debug("File ID is %s", file_id)
     if all([key, file_id]):
         is_key_exist = await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, key)
         logger.debug("Is key exist %s", is_key_exist)
@@ -42,6 +44,6 @@ async def save_photo_file_id(event, redis_connection: Redis):
             logger.error(str(e))
     else:
         logger.error("Key is %s", key)
-        logger.error("File id is %s", file_id)
+        logger.error("File ID is %s", file_id)
         logger.error("No key or photo_file_id")
         raise ValueError("No key or photo_file_id")
