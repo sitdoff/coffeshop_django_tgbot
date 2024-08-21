@@ -32,10 +32,10 @@ async def process_start_command(
 
         if response.status == 201:
             await services.set_auth_token(response_data["token"], message, extra["redis_connection"])
-            logger.debug("Successfully. The user has been created.")
+            logger.info("Successfully. The user has been created.")
         if response.status == 400:
             await services.authorize_user(message, extra["redis_connection"], session, extra["api_url"])
-            logger.debug(f"Unsuccessful. Error message: {response_data.get('error')}")
+            logger.info(f"Unsuccessful. Error message: {response_data.get('error')}")
 
     token = await extra["redis_connection"].get(f"token:{message.from_user.id}")
     logger.debug(f"User: {message.from_user.username}:{message.from_user.id}. Auth token: {token}")
