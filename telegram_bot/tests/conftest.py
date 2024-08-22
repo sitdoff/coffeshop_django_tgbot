@@ -29,7 +29,7 @@ def user():
 @pytest.fixture
 def message(user):
     test_message = AsyncMock()
-    test_message.user = user
+    test_message.from_user = user
     yield test_message
 
 
@@ -43,6 +43,6 @@ def redis_connection():
 def extra(redis_connection):
     extra_dict = {
         "redis_connection": redis_connection,
-        "api_url": "http://127.0.0.1:8000",
+        "api_url": "http://web:8000",
     }
     yield extra_dict
