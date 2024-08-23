@@ -1,24 +1,8 @@
 from unittest.mock import patch
 
-import pytest
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from filters.callback_factories import CategoryCallbackFactory, EditCartCallbackFactory
 from lexicon.lexicon_ru import LEXICON_RU
 from services.services import pagination_keyboard
-
-
-@pytest.fixture
-def keyboard():
-    buttons = [
-        [InlineKeyboardButton(text="Button 1", callback_data="button_1")],
-        [InlineKeyboardButton(text="Button 2", callback_data="button_2")],
-        [InlineKeyboardButton(text="Button 3", callback_data="button_3")],
-        [InlineKeyboardButton(text="Button 4", callback_data="button_4")],
-        [InlineKeyboardButton(text="Button 5", callback_data="button_5")],
-        [InlineKeyboardButton(text="Button 6", callback_data="button_6")],
-        [InlineKeyboardButton(text=LEXICON_RU["inline"]["back"], callback_data="back")],
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def test_pagination_keyboard_function(keyboard):
