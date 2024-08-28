@@ -76,7 +76,7 @@ async def process_cart_command(message: Message, extra: dict[str, Any]):
     await message.delete()
     event = await message.answer_photo(
         photo=photo,
-        caption=cart.get_cart_text(),
+        caption=caption,
         reply_markup=cart.get_cart_inline_keyboard(),
     )
     await cache_services.save_photo_file_id(event, extra["redis_connection"])
