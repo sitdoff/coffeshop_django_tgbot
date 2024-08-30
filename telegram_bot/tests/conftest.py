@@ -34,6 +34,14 @@ def message(user):
 
 
 @pytest.fixture
+def callback(user, message):
+    test_callback = AsyncMock()
+    test_callback.from_user = user
+    test_callback.message = message
+    yield test_callback
+
+
+@pytest.fixture
 def redis_connection():
     async_redis = FakeAsyncRedis()
     yield async_redis

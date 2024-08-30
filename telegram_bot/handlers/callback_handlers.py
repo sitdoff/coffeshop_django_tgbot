@@ -52,17 +52,21 @@ async def process_category_callback(
     keyboard_with_cart_button = await cart.edit_category_inline_keyboard(
         keyboard_list=paginated_keyboard.inline_keyboard
     )
-
-    if category_id is None:
-        event = await callback.message.edit_media(
-            media=category.picture,
-            reply_markup=keyboard_with_cart_button,
-        )
-    else:
-        event = await callback.message.edit_media(
-            media=category.picture,
-            reply_markup=keyboard_with_cart_button,
-        )
+    #
+    # if category_id is None:
+    #     event = await callback.message.edit_media(
+    #         media=category.picture,
+    #         reply_markup=keyboard_with_cart_button,
+    #     )
+    # else:
+    #     event = await callback.message.edit_media(
+    #         media=category.picture,
+    #         reply_markup=keyboard_with_cart_button,
+    #     )
+    event = await callback.message.edit_media(
+        media=category.picture,
+        reply_markup=keyboard_with_cart_button,
+    )
     await cache_services.save_photo_file_id(event, extra["redis_connection"])
 
 

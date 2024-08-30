@@ -1,6 +1,5 @@
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from handlers.command_handlers import process_cart_command
 from models.cart import Cart
 
