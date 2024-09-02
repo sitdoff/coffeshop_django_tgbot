@@ -1,8 +1,5 @@
-import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from aiogram.types import InlineKeyboardMarkup
-from aioresponses import aioresponses
 from filters.callback_factories import CategoryCallbackFactory
 from handlers.callback_handlers import process_category_callback
 from models.cart import Cart
