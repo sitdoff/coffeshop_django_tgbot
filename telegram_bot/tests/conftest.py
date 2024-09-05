@@ -4,6 +4,7 @@ import pytest
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, User
 from fakeredis import FakeAsyncRedis
 from lexicon.lexicon_ru import LEXICON_RU
+from models.models import ProductModel
 
 
 @pytest.fixture
@@ -54,3 +55,17 @@ def extra(redis_connection):
         "api_url": "http://web:8000",
     }
     yield extra_dict
+
+
+@pytest.fixture
+def product():
+    yield ProductModel(
+        id=1,
+        name="test product",
+        description="test description",
+        category="test category",
+        parent_id=1,
+        price="20.00",
+        quantity=1,
+        picture="https://test.com/test.png",
+    )
