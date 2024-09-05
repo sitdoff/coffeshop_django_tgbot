@@ -22,20 +22,18 @@ async def test_add_to_cart_if_callback_keyboard_was_edited(
     callback,
     extra,
     add_to_cart_callback_data: AddToCartCallbackFactory,
+    cart_mock,
 ):
-    cart = MagicMock()
-    cart.add_product_in_cart = AsyncMock()
-    cart.edit_product_inline_keyboard = AsyncMock()
 
-    Cart_mock.return_value = cart
+    Cart_mock.return_value = cart_mock
 
     await add_to_cart(callback, add_to_cart_callback_data, extra)
 
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
-    cart.add_product_in_cart.assert_called_once()
-    cart.add_product_in_cart.assert_called_with(add_to_cart_callback_data)
-    cart.edit_product_inline_keyboard.assert_called_once()
+    cart_mock.add_product_in_cart.assert_called_once()
+    cart_mock.add_product_in_cart.assert_called_with(add_to_cart_callback_data)
+    cart_mock.edit_product_inline_keyboard.assert_called_once()
     callback.message.edit_reply_markup.assert_called_once()
     callback.answer.assert_called_once()
 
@@ -47,22 +45,19 @@ async def test_add_to_cart_if_callback_keyboard_was_not_edited(
     extra,
     keyboard,
     add_to_cart_callback_data: AddToCartCallbackFactory,
+    cart_mock,
 ):
-    cart = MagicMock()
-    cart.add_product_in_cart = AsyncMock()
-    cart.edit_product_inline_keyboard = AsyncMock()
 
-    cart.edit_product_inline_keyboard.return_value = keyboard
     callback.message.reply_markup = keyboard
 
-    Cart_mock.return_value = cart
+    Cart_mock.return_value = cart_mock
 
     await add_to_cart(callback, add_to_cart_callback_data, extra)
 
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
-    cart.add_product_in_cart.assert_called_once()
-    cart.add_product_in_cart.assert_called_with(add_to_cart_callback_data)
-    cart.edit_product_inline_keyboard.assert_called_once()
+    cart_mock.add_product_in_cart.assert_called_once()
+    cart_mock.add_product_in_cart.assert_called_with(add_to_cart_callback_data)
+    cart_mock.edit_product_inline_keyboard.assert_called_once()
     callback.message.edit_reply_markup.assert_not_called()
     callback.answer.assert_called_once()

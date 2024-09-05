@@ -1,9 +1,10 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, User
 from fakeredis import FakeAsyncRedis
 from lexicon.lexicon_ru import LEXICON_RU
+from models.cart import Cart
 from models.models import ProductModel
 
 
@@ -58,14 +59,44 @@ def extra(redis_connection):
 
 
 @pytest.fixture
-def product():
+def product1():
     yield ProductModel(
         id=1,
-        name="test product",
-        description="test description",
+        name="test product 1",
+        description="test description 1",
         category="test category",
         parent_id=1,
         price="20.00",
         quantity=1,
         picture="https://test.com/test.png",
     )
+
+
+@pytest.fixture
+def product2():
+    yield ProductModel(
+        id=2,
+        name="test product 2",
+        description="test description 1",
+        category="test category",
+        parent_id=1,
+        price="20.00",
+        quantity=2,
+        picture="https://test.com/test.png",
+    )
+
+
+@pytest.fixture
+def cart_mock(product1, product2, keyboard):
+    cart = MagicMock()
+    cart.items = {
+        str(product1.id): product1,
+        str(product2.id): product2,
+    }
+    cart.get_items_from_redis = AsyncMock()
+    cart.remove_product_from_cart = AsyncMock()
+    cart.edit_product_inline_keyboard = AsyncMock()
+    cart.add_product_in_cart = AsyncMock()
+    cart.edit_product_inline_keyboard.return_value = keyboard
+    cart.edit_category_inline_keyboard = AsyncMock()
+    yield cart

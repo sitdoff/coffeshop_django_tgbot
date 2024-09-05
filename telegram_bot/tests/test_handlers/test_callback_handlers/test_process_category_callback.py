@@ -17,10 +17,9 @@ async def test_process_category_callback_without_callback_data(
     save_photo_file_id_mock: AsyncMock,
     callback,
     extra,
+    cart_mock,
 ):
-    cart = MagicMock()
-    cart.edit_category_inline_keyboard = AsyncMock()
-    Cart_mock.return_value = cart
+    Cart_mock.return_value = cart_mock
 
     test_category_data = {
         "id": 1,
@@ -51,7 +50,7 @@ async def test_process_category_callback_without_callback_data(
         category_id=None,
         factory=CategoryCallbackFactory,
     )
-    cart.edit_category_inline_keyboard.assert_called_once()
+    cart_mock.edit_category_inline_keyboard.assert_called_once()
     callback.message.edit_media.assert_called_once()
     save_photo_file_id_mock.assert_called_once()
 
@@ -67,10 +66,9 @@ async def test_process_category_callback_with_callback_data(
     save_photo_file_id_mock: AsyncMock,
     callback,
     extra,
+    cart_mock,
 ):
-    cart = MagicMock()
-    cart.edit_category_inline_keyboard = AsyncMock()
-    Cart_mock.return_value = cart
+    Cart_mock.return_value = cart_mock
 
     test_category_data = {
         "id": 1,
@@ -103,6 +101,6 @@ async def test_process_category_callback_with_callback_data(
         category_id=callback_data.category_id,
         factory=CategoryCallbackFactory,
     )
-    cart.edit_category_inline_keyboard.assert_called_once()
+    cart_mock.edit_category_inline_keyboard.assert_called_once()
     callback.message.edit_media.assert_called_once()
     save_photo_file_id_mock.assert_called_once()
