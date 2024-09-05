@@ -99,4 +99,5 @@ def cart_mock(product1, product2, keyboard):
     cart.add_product_in_cart = AsyncMock()
     cart.edit_product_inline_keyboard.return_value = keyboard
     cart.edit_category_inline_keyboard = AsyncMock()
+    cart.get_cart_text = MagicMock()
     yield cart
