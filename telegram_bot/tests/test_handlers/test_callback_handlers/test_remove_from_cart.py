@@ -33,11 +33,14 @@ async def test_remove_from_cart_if_product_not_in_cart(
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     cart_mock.get_items_from_redis.assert_called_once()
+    cart_mock.get_items_from_redis.assert_awaited()
 
     cart_mock.remove_product_from_cart.assert_not_called()
     cart_mock.edit_product_inline_keyboard.assert_not_called()
     callback.message.edit_reply_markup.assert_not_called()
+
     callback.answer.assert_called_once()
+    callback.answer.assert_awaited()
 
 
 @patch("handlers.callback_handlers.Cart")
@@ -55,11 +58,16 @@ async def test_remove_from_cart_if_product_in_cart(
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     cart_mock.get_items_from_redis.assert_called_once()
+    cart_mock.get_items_from_redis.assert_awaited()
 
     cart_mock.remove_product_from_cart.assert_called_once()
+    cart_mock.remove_product_from_cart.assert_awaited()
     cart_mock.edit_product_inline_keyboard.assert_called_once()
+    cart_mock.edit_product_inline_keyboard.assert_awaited()
     callback.message.edit_reply_markup.assert_called_once()
+    callback.message.edit_reply_markup.assert_awaited()
     callback.answer.assert_called_once()
+    callback.answer.assert_awaited()
 
 
 @patch("handlers.callback_handlers.Cart")
@@ -80,8 +88,11 @@ async def test_remove_from_cart_if_product_quantity_is_0(
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     cart_mock.get_items_from_redis.assert_called_once()
+    cart_mock.get_items_from_redis.assert_awaited()
 
     cart_mock.remove_product_from_cart.assert_not_called()
     cart_mock.edit_product_inline_keyboard.assert_not_called()
     callback.message.edit_reply_markup.assert_not_called()
+
     callback.answer.assert_called_once()
+    callback.answer.assert_awaited()

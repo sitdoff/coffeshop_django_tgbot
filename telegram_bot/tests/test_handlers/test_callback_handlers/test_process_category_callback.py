@@ -40,6 +40,7 @@ async def test_process_category_callback_without_callback_data(
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(extra["redis_connection"], callback.from_user.id)
     get_category_model_for_answer_callback_mock.assert_called_once()
+    get_category_model_for_answer_callback_mock.assert_awaited()
     get_category_model_for_answer_callback_mock.assert_called_with(
         callback, extra["redis_connection"], extra["api_url"], None
     )
@@ -51,8 +52,11 @@ async def test_process_category_callback_without_callback_data(
         factory=CategoryCallbackFactory,
     )
     cart_mock.edit_category_inline_keyboard.assert_called_once()
+    cart_mock.edit_category_inline_keyboard.assert_awaited()
     callback.message.edit_media.assert_called_once()
+    callback.message.edit_media.assert_awaited()
     save_photo_file_id_mock.assert_called_once()
+    save_photo_file_id_mock.assert_awaited()
 
 
 @patch("handlers.callback_handlers.cache_services.save_photo_file_id")
@@ -91,6 +95,7 @@ async def test_process_category_callback_with_callback_data(
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(extra["redis_connection"], callback.from_user.id)
     get_category_model_for_answer_callback_mock.assert_called_once()
+    get_category_model_for_answer_callback_mock.assert_awaited()
     get_category_model_for_answer_callback_mock.assert_called_with(
         callback, extra["redis_connection"], extra["api_url"], callback_data.category_id
     )
@@ -102,5 +107,8 @@ async def test_process_category_callback_with_callback_data(
         factory=CategoryCallbackFactory,
     )
     cart_mock.edit_category_inline_keyboard.assert_called_once()
+    cart_mock.edit_category_inline_keyboard.assert_awaited()
     callback.message.edit_media.assert_called_once()
+    callback.message.edit_media.assert_awaited()
     save_photo_file_id_mock.assert_called_once()
+    save_photo_file_id_mock.assert_awaited()

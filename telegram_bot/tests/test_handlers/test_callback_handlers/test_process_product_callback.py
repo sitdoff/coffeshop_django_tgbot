@@ -33,11 +33,15 @@ async def test_process_product_callback(
     await process_product_callback(callback, extra, product_callback_data)
 
     get_product_model_for_answer_callback_mock.assert_called_once()
+    get_product_model_for_answer_callback_mock.assert_awaited()
     get_product_model_for_answer_callback_mock.assert_called_with(
         callback, extra["redis_connection"], extra["api_url"], product_callback_data.product_id
     )
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     cart_mock.edit_product_inline_keyboard.assert_called_once()
+    cart_mock.edit_product_inline_keyboard.assert_awaited()
     callback.message.edit_media.assert_called_once()
+    callback.message.edit_media.assert_awaited()
     save_photo_file_id_mock.assert_called_once()
+    save_photo_file_id_mock.assert_awaited()

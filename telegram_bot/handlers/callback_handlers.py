@@ -2,7 +2,6 @@ import logging
 from typing import Any, Literal
 
 from aiogram import F, Router
-from aiogram.filters import Command
 from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
 from filters.callback_factories import (
     AddToCartCallbackFactory,
@@ -13,14 +12,12 @@ from filters.callback_factories import (
 )
 from keyboards.callback_keyboards import get_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
-from middlewares.callback_middlewares import SavePhotoFileId
 from models.cart import Cart
 from services import cache_services, services
 
 logger = logging.getLogger(__name__)
 
 router: Router = Router()
-# router.callback_query.outer_middleware(SavePhotoFileId())
 
 
 @router.callback_query(F.data == "make_order")
@@ -52,17 +49,6 @@ async def process_category_callback(
     keyboard_with_cart_button = await cart.edit_category_inline_keyboard(
         keyboard_list=paginated_keyboard.inline_keyboard
     )
-    #
-    # if category_id is None:
-    #     event = await callback.message.edit_media(
-    #         media=category.picture,
-    #         reply_markup=keyboard_with_cart_button,
-    #     )
-    # else:
-    #     event = await callback.message.edit_media(
-    #         media=category.picture,
-    #         reply_markup=keyboard_with_cart_button,
-    #     )
     event = await callback.message.edit_media(
         media=category.picture,
         reply_markup=keyboard_with_cart_button,
@@ -204,7 +190,11 @@ async def process_cart_clear_callback(callback: CallbackQuery, extra: dict[str, 
     photo.caption = LEXICON_RU["messages"]["cart_is_empty"]
     await cart.clear()
     answer = await callback.message.edit_media(
-        media=InputMediaPhoto(media=photo, caption=LEXICON_RU["messages"]["cart_is_empty"]),
+        media=(
+            InputMediaPhoto(media=photo, caption=LEXICON_RU["messages"]["cart_is_empty"])
+            if isinstance(photo, FSInputFile)
+            else photo
+        ),
         reply_markup=await get_start_keyboard(),
     )
     await cache_services.save_photo_file_id(answer, extra["redis_connection"], key="clear_cart")
