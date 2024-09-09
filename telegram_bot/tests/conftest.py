@@ -93,12 +93,14 @@ def cart_mock(product1, product2, keyboard):
         str(product1.id): product1,
         str(product2.id): product2,
     }
+    cart.get_cart_inline_keyboard = MagicMock()
+    cart.get_cart_text = MagicMock()
     cart.get_items_from_redis = AsyncMock()
     cart.remove_product_from_cart = AsyncMock()
     cart.edit_product_inline_keyboard = AsyncMock()
     cart.add_product_in_cart = AsyncMock()
     cart.edit_product_inline_keyboard.return_value = keyboard
     cart.edit_category_inline_keyboard = AsyncMock()
-    cart.get_cart_text = MagicMock()
     cart.get_edit_cart_inline_keyboard = AsyncMock()
+    cart.clear = AsyncMock()
     yield cart
