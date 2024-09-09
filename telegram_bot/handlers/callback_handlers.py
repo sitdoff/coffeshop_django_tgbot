@@ -190,7 +190,11 @@ async def process_cart_clear_callback(callback: CallbackQuery, extra: dict[str, 
     photo.caption = LEXICON_RU["messages"]["cart_is_empty"]
     await cart.clear()
     answer = await callback.message.edit_media(
-        media=InputMediaPhoto(media=photo, caption=LEXICON_RU["messages"]["cart_is_empty"]),
+        media=(
+            InputMediaPhoto(media=photo, caption=LEXICON_RU["messages"]["cart_is_empty"])
+            if isinstance(photo, FSInputFile)
+            else photo
+        ),
         reply_markup=await get_start_keyboard(),
     )
     await cache_services.save_photo_file_id(answer, extra["redis_connection"], key="clear_cart")
