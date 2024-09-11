@@ -9,8 +9,8 @@ class CategoryCallbackFactory(CallbackData, prefix="category"):
     Фабрика колбэков для категории.
     """
 
-    category_id: int
-    page: int = 1
+    category_id: int | str
+    page: int | str = 1
 
     @field_validator("category_id", mode="before")
     def validate_id(cls, value: Any) -> int:
@@ -22,7 +22,20 @@ class CategoryCallbackFactory(CallbackData, prefix="category"):
             try:
                 return int(value)
             except ValueError:
-                raise ValueError("category_id must be an integer or a string representing an integer")
+                raise ValueError('"category_id" must be an integer or a string representing an integer')
+        return value
+
+    @field_validator("page", mode="before")
+    def validate_page(cls, value: Any) -> int:
+        """
+        Валидатор поля page. Строки переводятся в целые числа.
+        Если значение нельзя перевести в целое число, то выбрасывается исключение.
+        """
+        if isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                raise ValueError('"page" must be an integer or a string representing an integer')
         return value
 
 
