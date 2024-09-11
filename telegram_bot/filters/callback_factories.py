@@ -71,20 +71,28 @@ class AddToCartCallbackFactory(CallbackData, prefix="item"):
     quantity: int
     cost: str  # Возможно этот отрибут не нужен. Но пока пусть будет.
 
-    def get_product_str_for_redis(self, template: str = "id:name:price:quantity:cost") -> str:
+    def get_product_str_for_redis(
+        self, template: str = "id:name:price:quantity:cost", separator: str | None = None
+    ) -> str:
         """
         Возвращает сроку для корзиные в Redis.
         """
-        keys = template.split(self.__separator__)
+        if separator is None:
+            separator = self.__separator__
+
+        keys = template.split(separator)
         values = [str(self.model_dump().get(key, "")) for key in keys]
-        return self.__separator__.join(values)
+        return separator.join(values)
 
     @classmethod
-    def unpack_from_redis(cls, value: str):
+    def unpack_from_redis(cls, value: str, separator: str | None = None) -> CallbackData:
         """
         Перобразует сроку из корзины в Redis в экземпляр фабрики.
         """
-        value = cls.__prefix__ + cls.__separator__ + value
+        if separator is None:
+            separator = cls.__separator__
+
+        value = cls.__prefix__ + cls.__separator__ + cls.__separator__.join(value.split(separator))
         return super().unpack(value)
 
 
