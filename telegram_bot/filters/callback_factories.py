@@ -15,7 +15,7 @@ class CategoryCallbackFactory(CallbackData, prefix="category"):
     @field_validator("category_id", mode="before")
     def validate_id(cls, value: Any) -> int:
         """
-        Валидатор поля category_id. Строки переводятся в целые числа.
+        Валидатор поля "category_id". Строки переводятся в целые числа.
         Если значение нельзя перевести в целое число, то выбрасывается исключение.
         """
         if isinstance(value, str):
@@ -28,7 +28,7 @@ class CategoryCallbackFactory(CallbackData, prefix="category"):
     @field_validator("page", mode="before")
     def validate_page(cls, value: Any) -> int:
         """
-        Валидатор поля page. Строки переводятся в целые числа.
+        Валидатор поля "page". Строки переводятся в целые числа.
         Если значение нельзя перевести в целое число, то выбрасывается исключение.
         """
         if isinstance(value, str):
