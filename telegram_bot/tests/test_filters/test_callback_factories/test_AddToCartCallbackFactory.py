@@ -27,14 +27,20 @@ def test_method_get_product_str_for_redis():
     assert factory.get_product_str_for_redis() == "1:test:10:1:10"
 
     factory = AddToCartCallbackFactory(id=1, name="test", price="10", quantity=1, cost="10")
-    factory.__separator__ = "_"
-    assert factory.get_product_str_for_redis(template="id_name_price_quantity_cost") == "1_test_10_1_10"
+    assert factory.get_product_str_for_redis(template="id_name_price_quantity_cost", separator="_") == "1_test_10_1_10"
 
     factory = AddToCartCallbackFactory(id="1", name="test", price="10", quantity="1", cost="10")
-    factory.__separator__ = "_"
-    assert factory.get_product_str_for_redis(template="id_name_price_quantity_cost") == "1_test_10_1_10"
+    assert factory.get_product_str_for_redis(template="id_name_price_quantity_cost", separator="_") == "1_test_10_1_10"
 
 
 def test_method_unpack_from_redis():
     factory = AddToCartCallbackFactory(id=1, name="test", price="10", quantity=1, cost="10")
     assert AddToCartCallbackFactory.unpack_from_redis(factory.get_product_str_for_redis()) == factory
+
+    factory = AddToCartCallbackFactory(id=1, name="test", price="10", quantity=1, cost="10")
+    assert (
+        AddToCartCallbackFactory.unpack_from_redis(
+            factory.get_product_str_for_redis(template="id_name_price_quantity_cost", separator="_"), separator="_"
+        )
+        == factory
+    )
