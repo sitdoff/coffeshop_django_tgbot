@@ -46,6 +46,19 @@ class ProductCallbackFactory(CallbackData, prefix="product"):
 
     product_id: int
 
+    @field_validator("product_id", mode="before")
+    def validate_page(cls, value: Any) -> int:
+        """
+        Валидатор поля "product_id". Строки переводятся в целые числа.
+        Если значение нельзя перевести в целое число, то выбрасывается исключение.
+        """
+        if isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                raise ValueError('"product_id" must be an integer or a string representing an integer')
+        return value
+
 
 class AddToCartCallbackFactory(CallbackData, prefix="item"):
     """
