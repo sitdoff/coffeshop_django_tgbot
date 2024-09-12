@@ -2,6 +2,7 @@ from typing import Any
 
 from aiogram.filters.callback_data import CallbackData
 from pydantic import field_validator
+from pydantic import condecimal, conint, field_validator
 
 
 class CategoryCallbackFactory(CallbackData, prefix="category"):
@@ -70,6 +71,9 @@ class AddToCartCallbackFactory(CallbackData, prefix="item"):
     price: str
     quantity: int
     cost: str  # Возможно этот отрибут не нужен. Но пока пусть будет.
+    price: condecimal(ge=0, max_digits=10, decimal_places=2)
+    quantity: conint(ge=1)
+    cost: condecimal(ge=0, max_digits=10, decimal_places=2)  # Возможно этот отрибут не нужен. Но пока пусть будет.
 
     def get_product_str_for_redis(
         self, template: str = "id:name:price:quantity:cost", separator: str | None = None
