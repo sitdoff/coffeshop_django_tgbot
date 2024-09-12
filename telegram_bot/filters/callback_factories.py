@@ -1,7 +1,6 @@
 from typing import Any
 
 from aiogram.filters.callback_data import CallbackData
-from pydantic import field_validator
 from pydantic import condecimal, conint, field_validator
 
 
@@ -68,9 +67,6 @@ class AddToCartCallbackFactory(CallbackData, prefix="item"):
 
     id: int
     name: str
-    price: str
-    quantity: int
-    cost: str  # Возможно этот отрибут не нужен. Но пока пусть будет.
     price: condecimal(ge=0, max_digits=10, decimal_places=2)
     quantity: conint(ge=1)
     cost: condecimal(ge=0, max_digits=10, decimal_places=2)  # Возможно этот отрибут не нужен. Но пока пусть будет.
@@ -107,9 +103,9 @@ class RemoveFromCartCallbackFactory(CallbackData, prefix="remove"):
 
     id: int
     name: str
-    price: str
-    quantity: int = 1
-    cost: str
+    price: condecimal(ge=0, max_digits=10, decimal_places=2)
+    quantity: conint(ge=0) = 1
+    cost: condecimal(ge=0, max_digits=10, decimal_places=2)
 
 
 class EditCartCallbackFactory(CallbackData, prefix="edit_cart"):
