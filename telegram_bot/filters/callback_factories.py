@@ -109,6 +109,8 @@ class RemoveFromCartCallbackFactory(CallbackData, prefix="remove"):
 
 
 class EditCartCallbackFactory(CallbackData, prefix="edit_cart"):
-    """ """
+    """
+    Фабрика колбэков для редактирования корзины.
+    """
 
     page: int = 1
