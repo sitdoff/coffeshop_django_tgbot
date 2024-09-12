@@ -12,6 +12,7 @@ def test_remove_from_cart_callback_factory_with_valid_data():
     assert factory.price == Decimal("100")
     assert factory.quantity == 10
     assert factory.cost == Decimal("100")
+    assert factory.pack() == "remove:1:test:100:10:100"
 
 
 def test_remove_from_cart_callback_factory_without_quantity():
@@ -21,6 +22,7 @@ def test_remove_from_cart_callback_factory_without_quantity():
     assert factory.price == Decimal("100")
     assert factory.quantity == 1
     assert factory.cost == Decimal("100")
+    assert factory.pack() == "remove:1:test:100:1:100"
 
 
 def test_remove_from_cart_callback_factory_with_negative_price():
