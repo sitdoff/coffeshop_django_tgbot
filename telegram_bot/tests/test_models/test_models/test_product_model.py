@@ -15,6 +15,7 @@ from filters.callback_factories import (
 )
 from lexicon.lexicon_ru import LEXICON_RU
 from models.models import ProductModel
+from pydantic import ValidationError
 
 
 @pytest.fixture
@@ -74,6 +75,25 @@ def test_product_model_init_with_valid_data(init_data):
     assert product.picture is not None
     assert product.picture.caption == product.name
     assert product.keyboard is not None
+
+
+def test_product_model_init_with_invalid_data(init_data):
+    init_data["product_id"] = str(init_data["product_id"])
+    product = ProductModel(**init_data)
+    assert product.id == int(init_data["product_id"])
+
+    init_data["price"] = float(init_data["price"])
+    with pytest.raises(ValidationError):
+        product = ProductModel(**init_data)
+    init_data["price"] = "10"
+
+    init_data["quantity"] = str(init_data["quantity"])
+    product = ProductModel(**init_data)
+    assert product.quantity == int(init_data["quantity"])
+
+    init_data["parent_id"] = str(init_data["parent_id"])
+    product = ProductModel(**init_data)
+    assert product.parent_id == int(init_data["parent_id"])
 
 
 def test_product_model_init_if_data_from_redis(init_data):
