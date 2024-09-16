@@ -53,7 +53,7 @@ class ProductModel(BaseModel):
         Свойство возвращает общую стоимость товаров.
         """
         if self.quantity is None:
-            return
+            return str(Decimal(self.price))
         return str(Decimal(self.price) * self.quantity)
 
     def model_dump(self, **kwargs: Any) -> dict:
