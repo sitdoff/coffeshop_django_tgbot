@@ -155,7 +155,7 @@ class CategoryModel(BaseModel):
         """
         buttons = []
         if data:
-            if data["children"]:
+            if data.get("children"):
                 buttons = [
                     [
                         InlineKeyboardButton(
@@ -166,7 +166,7 @@ class CategoryModel(BaseModel):
                     for child_category in data["children"]
                 ]
 
-            if data["products"]:
+            if data.get("products"):
                 buttons = [
                     [
                         InlineKeyboardButton(
@@ -177,7 +177,7 @@ class CategoryModel(BaseModel):
                     for product in data["products"]
                 ]
 
-            if data["parent_id"]:
+            if data.get("parent_id"):
                 buttons.append(
                     [
                         InlineKeyboardButton(
