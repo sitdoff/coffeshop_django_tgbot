@@ -194,7 +194,7 @@ class CategoryModel(BaseModel):
         """
         Метод возвращает изображение категории. Если его нет, то возвращает изображение-заглушку.
         """
-        if data["picture"] is None:
+        if data.get("picture") is None:
             logger.info("Category model: Default image is used.")
             return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.name)
         if "http" in data["picture"] or "https" in data["picture"]:
