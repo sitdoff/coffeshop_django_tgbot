@@ -33,7 +33,7 @@ class ProductModel(BaseModel):
     picture: InputMediaPhoto | str | None = Field(default=None, exclude=True)
     description: str | None = Field(default=None, exclude=True)
     category: str | None = Field(default=None, exclude=True)
-    price: str
+    price: Decimal
     quantity: int | None = 1
     parent_id: int | None = Field(default=None, exclude=True)
     keyboard: InlineKeyboardMarkup | None = Field(default=None, exclude=True)
@@ -53,7 +53,7 @@ class ProductModel(BaseModel):
         Свойство возвращает общую стоимость товаров.
         """
         if self.quantity is None:
-            return
+            return str(Decimal(self.price))
         return str(Decimal(self.price) * self.quantity)
 
     def model_dump(self, **kwargs: Any) -> dict:
@@ -93,7 +93,7 @@ class ProductModel(BaseModel):
         """
         Метод возвращает изображение товара. Если его нет, то возвращает изображение-заглушку.
         """
-        if data["picture"] is None:
+        if data.get("picture") is None:
             logger.info("Product model: Default image is used. %s", self.name)
             return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.name)
         if "http" in data["picture"] or "https" in data["picture"]:
@@ -136,18 +136,18 @@ class CategoryModel(BaseModel):
         self.picture = self.get_picture(data)
         self.keyboard = self.get_category_inline_keyboard(data)
 
-    @field_validator("id", mode="before")
-    def validate_id(cls, value: Any) -> int:
-        """
-        Валидатор значения id модели. Строки переводятся в целые числа.
-        Если значение нельзя перевести в целое число, то выбрасывается исключение.
-        """
-        if isinstance(value, str):
-            try:
-                return int(value)
-            except ValueError:
-                raise ValueError("id must be an integer or a string representing an integer")
-        return value
+    # @field_validator("id", mode="before")
+    # def validate_id(cls, value: Any) -> int:
+    #     """
+    #     Валидатор значения id модели. Строки переводятся в целые числа.
+    #     Если значение нельзя перевести в целое число, то выбрасывается исключение.
+    #     """
+    #     if isinstance(value, str):
+    #         try:
+    #             return int(value)
+    #         except ValueError:
+    #             raise ValueError("id must be an integer or a string representing an integer")
+    #     return value
 
     def get_category_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup:
         """
@@ -155,7 +155,7 @@ class CategoryModel(BaseModel):
         """
         buttons = []
         if data:
-            if data["children"]:
+            if data.get("children"):
                 buttons = [
                     [
                         InlineKeyboardButton(
@@ -166,7 +166,7 @@ class CategoryModel(BaseModel):
                     for child_category in data["children"]
                 ]
 
-            if data["products"]:
+            if data.get("products"):
                 buttons = [
                     [
                         InlineKeyboardButton(
@@ -177,7 +177,7 @@ class CategoryModel(BaseModel):
                     for product in data["products"]
                 ]
 
-            if data["parent_id"]:
+            if data.get("parent_id"):
                 buttons.append(
                     [
                         InlineKeyboardButton(
@@ -194,7 +194,7 @@ class CategoryModel(BaseModel):
         """
         Метод возвращает изображение категории. Если его нет, то возвращает изображение-заглушку.
         """
-        if data["picture"] is None:
+        if data.get("picture") is None:
             logger.info("Category model: Default image is used.")
             return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.name)
         if "http" in data["picture"] or "https" in data["picture"]:
