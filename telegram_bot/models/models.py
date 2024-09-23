@@ -33,7 +33,7 @@ class ProductModel(BaseModel):
     picture: InputMediaPhoto | str | None = Field(default=None, exclude=True)
     description: str | None = Field(default=None, exclude=True)
     category: str | None = Field(default=None, exclude=True)
-    price: str
+    price: Decimal
     quantity: int | None = 1
     parent_id: int | None = Field(default=None, exclude=True)
     keyboard: InlineKeyboardMarkup | None = Field(default=None, exclude=True)
