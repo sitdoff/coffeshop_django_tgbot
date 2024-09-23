@@ -69,7 +69,7 @@ def test_product_model_init_with_valid_data(init_data):
     assert product.name == init_data["name"]
     assert product.description == init_data["description"]
     assert product.category == init_data["category"]
-    assert product.price == init_data["price"]
+    assert product.price == Decimal(init_data["price"])
     assert product.quantity == init_data["quantity"]
     assert product.parent_id == init_data["parent_id"]
     assert product.picture is not None
@@ -83,8 +83,10 @@ def test_product_model_init_with_invalid_data(init_data):
     assert product.id == int(init_data["product_id"])
 
     init_data["price"] = float(init_data["price"])
-    with pytest.raises(ValidationError):
-        product = ProductModel(**init_data)
+    product = ProductModel(**init_data)
+
+    init_data["price"] = Decimal(init_data["price"])
+    product = ProductModel(**init_data)
     init_data["price"] = "10"
 
     init_data["quantity"] = str(init_data["quantity"])
@@ -105,7 +107,7 @@ def test_product_model_init_if_data_from_redis(init_data):
     assert product.name == init_data["name"]
     assert product.description == init_data["description"]
     assert product.category == init_data["category"]
-    assert product.price == init_data["price"]
+    assert product.price == Decimal(init_data["price"])
     assert product.quantity == init_data["quantity"]
     assert product.parent_id == init_data["parent_id"]
     assert product.picture is None
@@ -129,7 +131,13 @@ def test_product_model_cost_property(init_data):
 def test_product_model_model_dump(init_data):
     init_data["quantity"] = 10
     product = ProductModel(**init_data)
-    assert product.model_dump() == {"id": 1, "name": "test_product", "price": "10.00", "quantity": 10, "cost": "100.00"}
+    assert product.model_dump() == {
+        "id": 1,
+        "name": "test_product",
+        "price": Decimal("10.00"),
+        "quantity": 10,
+        "cost": "100.00",
+    }
 
 
 def test_product_model_get_product_inline_keyboard(init_data, product_inline_keyboard):
