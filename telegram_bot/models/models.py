@@ -93,7 +93,7 @@ class ProductModel(BaseModel):
         """
         Метод возвращает изображение товара. Если его нет, то возвращает изображение-заглушку.
         """
-        if data["picture"] is None:
+        if data.get("picture") is None:
             logger.info("Product model: Default image is used. %s", self.name)
             return InputMediaPhoto(media=FSInputFile("images/default.jpg"), caption=self.name)
         if "http" in data["picture"] or "https" in data["picture"]:
