@@ -136,18 +136,18 @@ class CategoryModel(BaseModel):
         self.picture = self.get_picture(data)
         self.keyboard = self.get_category_inline_keyboard(data)
 
-    @field_validator("id", mode="before")
-    def validate_id(cls, value: Any) -> int:
-        """
-        Валидатор значения id модели. Строки переводятся в целые числа.
-        Если значение нельзя перевести в целое число, то выбрасывается исключение.
-        """
-        if isinstance(value, str):
-            try:
-                return int(value)
-            except ValueError:
-                raise ValueError("id must be an integer or a string representing an integer")
-        return value
+    # @field_validator("id", mode="before")
+    # def validate_id(cls, value: Any) -> int:
+    #     """
+    #     Валидатор значения id модели. Строки переводятся в целые числа.
+    #     Если значение нельзя перевести в целое число, то выбрасывается исключение.
+    #     """
+    #     if isinstance(value, str):
+    #         try:
+    #             return int(value)
+    #         except ValueError:
+    #             raise ValueError("id must be an integer or a string representing an integer")
+    #     return value
 
     def get_category_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup:
         """
