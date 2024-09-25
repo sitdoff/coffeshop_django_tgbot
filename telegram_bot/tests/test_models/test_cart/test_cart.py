@@ -7,3 +7,7 @@ from models.cart import Cart
 def redis_connection():
     conn = FakeRedis()
     yield conn
+
+@pytest.fixture
+def user_id():
+    yield "123456"
