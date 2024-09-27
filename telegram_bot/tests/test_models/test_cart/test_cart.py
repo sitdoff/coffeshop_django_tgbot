@@ -22,6 +22,15 @@ def user_id():
 
 
 @pytest.fixture
+def cart(redis_connection, user_id):
+    cart = Cart(
+        redis_connection=redis_connection,
+        user_id=user_id,
+    )
+    yield cart
+
+
+@pytest.fixture
 def products():
     product_1 = {
         "product_id": 1,
@@ -102,12 +111,10 @@ def test_cart_init_with_valid_data(redis_connection, user_id):
     assert cart.items == {}
 
 
-async def test_cart_add_product_in_cartd(add_callbacks, redis_connection, user_id):
+async def test_cart_add_product_in_cartd(cart, add_callbacks, redis_connection):
     add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
     assert isinstance(add_product1_callbackdata, AddToCartCallbackFactory)
     assert isinstance(add_product2_callbackdata, AddToCartCallbackFactory)
-
-    cart = Cart(redis_connection=redis_connection, user_id=user_id)
 
     await cart.add_product_in_cart(add_product1_callbackdata)
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
@@ -142,7 +149,7 @@ async def test_cart_add_product_in_cartd(add_callbacks, redis_connection, user_i
     assert product2_in_cart == add_product2_callbackdata.get_product_str_for_redis()
 
 
-async def test_cart_remove_product_from_cart(add_callbacks, remove_callbacks, redis_connection, user_id):
+async def test_cart_remove_product_from_cart(cart, add_callbacks, remove_callbacks, redis_connection):
     add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
     assert isinstance(add_product1_callbackdata, AddToCartCallbackFactory)
     assert isinstance(add_product2_callbackdata, AddToCartCallbackFactory)
@@ -151,7 +158,6 @@ async def test_cart_remove_product_from_cart(add_callbacks, remove_callbacks, re
     assert isinstance(remove_product1_callbackdata, RemoveFromCartCallbackFactory)
     assert isinstance(remove_product2_callbackdata, RemoveFromCartCallbackFactory)
 
-    cart = Cart(redis_connection=redis_connection, user_id=user_id)
     # Добавляем продукты 5 раз
     await cart.add_product_in_cart(add_product1_callbackdata)
     await cart.add_product_in_cart(add_product2_callbackdata)
@@ -175,3 +181,7 @@ async def test_cart_remove_product_from_cart(add_callbacks, remove_callbacks, re
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 0
     assert cart.items == {}
+
+
+async def test_cart_change_product_quantity(cart, add_callbacks, redis_connection, user_id):
+    pass
