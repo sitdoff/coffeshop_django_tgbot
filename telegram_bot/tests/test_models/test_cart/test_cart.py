@@ -220,3 +220,58 @@ async def test_cart_change_product_quantity(cart: Cart, add_callbacks, remove_ca
     assert cart.items == {}
     string_product_from_redis: str = await redis_connection.hget(cart.cart_name, remove_product1_callbackdata.id)
     assert string_product_from_redis is None
+
+
+async def test_cart__get_cart_data_from_redis(cart: Cart, add_callbacks, remove_callbacks):
+    add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
+    assert isinstance(add_product1_callbackdata, AddToCartCallbackFactory)
+
+    remove_product1_callbackdata, remove_product2_callbackdata = remove_callbacks.values()
+    assert isinstance(remove_product1_callbackdata, RemoveFromCartCallbackFactory)
+
+    cart_data_from_redis = await cart._get_cart_data_from_redis()
+    assert cart_data_from_redis == {}
+
+    await cart.add_product_in_cart(add_product1_callbackdata)
+
+    cart_data_from_redis = await cart._get_cart_data_from_redis()
+    assert cart_data_from_redis == {
+        str(add_product1_callbackdata.id): add_product1_callbackdata.get_product_str_for_redis()
+    }
+
+    await cart.add_product_in_cart(add_product2_callbackdata)
+
+    cart_data_from_redis = await cart._get_cart_data_from_redis()
+    assert cart_data_from_redis == {
+        str(add_product1_callbackdata.id): add_product1_callbackdata.get_product_str_for_redis(),
+        str(add_product2_callbackdata.id): add_product2_callbackdata.get_product_str_for_redis(),
+    }
+
+    await cart.add_product_in_cart(add_product1_callbackdata)
+
+    cart_data_from_redis = await cart._get_cart_data_from_redis()
+    assert cart_data_from_redis == {
+        str(add_product1_callbackdata.id): add_product1_callbackdata.get_product_str_for_redis().replace(":1:", ":2:"),
+        str(add_product2_callbackdata.id): add_product2_callbackdata.get_product_str_for_redis(),
+    }
+
+    # Удаляем 2 раза, потому что в фикстуре начальное количество равно 2
+    await cart.remove_product_from_cart(remove_product2_callbackdata)
+    await cart.remove_product_from_cart(remove_product2_callbackdata)
+
+    cart_data_from_redis = await cart._get_cart_data_from_redis()
+    assert cart_data_from_redis == {
+        str(add_product1_callbackdata.id): add_product1_callbackdata.get_product_str_for_redis().replace(":1:", ":2:"),
+    }
+
+    await cart.remove_product_from_cart(remove_product1_callbackdata)
+
+    cart_data_from_redis = await cart._get_cart_data_from_redis()
+    assert cart_data_from_redis == {
+        str(add_product1_callbackdata.id): add_product1_callbackdata.get_product_str_for_redis(),
+    }
+
+    await cart.remove_product_from_cart(remove_product1_callbackdata)
+
+    cart_data_from_redis = await cart._get_cart_data_from_redis()
+    assert cart_data_from_redis == {}
