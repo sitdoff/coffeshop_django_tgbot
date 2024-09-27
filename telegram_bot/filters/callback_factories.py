@@ -4,6 +4,19 @@ from aiogram.filters.callback_data import CallbackData
 from pydantic import condecimal, conint, field_validator
 
 
+class UnpackFromRedisMixin:
+    @classmethod
+    def unpack_from_redis(cls, value: str, separator: str | None = None) -> CallbackData:
+        """
+        Перобразует сроку из корзины в Redis в экземпляр фабрики.
+        """
+        if separator is None:
+            separator = cls.__separator__
+
+        value = cls.__prefix__ + cls.__separator__ + cls.__separator__.join(value.split(separator))
+        return super().unpack(value)
+
+
 class CategoryCallbackFactory(CallbackData, prefix="category"):
     """
     Фабрика колбэков для категории.
@@ -60,7 +73,7 @@ class ProductCallbackFactory(CallbackData, prefix="product"):
         return value
 
 
-class AddToCartCallbackFactory(CallbackData, prefix="item"):
+class AddToCartCallbackFactory(UnpackFromRedisMixin, CallbackData, prefix="item"):
     """
     Фабрика колбэков для добавляния товара в корзину.
     """
@@ -84,19 +97,8 @@ class AddToCartCallbackFactory(CallbackData, prefix="item"):
         values = [str(self.model_dump().get(key, "")) for key in keys]
         return separator.join(values)
 
-    @classmethod
-    def unpack_from_redis(cls, value: str, separator: str | None = None) -> CallbackData:
-        """
-        Перобразует сроку из корзины в Redis в экземпляр фабрики.
-        """
-        if separator is None:
-            separator = cls.__separator__
 
-        value = cls.__prefix__ + cls.__separator__ + cls.__separator__.join(value.split(separator))
-        return super().unpack(value)
-
-
-class RemoveFromCartCallbackFactory(CallbackData, prefix="remove"):
+class RemoveFromCartCallbackFactory(UnpackFromRedisMixin, CallbackData, prefix="remove"):
     """
     Фабрика колбэков для удаления товара из корзины.
     """
