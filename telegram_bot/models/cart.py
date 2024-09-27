@@ -159,7 +159,9 @@ class Cart(BaseModel):
         if int(callback_data.quantity) > 0:
             await self.change_product_quantity(callback_data, quantity=-1)
 
-    async def change_product_quantity(self, callback_data: AddToCartCallbackFactory, quantity: int = 1) -> None:
+    async def change_product_quantity(
+        self, callback_data: AddToCartCallbackFactory | RemoveFromCartCallbackFactory, quantity: int = 1
+    ) -> None:
         """
         Метод изменяет количество товара в корзине. Если по итогу количество становится равно или меньше нуля, то такой товар удаляется из корзины.
         """
