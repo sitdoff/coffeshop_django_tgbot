@@ -111,7 +111,7 @@ def test_cart_init_with_valid_data(redis_connection, user_id):
     assert cart.items == {}
 
 
-async def test_cart_add_product_in_cartd(cart, add_callbacks, redis_connection):
+async def test_cart_add_product_in_cartd(cart: Cart, add_callbacks, redis_connection):
     add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
     assert isinstance(add_product1_callbackdata, AddToCartCallbackFactory)
     assert isinstance(add_product2_callbackdata, AddToCartCallbackFactory)
@@ -149,7 +149,7 @@ async def test_cart_add_product_in_cartd(cart, add_callbacks, redis_connection):
     assert product2_in_cart == add_product2_callbackdata.get_product_str_for_redis()
 
 
-async def test_cart_remove_product_from_cart(cart, add_callbacks, remove_callbacks, redis_connection):
+async def test_cart_remove_product_from_cart(cart: Cart, add_callbacks, remove_callbacks, redis_connection):
     add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
     assert isinstance(add_product1_callbackdata, AddToCartCallbackFactory)
     assert isinstance(add_product2_callbackdata, AddToCartCallbackFactory)
@@ -183,5 +183,40 @@ async def test_cart_remove_product_from_cart(cart, add_callbacks, remove_callbac
     assert cart.items == {}
 
 
-async def test_cart_change_product_quantity(cart, add_callbacks, redis_connection, user_id):
-    pass
+async def test_cart_change_product_quantity(cart: Cart, add_callbacks, remove_callbacks, redis_connection):
+    add_product1_callbackdata, *_ = add_callbacks.values()
+    assert isinstance(add_product1_callbackdata, AddToCartCallbackFactory)
+
+    remove_product1_callbackdata, *_ = remove_callbacks.values()
+    assert isinstance(remove_product1_callbackdata, RemoveFromCartCallbackFactory)
+
+    await cart.add_product_in_cart(add_product1_callbackdata)
+
+    string_product_from_redis: str = await redis_connection.hget(cart.cart_name, add_product1_callbackdata.id)
+    product_from_redis = AddToCartCallbackFactory.unpack_from_redis(string_product_from_redis)
+    assert product_from_redis.quantity == 1
+
+    await cart.change_product_quantity(add_product1_callbackdata, quantity=2)
+    assert cart.items == {}
+
+    string_product_from_redis: str = await redis_connection.hget(cart.cart_name, add_product1_callbackdata.id)
+    product_from_redis = AddToCartCallbackFactory.unpack_from_redis(string_product_from_redis)
+    assert product_from_redis.quantity == 3
+
+    # А вот тут ни разу не правильная логика получается. Вроде как коллбэк для удаления, а количество увеличивается.
+    await cart.change_product_quantity(remove_product1_callbackdata)
+    assert cart.items == {}
+    string_product_from_redis: str = await redis_connection.hget(cart.cart_name, remove_product1_callbackdata.id)
+    product_from_redis = RemoveFromCartCallbackFactory.unpack_from_redis(string_product_from_redis)
+    assert product_from_redis.quantity == 4
+
+    await cart.change_product_quantity(remove_product1_callbackdata, quantity=-3)
+    assert cart.items == {}
+    string_product_from_redis: str = await redis_connection.hget(cart.cart_name, remove_product1_callbackdata.id)
+    product_from_redis = RemoveFromCartCallbackFactory.unpack_from_redis(string_product_from_redis)
+    assert product_from_redis.quantity == 1
+
+    await cart.change_product_quantity(remove_product1_callbackdata, quantity=-1)
+    assert cart.items == {}
+    string_product_from_redis: str = await redis_connection.hget(cart.cart_name, remove_product1_callbackdata.id)
+    assert string_product_from_redis is None
