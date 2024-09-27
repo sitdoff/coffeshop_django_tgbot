@@ -7,6 +7,7 @@ from filters.callback_factories import (
     AddToCartCallbackFactory,
     EditCartCallbackFactory,
     ProductCallbackFactory,
+    RemoveFromCartCallbackFactory,
 )
 from lexicon.lexicon_ru import LEXICON_RU
 from models.models import ProductModel
@@ -151,7 +152,7 @@ class Cart(BaseModel):
             )
             logger.debug("Product %s added to cart", callback_data.get_product_str_for_redis())
 
-    async def remove_product_from_cart(self, callback_data: AddToCartCallbackFactory) -> None:
+    async def remove_product_from_cart(self, callback_data: RemoveFromCartCallbackFactory) -> None:
         """
         Метод уменьшает количество товара в корзине.
         """
