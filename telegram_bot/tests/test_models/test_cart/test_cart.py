@@ -275,3 +275,39 @@ async def test_cart__get_cart_data_from_redis(cart: Cart, add_callbacks, remove_
 
     cart_data_from_redis = await cart._get_cart_data_from_redis()
     assert cart_data_from_redis == {}
+
+
+async def test_cart_get_product_model_from_string(cart, products):
+    product1, *_ = products.values()
+    string_product1 = AddToCartCallbackFactory(**product1.model_dump()).get_product_str_for_redis()
+
+    product_1_form_string = await cart.get_product_model_from_string(string_product1)
+    assert isinstance(product_1_form_string, ProductModel)
+    assert product_1_form_string.id == product1.id
+    assert product_1_form_string.name == product1.name
+    assert product_1_form_string.price == product1.price
+    assert product_1_form_string.quantity == product1.quantity
+    assert product_1_form_string.cost == product1.cost
+
+
+async def test_cart_get_items_from_redis(
+    cart: Cart,
+    add_callbacks: dict[str, AddToCartCallbackFactory],
+):
+    assert cart.items == {}
+
+    add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
+
+    await cart.add_product_in_cart(add_product1_callbackdata)
+    await cart.add_product_in_cart(add_product2_callbackdata)
+    assert cart.items == {}
+    await cart.get_items_from_redis()
+
+    assert cart.items == {
+        str(add_product1_callbackdata.id): await cart.get_product_model_from_string(
+            add_product1_callbackdata.get_product_str_for_redis()
+        ),
+        str(add_product2_callbackdata.id): await cart.get_product_model_from_string(
+            add_product2_callbackdata.get_product_str_for_redis()
+        ),
+    }

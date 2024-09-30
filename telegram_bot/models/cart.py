@@ -96,7 +96,7 @@ class Cart(BaseModel):
         buttons = await self._add_cart_button(buttons)
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-    async def get_product_model_from_string(self, product_string_from_redis) -> ProductModel:
+    async def get_product_model_from_string(self, product_string_from_redis: str) -> ProductModel:
         """
         Метод преобразовывает сроку с данными из Redis в модель товара.
         """
