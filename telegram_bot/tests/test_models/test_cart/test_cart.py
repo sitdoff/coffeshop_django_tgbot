@@ -344,8 +344,26 @@ async def test_cart_save_cart(
     )
 
 
-async def test_cart_clear():
-    pass
+async def test_cart_clear(
+    cart: Cart,
+    add_callbacks: dict[str, AddToCartCallbackFactory],
+    redis_connection: FakeRedis,
+):
+    add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
+    await cart.add_product_in_cart(add_product1_callbackdata)
+    await cart.add_product_in_cart(add_product2_callbackdata)
+
+    await cart.get_items_from_redis()
+    cart_items_in_redis = await redis_connection.hgetall(cart.cart_name)
+
+    assert cart.items != {}
+    assert cart_items_in_redis != {}
+
+    await cart.clear()
+    cart_items_in_redis = await redis_connection.hgetall(cart.cart_name)
+
+    assert cart.items == {}
+    assert cart_items_in_redis == {}
 
 
 async def test_cart_check_cart_exist():
