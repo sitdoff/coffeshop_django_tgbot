@@ -311,3 +311,86 @@ async def test_cart_get_items_from_redis(
             add_product2_callbackdata.get_product_str_for_redis()
         ),
     }
+
+
+async def test_cart_save_cart(
+    cart: Cart,
+    add_callbacks: dict[str, AddToCartCallbackFactory],
+    redis_connection: FakeRedis,
+):
+    add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
+
+    cart.items = {
+        str(add_product1_callbackdata.id): await cart.get_product_model_from_string(
+            add_product1_callbackdata.get_product_str_for_redis()
+        ),
+        str(add_product2_callbackdata.id): await cart.get_product_model_from_string(
+            add_product2_callbackdata.get_product_str_for_redis()
+        ),
+    }
+
+    cart_items_in_redis = await redis_connection.hgetall(cart.cart_name)
+    assert cart_items_in_redis == {}
+
+    await cart.save_cart()
+
+    cart_items_in_redis = await redis_connection.hgetall(cart.cart_name)
+    assert len(cart_items_in_redis) == len(cart.items)
+    assert (
+        cart_items_in_redis[str(add_product1_callbackdata.id)] == add_product1_callbackdata.get_product_str_for_redis()
+    )
+    assert (
+        cart_items_in_redis[str(add_product2_callbackdata.id)] == add_product2_callbackdata.get_product_str_for_redis()
+    )
+
+
+async def test_cart_clear():
+    pass
+
+
+async def test_cart_check_cart_exist():
+    pass
+
+
+async def test_cart_get_cart_info():
+    pass
+
+
+def test_cart_model_dump():
+    pass
+
+
+def test_cart___len__():
+    pass
+
+
+def test_cart_total_cost():
+    pass
+
+
+def test_cart_get_cart_text():
+    pass
+
+
+def test_cart_get_cart_inline_keyboard():
+    pass
+
+
+async def test_cart__add_cart_button():
+    pass
+
+
+async def test_cart__edit_product_button():
+    pass
+
+
+async def test_cart_get_edit_cart_inline_keyboard():
+    pass
+
+
+async def test_cart_edit_category_inline_keyboard():
+    pass
+
+
+async def test_cart_edit_product_inline_keyboard():
+    pass
