@@ -128,6 +128,7 @@ class Cart(BaseModel):
         Метод очищает корзину.
         """
         await self.redis_connection.delete(self.cart_name)
+        await self.get_items_from_redis()
 
     async def check_cart_exist(self) -> bool:
         """
