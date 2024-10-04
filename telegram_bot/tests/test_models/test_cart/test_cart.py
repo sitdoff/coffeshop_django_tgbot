@@ -366,8 +366,17 @@ async def test_cart_clear(
     assert cart_items_in_redis == {}
 
 
-async def test_cart_check_cart_exist():
-    pass
+async def test_cart_check_cart_exist(
+    cart: Cart,
+    add_callbacks: dict[str, AddToCartCallbackFactory],
+):
+    assert await cart.check_cart_exist() == False
+
+    add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
+    await cart.add_product_in_cart(add_product1_callbackdata)
+    await cart.add_product_in_cart(add_product2_callbackdata)
+
+    assert await cart.check_cart_exist() == True
 
 
 async def test_cart_get_cart_info():
