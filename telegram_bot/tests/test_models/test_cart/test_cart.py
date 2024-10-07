@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 from fakeredis.aioredis import FakeRedis
 from filters.callback_factories import (
@@ -379,20 +381,108 @@ async def test_cart_check_cart_exist(
     assert await cart.check_cart_exist() == True
 
 
-async def test_cart_get_cart_info():
-    pass
+async def test_cart_get_cart_info(cart: Cart, add_callbacks: dict[str, AddToCartCallbackFactory]):
+    cart_info = await cart.get_cart_info()
+    assert cart_info == {"len": 0, "total_cost": 0}
+
+    add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
+
+    await cart.add_product_in_cart(add_product1_callbackdata)
+    cart_info = await cart.get_cart_info()
+    assert cart_info == {"len": len(cart.items), "total_cost": cart.total_cost}
+
+    await cart.add_product_in_cart(add_product2_callbackdata)
+    await cart.get_items_from_redis()
+    cart_info = await cart.get_cart_info()
+
+    assert cart_info == {"len": len(cart.items), "total_cost": cart.total_cost}
+
+    await cart.clear()
+    cart_info = await cart.get_cart_info()
+
+    assert cart_info == {"len": 0, "total_cost": 0}
 
 
-def test_cart_model_dump():
-    pass
+async def test_cart_model_dump(cart: Cart, add_callbacks: dict[str, AddToCartCallbackFactory]):
+    add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
+
+    dump = cart.model_dump()
+    assert dump == {"items": {}, "total_cost": 0}
+
+    await cart.add_product_in_cart(add_product1_callbackdata)
+    await cart.get_items_from_redis()
+    dump = cart.model_dump()
+    assert dump == {
+        "items": {
+            str(add_product1_callbackdata.id): {
+                "product_id": add_product1_callbackdata.id,
+                "product_name": add_product1_callbackdata.name,
+                "price": add_product1_callbackdata.price,
+                "quantity": add_product1_callbackdata.quantity,
+                "cost": str(add_product1_callbackdata.cost),
+            }
+        },
+        "total_cost": cart.total_cost,
+    }
+
+    await cart.add_product_in_cart(add_product2_callbackdata)
+    await cart.get_items_from_redis()
+    dump = cart.model_dump()
+    assert dump == {
+        "items": {
+            str(add_product1_callbackdata.id): {
+                "product_id": add_product1_callbackdata.id,
+                "product_name": add_product1_callbackdata.name,
+                "price": add_product1_callbackdata.price,
+                "quantity": add_product1_callbackdata.quantity,
+                "cost": str(add_product1_callbackdata.cost),
+            },
+            str(add_product2_callbackdata.id): {
+                "product_id": add_product2_callbackdata.id,
+                "product_name": add_product2_callbackdata.name,
+                "price": add_product2_callbackdata.price,
+                "quantity": add_product2_callbackdata.quantity,
+                "cost": str(add_product2_callbackdata.cost),
+            },
+        },
+        "total_cost": cart.total_cost,
+    }
 
 
-def test_cart___len__():
-    pass
+async def test_cart___len__(cart: Cart, add_callbacks):
+    add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
+
+    assert len(cart) == 0
+
+    await cart.add_product_in_cart(add_product1_callbackdata)
+    await cart.get_items_from_redis()
+
+    assert len(cart) == add_product1_callbackdata.quantity
+
+    await cart.add_product_in_cart(add_product2_callbackdata)
+    await cart.get_items_from_redis()
+
+    assert len(cart) == add_product1_callbackdata.quantity + add_product2_callbackdata.quantity
 
 
-def test_cart_total_cost():
-    pass
+async def test_cart_total_cost(cart: Cart, add_callbacks):
+    add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
+
+    assert cart.total_cost == 0
+
+    await cart.add_product_in_cart(add_product1_callbackdata)
+    await cart.get_items_from_redis()
+
+    assert cart.total_cost == add_product1_callbackdata.price * add_product1_callbackdata.quantity
+
+    await cart.add_product_in_cart(add_product2_callbackdata)
+    await cart.get_items_from_redis()
+
+    assert (
+        cart.total_cost
+        == add_product1_callbackdata.price * add_product1_callbackdata.quantity
+        + add_product2_callbackdata.price * add_product2_callbackdata.quantity
+    )
 
 
 def test_cart_get_cart_text():
