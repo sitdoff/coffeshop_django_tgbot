@@ -485,8 +485,47 @@ async def test_cart_total_cost(cart: Cart, add_callbacks):
     )
 
 
-def test_cart_get_cart_text():
-    pass
+async def test_cart_get_cart_text(cart: Cart, add_callbacks):
+    add_product1_callbackdata, add_product2_callbackdata = add_callbacks.values()
+
+    reference = [
+        "`---------------------------------`",
+        "`     Товары в вашей корзине      `",
+        "`---------------------------------`",
+        "`---------------------------------`",
+        "`Итог                          0 ₽`",
+    ]
+
+    assert cart.get_cart_text() == "\n".join(reference)
+
+    await cart.add_product_in_cart(add_product1_callbackdata)
+    await cart.get_items_from_redis()
+
+    reference = [
+        "`---------------------------------`",
+        "`     Товары в вашей корзине      `",
+        "`---------------------------------`",
+        "`test_product_1       1    10.00 ₽`",
+        "`---------------------------------`",
+        "`Итог                      10.00 ₽`",
+    ]
+
+    assert cart.get_cart_text() == "\n".join(reference)
+
+    await cart.add_product_in_cart(add_product2_callbackdata)
+    await cart.get_items_from_redis()
+
+    reference = [
+        "`---------------------------------`",
+        "`     Товары в вашей корзине      `",
+        "`---------------------------------`",
+        "`test_product_1       1    10.00 ₽`",
+        "`test_product_2       2    20.00 ₽`",
+        "`---------------------------------`",
+        "`Итог                      30.00 ₽`",
+    ]
+
+    assert cart.get_cart_text() == "\n".join(reference)
 
 
 def test_cart_get_cart_inline_keyboard():
