@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from fakeredis.aioredis import FakeRedis
 from filters.callback_factories import (
     AddToCartCallbackFactory,
@@ -8,6 +9,7 @@ from filters.callback_factories import (
     ProductCallbackFactory,
     RemoveFromCartCallbackFactory,
 )
+from lexicon.lexicon_ru import LEXICON_RU
 from models.cart import Cart
 from models.models import ProductModel
 
@@ -528,8 +530,30 @@ async def test_cart_get_cart_text(cart: Cart, add_callbacks):
     assert cart.get_cart_text() == "\n".join(reference)
 
 
-def test_cart_get_cart_inline_keyboard():
-    pass
+def test_cart_get_cart_inline_keyboard(cart: Cart):
+    inline_keyboard: InlineKeyboardMarkup = cart.get_cart_inline_keyboard()
+
+    assert isinstance(inline_keyboard, InlineKeyboardMarkup)
+
+    inline_keyboard_buttons: list[list[InlineKeyboardButton]] = cart.get_cart_inline_keyboard().inline_keyboard
+
+    for row in inline_keyboard_buttons:
+        for button in row:
+            assert isinstance(button, InlineKeyboardButton)
+
+    assert len(inline_keyboard_buttons) == 4
+
+    assert inline_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["add_to_order"]
+    assert inline_keyboard_buttons[0][0].callback_data == "make_order"
+
+    assert inline_keyboard_buttons[1][0].text == LEXICON_RU["inline"]["edit_cart"]
+    assert inline_keyboard_buttons[1][0].callback_data == EditCartCallbackFactory().pack()
+
+    assert inline_keyboard_buttons[2][0].text == LEXICON_RU["inline"]["clear_cart"]
+    assert inline_keyboard_buttons[2][0].callback_data == "clear_cart"
+
+    assert inline_keyboard_buttons[3][0].text == LEXICON_RU["inline"]["checkout"]
+    assert inline_keyboard_buttons[3][0].callback_data == "pass"
 
 
 async def test_cart__add_cart_button():
