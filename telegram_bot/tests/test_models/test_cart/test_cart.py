@@ -556,8 +556,30 @@ def test_cart_get_cart_inline_keyboard(cart: Cart):
     assert inline_keyboard_buttons[3][0].callback_data == "pass"
 
 
-async def test_cart__add_cart_button():
-    pass
+async def test_cart__add_cart_button(cart: Cart, products: dict[int, ProductModel]):
+    product_1 = products.get(1)
+    product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
+
+    assert len(product_1_keyboard_buttons) == 3
+    assert len(product_1_keyboard_buttons[0]) == 1
+    assert len(product_1_keyboard_buttons[1]) == 2
+    assert len(product_1_keyboard_buttons[2]) == 1
+
+    product_1_keyboard_buttons = await cart._add_cart_button(product_1_keyboard_buttons)
+
+    assert len(product_1_keyboard_buttons) == 4
+    assert len(product_1_keyboard_buttons[0]) == 1
+    assert len(product_1_keyboard_buttons[1]) == 2
+    assert len(product_1_keyboard_buttons[2]) == 1
+    assert len(product_1_keyboard_buttons[3]) == 1
+
+    cart_info = await cart.get_cart_info()
+
+    assert isinstance(product_1_keyboard_buttons[3][0], InlineKeyboardButton)
+    assert product_1_keyboard_buttons[3][0].text == LEXICON_RU["inline"]["cart"].substitute(
+        total_cost=cart_info["total_cost"],
+        callback_data="cart",
+    )
 
 
 async def test_cart__edit_product_button():
