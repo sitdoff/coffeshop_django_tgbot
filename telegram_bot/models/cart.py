@@ -219,6 +219,9 @@ class Cart(BaseModel):
         keyboard_list = await self._edit_product_button(keyboard_list)
         return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
 
+    # TODO: Переделать метод
+    # Этот метод как то не вяжется с логикой корзины.
+    # Он изменяет клавиатуру продукта, так что он скорее отностится к продукту, а не к корзине.
     async def _add_cart_button(
         self, buttons_list: list[list[InlineKeyboardButton]]
     ) -> list[list[InlineKeyboardButton]]:

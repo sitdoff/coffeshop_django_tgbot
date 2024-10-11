@@ -583,16 +583,20 @@ async def test_cart__add_cart_button(cart: Cart, products: dict[int, ProductMode
 
 
 async def test_cart__edit_product_button():
+    # TODO: написать тест.
     pass
 
 
 async def test_cart_get_edit_cart_inline_keyboard():
+    # TODO: написать тест.
     pass
 
 
 async def test_cart_edit_category_inline_keyboard():
+    # TODO: написать тест.
     pass
 
 
 async def test_cart_edit_product_inline_keyboard():
+    # TODO: написать тест.
     pass
