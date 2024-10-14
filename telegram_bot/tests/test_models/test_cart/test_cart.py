@@ -11,7 +11,7 @@ from filters.callback_factories import (
 )
 from lexicon.lexicon_ru import LEXICON_RU
 from models.cart import Cart
-from models.models import ProductModel
+from models.models import CategoryModel, ProductModel
 
 
 @pytest.fixture
@@ -57,8 +57,8 @@ def products():
         "picture": "http://example.com/image_product_2.png",
     }
     result = {
-        1: ProductModel(**product_1),
-        2: ProductModel(**product_2),
+        "1": ProductModel(**product_1),
+        "2": ProductModel(**product_2),
     }
     yield result
 
@@ -557,7 +557,7 @@ def test_cart_get_cart_inline_keyboard(cart: Cart):
 
 
 async def test_cart__add_cart_button(cart: Cart, products: dict[int, ProductModel]):
-    product_1 = products.get(1)
+    product_1 = products.get("1")
     product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
 
     assert len(product_1_keyboard_buttons) == 3
@@ -585,7 +585,7 @@ async def test_cart__add_cart_button(cart: Cart, products: dict[int, ProductMode
 async def test_cart__edit_product_button(
     cart: Cart, products: dict[int, ProductModel], add_callbacks: dict[str, AddToCartCallbackFactory]
 ):
-    product_1 = products.get(1)
+    product_1 = products.get("1")
     product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
 
     assert len(product_1_keyboard_buttons[0]) == 1
@@ -649,11 +649,23 @@ async def test_cart_get_edit_cart_inline_keyboard(cart: Cart, add_callbacks: dic
     )
 
 
-async def test_cart_edit_category_inline_keyboard():
-    # TODO: написать тест.
-    pass
+async def test_cart_edit_category_inline_keyboard(cart: Cart, keyboard: InlineKeyboardMarkup):
+    buttons = keyboard.inline_keyboard
+    print(buttons)
+
+    assert len(buttons) == 7
+
+    keyboard = await cart.edit_category_inline_keyboard(buttons)
+    buttons = keyboard.inline_keyboard
+
+    assert len(buttons) == 8
 
 
-async def test_cart_edit_product_inline_keyboard():
-    # TODO: написать тест.
-    pass
+async def test_cart_edit_product_inline_keyboard(cart: Cart, products: dict[str, ProductModel]):
+    buttons = products.get("1").keyboard.inline_keyboard
+    assert len(buttons) == 3
+
+    keyboard = await cart.edit_product_inline_keyboard(buttons)
+    buttons = keyboard.inline_keyboard
+
+    assert len(buttons) == 4
