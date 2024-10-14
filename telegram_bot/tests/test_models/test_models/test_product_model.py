@@ -1,136 +1,77 @@
 from decimal import Decimal
 
-import pytest
-from aiogram.types import (
-    FSInputFile,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    InputMediaPhoto,
-    URLInputFile,
-)
-from filters.callback_factories import (
-    AddToCartCallbackFactory,
-    CategoryCallbackFactory,
-    RemoveFromCartCallbackFactory,
-)
-from lexicon.lexicon_ru import LEXICON_RU
+from aiogram.types import FSInputFile, InputMediaPhoto, URLInputFile
 from models.models import ProductModel
-from pydantic import ValidationError
 
 
-@pytest.fixture
-def init_data():
-    data = {
-        "product_id": 1,
-        "name": "test_product",
-        "description": "test_product_description",
-        "category": "test_category",
-        "price": "10.00",
-        "quantity": 1,
-        "parent_id": 1,
-        "picture": "http://example.com/image.png",
-    }
-    yield data
-
-
-@pytest.fixture
-def product(init_data):
-    product = ProductModel(**init_data)
-    yield product
-
-
-@pytest.fixture
-def product_inline_keyboard(product):
-    buttons = [
-        [
-            InlineKeyboardButton(
-                text=LEXICON_RU["inline"]["add_cart"],
-                callback_data=AddToCartCallbackFactory(**product.model_dump()).pack(),
-            ),
-        ],
-        [
-            InlineKeyboardButton(text="-", callback_data=RemoveFromCartCallbackFactory(**product.model_dump()).pack()),
-            InlineKeyboardButton(text="+", callback_data=AddToCartCallbackFactory(**product.model_dump()).pack()),
-        ],
-        [
-            InlineKeyboardButton(
-                text=LEXICON_RU["inline"]["back"],
-                callback_data=(CategoryCallbackFactory(category_id=product.parent_id).pack()),
-            )
-        ],
-    ]
-    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
-    yield keyboard
-
-
-def test_product_model_init_with_valid_data(init_data):
-    product = ProductModel(**init_data)
-    assert product.id == init_data["product_id"]
-    assert product.name == init_data["name"]
-    assert product.description == init_data["description"]
-    assert product.category == init_data["category"]
-    assert product.price == Decimal(init_data["price"])
-    assert product.quantity == init_data["quantity"]
-    assert product.parent_id == init_data["parent_id"]
+def test_product_model_init_with_valid_data(product_init_data):
+    product = ProductModel(**product_init_data)
+    assert product.id == product_init_data["product_id"]
+    assert product.name == product_init_data["name"]
+    assert product.description == product_init_data["description"]
+    assert product.category == product_init_data["category"]
+    assert product.price == Decimal(product_init_data["price"])
+    assert product.quantity == product_init_data["quantity"]
+    assert product.parent_id == product_init_data["parent_id"]
     assert product.picture is not None
     assert product.picture.caption == product.name
     assert product.keyboard is not None
 
 
-def test_product_model_init_with_invalid_data(init_data):
-    init_data["product_id"] = str(init_data["product_id"])
-    product = ProductModel(**init_data)
-    assert product.id == int(init_data["product_id"])
+def test_product_model_init_with_invalid_data(product_init_data):
+    product_init_data["product_id"] = str(product_init_data["product_id"])
+    product = ProductModel(**product_init_data)
+    assert product.id == int(product_init_data["product_id"])
 
-    init_data["price"] = float(init_data["price"])
-    product = ProductModel(**init_data)
+    product_init_data["price"] = float(product_init_data["price"])
+    product = ProductModel(**product_init_data)
 
-    init_data["price"] = Decimal(init_data["price"])
-    product = ProductModel(**init_data)
-    init_data["price"] = "10"
+    product_init_data["price"] = Decimal(product_init_data["price"])
+    product = ProductModel(**product_init_data)
+    product_init_data["price"] = "10"
 
-    init_data["quantity"] = str(init_data["quantity"])
-    product = ProductModel(**init_data)
-    assert product.quantity == int(init_data["quantity"])
+    product_init_data["quantity"] = str(product_init_data["quantity"])
+    product = ProductModel(**product_init_data)
+    assert product.quantity == int(product_init_data["quantity"])
 
-    init_data["parent_id"] = str(init_data["parent_id"])
-    product = ProductModel(**init_data)
-    assert product.parent_id == int(init_data["parent_id"])
+    product_init_data["parent_id"] = str(product_init_data["parent_id"])
+    product = ProductModel(**product_init_data)
+    assert product.parent_id == int(product_init_data["parent_id"])
 
 
-def test_product_model_init_if_data_from_redis(init_data):
-    del init_data["picture"]
-    init_data["is_data_from_redis"] = True
+def test_product_model_init_if_data_from_redis(product_init_data):
+    del product_init_data["picture"]
+    product_init_data["is_data_from_redis"] = True
 
-    product = ProductModel(**init_data)
-    assert product.id == init_data["product_id"]
-    assert product.name == init_data["name"]
-    assert product.description == init_data["description"]
-    assert product.category == init_data["category"]
-    assert product.price == Decimal(init_data["price"])
-    assert product.quantity == init_data["quantity"]
-    assert product.parent_id == init_data["parent_id"]
+    product = ProductModel(**product_init_data)
+    assert product.id == product_init_data["product_id"]
+    assert product.name == product_init_data["name"]
+    assert product.description == product_init_data["description"]
+    assert product.category == product_init_data["category"]
+    assert product.price == Decimal(product_init_data["price"])
+    assert product.quantity == product_init_data["quantity"]
+    assert product.parent_id == product_init_data["parent_id"]
     assert product.picture is None
     assert product.keyboard is None
 
 
-def test_product_model_cost_property(init_data):
-    product = ProductModel(**init_data)
+def test_product_model_cost_property(product_init_data):
+    product = ProductModel(**product_init_data)
     assert product.cost == str(Decimal(product.price) * product.quantity)
 
-    init_data["quantity"] = 10
-    product = ProductModel(**init_data)
+    product_init_data["quantity"] = 10
+    product = ProductModel(**product_init_data)
     assert product.cost == str(Decimal(product.price) * product.quantity)
 
-    init_data["quantity"] = None
-    init_data["is_data_from_redis"] = True
-    product = ProductModel(**init_data)
+    product_init_data["quantity"] = None
+    product_init_data["is_data_from_redis"] = True
+    product = ProductModel(**product_init_data)
     assert product.cost == str(Decimal(product.price))
 
 
-def test_product_model_model_dump(init_data):
-    init_data["quantity"] = 10
-    product = ProductModel(**init_data)
+def test_product_model_model_dump(product_init_data):
+    product_init_data["quantity"] = 10
+    product = ProductModel(**product_init_data)
     assert product.model_dump() == {
         "id": 1,
         "name": "test_product",
@@ -140,30 +81,30 @@ def test_product_model_model_dump(init_data):
     }
 
 
-def test_product_model_get_product_inline_keyboard(init_data, product_inline_keyboard):
-    product = ProductModel(**init_data)
-    assert product.get_product_inline_keyboard(init_data) == product_inline_keyboard
+def test_product_model_get_product_inline_keyboard(product_init_data, product_inline_keyboard):
+    product = ProductModel(**product_init_data)
+    assert product.get_product_inline_keyboard(product_init_data) == product_inline_keyboard
 
 
-def test_product_model_get_picture(init_data):
-    product = ProductModel(**init_data)
+def test_product_model_get_picture(product_init_data):
+    product = ProductModel(**product_init_data)
     picture = product.picture
     assert isinstance(picture, InputMediaPhoto)
-    assert picture.caption == init_data["name"]
+    assert picture.caption == product_init_data["name"]
     assert isinstance(picture.media, URLInputFile)
-    assert picture.media.url == init_data["picture"]
+    assert picture.media.url == product_init_data["picture"]
 
-    init_data["picture"] = None
-    product = ProductModel(**init_data)
+    product_init_data["picture"] = None
+    product = ProductModel(**product_init_data)
     picture = product.picture
     assert isinstance(picture, InputMediaPhoto)
-    assert picture.caption == init_data["name"]
+    assert picture.caption == product_init_data["name"]
     assert isinstance(picture.media, FSInputFile)
     assert picture.media.path == "images/default.jpg"
 
-    init_data["picture"] = "LONG_CACHE_IMAGE_KEY_FROM_TELEGRAM"
-    product = ProductModel(**init_data)
+    product_init_data["picture"] = "LONG_CACHE_IMAGE_KEY_FROM_TELEGRAM"
+    product = ProductModel(**product_init_data)
     picture = product.picture
     assert isinstance(picture, InputMediaPhoto)
-    assert picture.caption == init_data["name"]
-    assert picture.media == init_data["picture"]
+    assert picture.caption == product_init_data["name"]
+    assert picture.media == product_init_data["picture"]

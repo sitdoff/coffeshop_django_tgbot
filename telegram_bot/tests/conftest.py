@@ -4,7 +4,6 @@ import pytest
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, User
 from fakeredis import FakeAsyncRedis
 from lexicon.lexicon_ru import LEXICON_RU
-from models.cart import Cart
 from models.models import ProductModel
 
 

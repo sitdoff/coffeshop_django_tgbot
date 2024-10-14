@@ -7,6 +7,7 @@ from filters.callback_factories import (
     AddToCartCallbackFactory,
     EditCartCallbackFactory,
     ProductCallbackFactory,
+    RemoveFromCartCallbackFactory,
 )
 from lexicon.lexicon_ru import LEXICON_RU
 from models.models import ProductModel
@@ -49,7 +50,7 @@ class Cart(BaseModel):
         # Длина строки в мобильном приложении 35 символов.
         line = "`" + "-" * 33 + "`" + "\n"
         text = line
-        text += f"`{LEXICON_RU['messages']['cart_text_head']:^35}\n`"
+        text += f"`{LEXICON_RU['messages']['cart_text_head']:^33}`\n"
         text += line
         for product in self.items.values():
             text += f"`{product.name:<20s} {product.quantity:^2d} {product.cost:>7s} {LEXICON_RU['messages']['rub_symbol']}`\n"
@@ -95,7 +96,7 @@ class Cart(BaseModel):
         buttons = await self._add_cart_button(buttons)
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-    async def get_product_model_from_string(self, product_string_from_redis) -> ProductModel:
+    async def get_product_model_from_string(self, product_string_from_redis: str) -> ProductModel:
         """
         Метод преобразовывает сроку с данными из Redis в модель товара.
         """
@@ -116,17 +117,18 @@ class Cart(BaseModel):
         """
         Метод сохраняет данные из атрибута items в Redis в виде строк.
         """
-        if await self.check_cart_exist():
-            for key, value in self.items.items():
-                await self.redis_connection.hset(
-                    self.cart_name, key, AddToCartCallbackFactory(**value.model_dump()).get_product_str_for_redis()
-                )
+        # if await self.check_cart_exist():
+        for key, value in self.items.items():
+            await self.redis_connection.hset(
+                self.cart_name, key, AddToCartCallbackFactory(**value.model_dump()).get_product_str_for_redis()
+            )
 
     async def clear(self) -> None:
         """
         Метод очищает корзину.
         """
         await self.redis_connection.delete(self.cart_name)
+        await self.get_items_from_redis()
 
     async def check_cart_exist(self) -> bool:
         """
@@ -151,14 +153,16 @@ class Cart(BaseModel):
             )
             logger.debug("Product %s added to cart", callback_data.get_product_str_for_redis())
 
-    async def remove_product_from_cart(self, callback_data: AddToCartCallbackFactory) -> None:
+    async def remove_product_from_cart(self, callback_data: RemoveFromCartCallbackFactory) -> None:
         """
         Метод уменьшает количество товара в корзине.
         """
         if int(callback_data.quantity) > 0:
             await self.change_product_quantity(callback_data, quantity=-1)
 
-    async def change_product_quantity(self, callback_data: AddToCartCallbackFactory, quantity: int = 1) -> None:
+    async def change_product_quantity(
+        self, callback_data: AddToCartCallbackFactory | RemoveFromCartCallbackFactory, quantity: int = 1
+    ) -> None:
         """
         Метод изменяет количество товара в корзине. Если по итогу количество становится равно или меньше нуля, то такой товар удаляется из корзины.
         """
@@ -193,28 +197,33 @@ class Cart(BaseModel):
             "total_cost": self.total_cost,
         }
 
+    # TODO: Этот метод содержит логике, которая скорее относится к категории, а не к корзине.
     async def edit_category_inline_keyboard(
         self, keyboard_list: list[list[InlineKeyboardButton]]
     ) -> InlineKeyboardMarkup:
         """
         Метод изменяет инлайн-клавиатуру категории, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
         """
-        await self.get_items_from_redis()
+        await self.get_items_from_redis()  # TODO Если синхронизировать корзину после каждого изменнения её содержимого, то тут можно убрать.
         keyboard_list = await self._add_cart_button(buttons_list=keyboard_list)
-        # keyboard_list = await self._edit_product_button(keyboard_list)
+        # keyboard_list = await self._edit_product_button(keyboard_list) # TODO: Надо ли это?
         return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
 
+    # TODO: Этот метод содержит логике, которая скорее относится к продукту, а не к корзине.
     async def edit_product_inline_keyboard(
         self, keyboard_list: list[list[InlineKeyboardButton]]
     ) -> InlineKeyboardMarkup:
         """
         Метод изменяет инлайн-клавиатуру товара, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
         """
-        await self.get_items_from_redis()
+        await self.get_items_from_redis()  # TODO Если синхронизировать корзину после каждого изменнения её содержимого, то тут можно убрать.
         keyboard_list = await self._add_cart_button(buttons_list=keyboard_list)
         keyboard_list = await self._edit_product_button(keyboard_list)
         return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
 
+    # TODO: Переделать метод
+    # Этот метод как то не вяжется с логикой корзины.
+    # Он изменяет клавиатуру продукта, так что он скорее отностится к продукту, а не к корзине.
     async def _add_cart_button(
         self, buttons_list: list[list[InlineKeyboardButton]]
     ) -> list[list[InlineKeyboardButton]]:
