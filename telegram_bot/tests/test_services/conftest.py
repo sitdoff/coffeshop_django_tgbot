@@ -19,7 +19,7 @@ def message():
     msg.photo = [MagicMock()]
     msg.photo[-1].file_id = "message photo id"
     msg.from_user = MagicMock()
-    msg.from_user.id = None
+    msg.from_user.id = 1
     yield msg
 
 
@@ -27,6 +27,8 @@ def message():
 def callback(message: Message):
     cb = MagicMock(spec=CallbackQuery)
     cb.message = message
+    cb.from_user = MagicMock()
+    cb.from_user.id = 1
     yield cb
 
 
