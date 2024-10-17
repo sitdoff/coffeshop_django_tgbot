@@ -18,6 +18,8 @@ def message():
     msg.caption = "message caption"
     msg.photo = [MagicMock()]
     msg.photo[-1].file_id = "message photo id"
+    msg.from_user = MagicMock()
+    msg.from_user.id = None
     yield msg
 
 
