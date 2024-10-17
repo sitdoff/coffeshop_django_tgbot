@@ -27,6 +27,7 @@ async def save_photo_file_id(event: Message | CallbackQuery, redis_connection: R
     Если параметр key не указан, то в качестве ключа используется описание фотографии из event.
     """
     file_id = False
+    # TODO по идеее можно просто вытаскивать message из callback и пускать его дальше.
     if isinstance(event, CallbackQuery):
         logger.info("Event is callback query")
         if key is None:
@@ -48,6 +49,7 @@ async def save_photo_file_id(event: Message | CallbackQuery, redis_connection: R
                 logger.info("File ID saved in Redis with key %s", key)
             else:
                 logger.info("Key %s already exists", key)
+        # TODO слишком широкий диапазон перехватываемых ошибок. Надо сузить до разумного минимума
         except Exception as e:
             logger.error(str(e))
     else:
