@@ -24,7 +24,7 @@ async def test_save_photo_file_id_with_message_if_key_is_none(events: Events, re
 
     photo_file_id_form_redis: bytes = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, caption)
     assert not photo_file_id_form_redis is None
-    assert photo_file_id_form_redis.decode() == file_id
+    assert photo_file_id_form_redis == file_id
 
 
 async def test_save_photo_file_id_with_message_if_key_exists(events: Events, redis_connection: FakeRedis):
@@ -38,7 +38,7 @@ async def test_save_photo_file_id_with_message_if_key_exists(events: Events, red
 
     photo_file_id_form_redis: bytes = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, key)
     assert not photo_file_id_form_redis is None
-    assert photo_file_id_form_redis.decode() == file_id
+    assert photo_file_id_form_redis == file_id
 
 
 async def test_save_photo_file_id_with_callback_if_key_is_none(events: Events, redis_connection: FakeRedis):
@@ -51,7 +51,7 @@ async def test_save_photo_file_id_with_callback_if_key_is_none(events: Events, r
 
     photo_file_id_form_redis: bytes = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, caption)
     assert not photo_file_id_form_redis is None
-    assert photo_file_id_form_redis.decode() == file_id
+    assert photo_file_id_form_redis == file_id
 
 
 async def test_save_photo_file_id_with_callback_if_key_exists(events: Events, redis_connection: FakeRedis):
@@ -65,7 +65,7 @@ async def test_save_photo_file_id_with_callback_if_key_exists(events: Events, re
 
     photo_file_id_form_redis: bytes = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, key)
     assert not photo_file_id_form_redis is None
-    assert photo_file_id_form_redis.decode() == file_id
+    assert photo_file_id_form_redis == file_id
 
 
 async def test_save_photo_file_id_with_message_if_caption_is_none(events: Events, redis_connection: FakeRedis):

@@ -11,7 +11,7 @@ async def test_get_auth_token_with_message(events: Events, redis_connection: Fak
 
     await redis_connection.set(key, token)
 
-    assert (await get_auth_token(events.message, redis_connection)).decode() == token
+    assert (await get_auth_token(events.message, redis_connection)) == token
 
 
 async def test_get_auth_token_with_callback(events: Events, redis_connection: FakeRedis):

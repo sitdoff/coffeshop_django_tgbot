@@ -12,4 +12,4 @@ async def test_set_auth_token(message: Message, redis_connection: FakeRedis):
     await set_auth_token("token", message, redis_connection)
 
     assert await redis_connection.exists(key) == 1
-    assert await redis_connection.get(key) == b"token"
+    assert await redis_connection.get(key) == "token"
