@@ -24,12 +24,9 @@ def message():
 
 
 @pytest.fixture
-def callback():
+def callback(message: Message):
     cb = MagicMock(spec=CallbackQuery)
-    cb.message = MagicMock(spec=Message)
-    cb.message.caption = "callback caption"
-    cb.message.photo = [MagicMock()]
-    cb.message.photo[-1].file_id = "callback photo id"
+    cb.message = message
     yield cb
 
 
