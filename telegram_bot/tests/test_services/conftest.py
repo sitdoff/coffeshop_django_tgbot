@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from aiogram.types import CallbackQuery, Message
+from tests.test_models.conftest import category_init_data, product_init_data
 
 
 @dataclass
@@ -29,6 +30,7 @@ def callback(message: Message):
     cb.message = message
     cb.from_user = MagicMock()
     cb.from_user.id = 1
+    cb.data = "test data"
     yield cb
 
 
