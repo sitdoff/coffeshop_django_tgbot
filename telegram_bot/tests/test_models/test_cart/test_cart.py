@@ -418,7 +418,6 @@ async def test_cart_clear(
     await cart.add_product_in_cart(add_product1_callbackdata)
     await cart.add_product_in_cart(add_product2_callbackdata)
 
-    await cart.get_items_from_redis()
     cart_items_in_redis = await redis_connection.hgetall(cart.cart_name)
 
     assert cart.items != {}
@@ -455,7 +454,6 @@ async def test_cart_get_cart_info(cart: Cart, add_callbacks: dict[str, AddToCart
     assert cart_info == {"len": len(cart.items), "total_cost": cart.total_cost}
 
     await cart.add_product_in_cart(add_product2_callbackdata)
-    await cart.get_items_from_redis()
     cart_info = await cart.get_cart_info()
 
     assert cart_info == {"len": len(cart.items), "total_cost": cart.total_cost}
@@ -473,7 +471,6 @@ async def test_cart_model_dump(cart: Cart, add_callbacks: dict[str, AddToCartCal
     assert dump == {"items": {}, "total_cost": 0}
 
     await cart.add_product_in_cart(add_product1_callbackdata)
-    await cart.get_items_from_redis()
     dump = cart.model_dump()
     assert dump == {
         "items": {
@@ -489,7 +486,6 @@ async def test_cart_model_dump(cart: Cart, add_callbacks: dict[str, AddToCartCal
     }
 
     await cart.add_product_in_cart(add_product2_callbackdata)
-    await cart.get_items_from_redis()
     dump = cart.model_dump()
     assert dump == {
         "items": {
@@ -518,12 +514,10 @@ async def test_cart___len__(cart: Cart, add_callbacks):
     assert len(cart) == 0
 
     await cart.add_product_in_cart(add_product1_callbackdata)
-    await cart.get_items_from_redis()
 
     assert len(cart) == add_product1_callbackdata.quantity
 
     await cart.add_product_in_cart(add_product2_callbackdata)
-    await cart.get_items_from_redis()
 
     assert len(cart) == add_product1_callbackdata.quantity + add_product2_callbackdata.quantity
 
@@ -534,12 +528,10 @@ async def test_cart_total_cost(cart: Cart, add_callbacks):
     assert cart.total_cost == 0
 
     await cart.add_product_in_cart(add_product1_callbackdata)
-    await cart.get_items_from_redis()
 
     assert cart.total_cost == add_product1_callbackdata.price * add_product1_callbackdata.quantity
 
     await cart.add_product_in_cart(add_product2_callbackdata)
-    await cart.get_items_from_redis()
 
     assert (
         cart.total_cost
@@ -562,7 +554,6 @@ async def test_cart_get_cart_text(cart: Cart, add_callbacks):
     assert cart.get_cart_text() == "\n".join(reference)
 
     await cart.add_product_in_cart(add_product1_callbackdata)
-    await cart.get_items_from_redis()
 
     reference = [
         "`---------------------------------`",
@@ -576,7 +567,6 @@ async def test_cart_get_cart_text(cart: Cart, add_callbacks):
     assert cart.get_cart_text() == "\n".join(reference)
 
     await cart.add_product_in_cart(add_product2_callbackdata)
-    await cart.get_items_from_redis()
 
     reference = [
         "`---------------------------------`",
@@ -660,7 +650,6 @@ async def test_cart__edit_product_button(
     assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
 
     await cart.add_product_in_cart(add_callbacks["1"])
-    await cart.get_items_from_redis()
 
     product_1_keyboard_buttons = await cart._edit_product_button(product_1_keyboard_buttons)
 
@@ -686,7 +675,6 @@ async def test_cart_get_edit_cart_inline_keyboard(cart: Cart, add_callbacks: dic
     check_inline_keyboard(inline_keyboard)
 
     await cart.add_product_in_cart(add_callbacks["1"])
-    await cart.get_items_from_redis()
 
     inline_keyboard = await cart.get_edit_cart_inline_keyboard()
     check_inline_keyboard(inline_keyboard)
@@ -698,7 +686,6 @@ async def test_cart_get_edit_cart_inline_keyboard(cart: Cart, add_callbacks: dic
     )
 
     await cart.add_product_in_cart(add_callbacks["2"])
-    await cart.get_items_from_redis()
 
     inline_keyboard = await cart.get_edit_cart_inline_keyboard()
     check_inline_keyboard(inline_keyboard)
