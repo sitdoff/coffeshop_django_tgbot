@@ -117,7 +117,6 @@ class Cart(BaseModel):
         """
         Метод сохраняет данные из атрибута items в Redis в виде строк.
         """
-        # if await self.check_cart_exist():
         for key, value in self.items.items():
             await self.redis_connection.hset(
                 self.cart_name, key, AddToCartCallbackFactory(**value.model_dump()).get_product_str_for_redis()
@@ -152,6 +151,7 @@ class Cart(BaseModel):
                 value=callback_data.get_product_str_for_redis(),
             )
             logger.debug("Product %s added to cart", callback_data.get_product_str_for_redis())
+        await self.get_items_from_redis()
 
     async def remove_product_from_cart(self, callback_data: RemoveFromCartCallbackFactory) -> None:
         """
