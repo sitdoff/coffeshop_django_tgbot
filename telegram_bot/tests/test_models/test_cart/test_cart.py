@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from fakeredis.aioredis import FakeRedis
 from filters.callback_factories import (
@@ -27,21 +29,84 @@ async def test_cart_add_product_in_cartd(cart: Cart, add_callbacks, redis_connec
     await cart.add_product_in_cart(add_product1_callbackdata)
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 1
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=1,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     product1_in_cart = await redis_connection.hget(cart.cart_name, add_product1_callbackdata.id)
     assert product1_in_cart == add_product1_callbackdata.get_product_str_for_redis()
 
     await cart.add_product_in_cart(add_product2_callbackdata)
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 2
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=1,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+        "2": ProductModel(
+            id=2,
+            name="test_product_2",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=2,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     product2_in_cart = await redis_connection.hget(cart.cart_name, add_product2_callbackdata.id)
     assert product2_in_cart == add_product2_callbackdata.get_product_str_for_redis()
 
     await cart.add_product_in_cart(add_product1_callbackdata)
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 2
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=2,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+        "2": ProductModel(
+            id=2,
+            name="test_product_2",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=2,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     product1_in_cart = await redis_connection.hget(cart.cart_name, add_product1_callbackdata.id)
     assert product1_in_cart != add_product1_callbackdata.get_product_str_for_redis()
     add_product1_callbackdata.quantity += 1
@@ -50,7 +115,32 @@ async def test_cart_add_product_in_cartd(cart: Cart, add_callbacks, redis_connec
     await cart.add_product_in_cart(add_product2_callbackdata)
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 2
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=2,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+        "2": ProductModel(
+            id=2,
+            name="test_product_2",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=3,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     product2_in_cart = await redis_connection.hget(cart.cart_name, add_product2_callbackdata.id)
     assert product2_in_cart != add_product2_callbackdata.get_product_str_for_redis()
     add_product2_callbackdata.quantity += 1
@@ -75,7 +165,32 @@ async def test_cart_remove_product_from_cart(cart: Cart, add_callbacks, remove_c
 
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 2
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=3,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+        "2": ProductModel(
+            id=2,
+            name="test_product_2",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=3,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
 
     # Удаляем продукты 6 раз, потому что у продукта 2 изначальне количество
     # в фикстуре 2 и в первый раз добавляется сразу 2 товара
@@ -105,7 +220,20 @@ async def test_cart_change_product_quantity(cart: Cart, add_callbacks, remove_ca
     assert product_from_redis.quantity == 1
 
     await cart.change_product_quantity(add_product1_callbackdata, quantity=2)
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=3,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
 
     string_product_from_redis: str = await redis_connection.hget(cart.cart_name, add_product1_callbackdata.id)
     product_from_redis = AddToCartCallbackFactory.unpack_from_redis(string_product_from_redis)
@@ -113,13 +241,39 @@ async def test_cart_change_product_quantity(cart: Cart, add_callbacks, remove_ca
 
     # А вот тут ни разу не правильная логика получается. Вроде как коллбэк для удаления, а количество увеличивается.
     await cart.change_product_quantity(remove_product1_callbackdata)
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=4,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     string_product_from_redis: str = await redis_connection.hget(cart.cart_name, remove_product1_callbackdata.id)
     product_from_redis = RemoveFromCartCallbackFactory.unpack_from_redis(string_product_from_redis)
     assert product_from_redis.quantity == 4
 
     await cart.change_product_quantity(remove_product1_callbackdata, quantity=-3)
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=1,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     string_product_from_redis: str = await redis_connection.hget(cart.cart_name, remove_product1_callbackdata.id)
     product_from_redis = RemoveFromCartCallbackFactory.unpack_from_redis(string_product_from_redis)
     assert product_from_redis.quantity == 1
@@ -208,7 +362,10 @@ async def test_cart_get_items_from_redis(
 
     await cart.add_product_in_cart(add_product1_callbackdata)
     await cart.add_product_in_cart(add_product2_callbackdata)
+
+    cart.items = {}
     assert cart.items == {}
+
     await cart.get_items_from_redis()
 
     assert cart.items == {
