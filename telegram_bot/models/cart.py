@@ -180,6 +180,7 @@ class Cart(BaseModel):
                 key=callback_data.id,
                 value=product_from_redis.get_product_str_for_redis(),
             )
+        await self.get_items_from_redis()
 
     async def _get_cart_data_from_redis(self) -> dict:
         """
