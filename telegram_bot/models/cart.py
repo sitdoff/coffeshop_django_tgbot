@@ -205,7 +205,7 @@ class Cart(BaseModel):
         """
         Метод изменяет инлайн-клавиатуру категории, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
         """
-        await self.get_items_from_redis()  # TODO Если синхронизировать корзину после каждого изменнения её содержимого, то тут можно убрать.
+        # await self.get_items_from_redis()  # TODO Если синхронизировать корзину после каждого изменнения её содержимого, то тут можно убрать.
         keyboard_list = await self._add_cart_button(buttons_list=keyboard_list)
         return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
 
@@ -216,7 +216,7 @@ class Cart(BaseModel):
         """
         Метод изменяет инлайн-клавиатуру товара, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
         """
-        await self.get_items_from_redis()  # TODO Если синхронизировать корзину после каждого изменнения её содержимого, то тут можно убрать.
+        # await self.get_items_from_redis()  # TODO Если синхронизировать корзину после каждого изменнения её содержимого, то тут можно убрать.
         keyboard_list = await self._add_cart_button(buttons_list=keyboard_list)
         keyboard_list = await self._edit_product_button(keyboard_list)
         return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
