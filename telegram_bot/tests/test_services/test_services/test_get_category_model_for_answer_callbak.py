@@ -12,7 +12,6 @@ async def test_get_category_model_for_answer_callback_if_category_id_is_None(
 
     with aioresponses() as mock_response:
         url = f"{extra['api_url']}/categories/"
-        print(url)
         mock_response.get(url, status=200, payload=response_payload)
         result: CategoryModel = await get_category_model_for_answer_callback(
             callback, extra["redis_connection"], extra["api_url"]
