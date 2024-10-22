@@ -44,7 +44,7 @@ def callback(user, message):
 
 @pytest.fixture
 def redis_connection():
-    async_redis = FakeAsyncRedis()
+    async_redis = FakeAsyncRedis(decode_responses=True)
     yield async_redis
 
 
