@@ -17,6 +17,25 @@ class UnpackFromRedisMixin:
         return super().unpack(value)
 
 
+class GetProductStrForRedisMixin:
+    """
+    Миксин для добавления метода get_product_str_for_redis в фабрику колбэка.
+    """
+
+    def get_product_str_for_redis(
+        self, template: str = "id:name:price:quantity:cost", separator: str | None = None
+    ) -> str:
+        """
+        Возвращает сроку для корзиные в Redis.
+        """
+        if separator is None:
+            separator = self.__separator__
+
+        keys = template.split(separator)
+        values = [str(self.model_dump().get(key, "")) for key in keys]
+        return separator.join(values)
+
+
 class CategoryCallbackFactory(CallbackData, prefix="category"):
     """
     Фабрика колбэков для категории.
@@ -73,41 +92,28 @@ class ProductCallbackFactory(CallbackData, prefix="product"):
         return value
 
 
-class AddToCartCallbackFactory(UnpackFromRedisMixin, CallbackData, prefix="item"):
+class AddToCartCallbackFactory(UnpackFromRedisMixin, GetProductStrForRedisMixin, CallbackData, prefix="item"):
     """
     Фабрика колбэков для добавляния товара в корзину.
     """
 
     id: int
     name: str
-    price: condecimal(ge=0, max_digits=10, decimal_places=2)
-    quantity: conint(ge=1)
-    cost: condecimal(ge=0, max_digits=10, decimal_places=2)  # Возможно этот отрибут не нужен. Но пока пусть будет.
-
-    def get_product_str_for_redis(
-        self, template: str = "id:name:price:quantity:cost", separator: str | None = None
-    ) -> str:
-        """
-        Возвращает сроку для корзиные в Redis.
-        """
-        if separator is None:
-            separator = self.__separator__
-
-        keys = template.split(separator)
-        values = [str(self.model_dump().get(key, "")) for key in keys]
-        return separator.join(values)
+    price: condecimal(ge=0, max_digits=10, decimal_places=2)  # type: ignore
+    quantity: conint(ge=1)  # type: ignore
+    cost: condecimal(ge=0, max_digits=10, decimal_places=2)  # type: ignore # Возможно этот отрибут не нужен. Но пока пусть будет.
 
 
-class RemoveFromCartCallbackFactory(UnpackFromRedisMixin, CallbackData, prefix="remove"):
+class RemoveFromCartCallbackFactory(UnpackFromRedisMixin, GetProductStrForRedisMixin, CallbackData, prefix="remove"):
     """
     Фабрика колбэков для удаления товара из корзины.
     """
 
     id: int
     name: str
-    price: condecimal(ge=0, max_digits=10, decimal_places=2)
-    quantity: conint(ge=0) = 1
-    cost: condecimal(ge=0, max_digits=10, decimal_places=2)
+    price: condecimal(ge=0, max_digits=10, decimal_places=2)  # type: ignore
+    quantity: conint(ge=0) = 1  # type: ignore
+    cost: condecimal(ge=0, max_digits=10, decimal_places=2)  # type: ignore
 
 
 class EditCartCallbackFactory(CallbackData, prefix="edit_cart"):

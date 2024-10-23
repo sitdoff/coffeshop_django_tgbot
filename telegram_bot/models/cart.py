@@ -79,6 +79,7 @@ class Cart(BaseModel):
         ]
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
+    # TODO: Возможно это не метод корзины. Ну или скрытый метод.
     async def get_product_model_from_string(self, product_string_from_redis: str) -> ProductModel:
         """
         Метод преобразовывает сроку с данными из Redis в модель товара.
@@ -96,6 +97,7 @@ class Cart(BaseModel):
         }
         self.items = items
 
+    # TODO: Метод вообще не используется нигде.
     async def save_cart(self) -> None:
         """
         Метод сохраняет данные из атрибута items в Redis в виде строк.
@@ -125,7 +127,7 @@ class Cart(BaseModel):
         Метод добавляет в корзину новый товар или увеличивает количество уже существующего.
         """
         if await self.redis_connection.hexists(self.cart_name, callback_data.id):
-            await self.change_product_quantity(callback_data)
+            await self.change_product_quantity(callback_data, quantity=callback_data.quantity)
             logger.debug("Product %s incremented in cart", callback_data.name)
         else:
             await self.redis_connection.hset(
@@ -141,16 +143,22 @@ class Cart(BaseModel):
         Метод уменьшает количество товара в корзине.
         """
         if int(callback_data.quantity) > 0:
-            await self.change_product_quantity(callback_data, quantity=-1)
+            await self.change_product_quantity(callback_data, quantity=callback_data.quantity * -1)
 
     async def change_product_quantity(
-        self, callback_data: AddToCartCallbackFactory | RemoveFromCartCallbackFactory, quantity: int = 1
+        self, callback_data: AddToCartCallbackFactory | RemoveFromCartCallbackFactory, quantity: int
     ) -> None:
         """
         Метод изменяет количество товара в корзине. Если по итогу количество становится равно или меньше нуля, то такой товар удаляется из корзины.
         """
+        self._validate_callback_data_and_quantity(callback_data, quantity)
+
         string_product_from_redis: str = await self.redis_connection.hget(self.cart_name, callback_data.id)
-        product_from_redis = AddToCartCallbackFactory.unpack_from_redis(string_product_from_redis)
+
+        if string_product_from_redis is None:
+            raise ValueError("Product not exists in cart")
+
+        product_from_redis = callback_data.unpack_from_redis(string_product_from_redis)
         product_from_redis.quantity += quantity
         if product_from_redis.quantity <= 0:
             await self.redis_connection.hdel(
@@ -195,3 +203,14 @@ class Cart(BaseModel):
         Метод возвращает общее количетсво товаров в корзине.
         """
         return sum(item.quantity for item in self.items.values())
+
+    @staticmethod
+    def _validate_callback_data_and_quantity(
+        callback_data: AddToCartCallbackFactory | RemoveFromCartCallbackFactory, quantity: int
+    ) -> None:
+        # TODO: покрыть тестами
+        if isinstance(callback_data, AddToCartCallbackFactory) and quantity < 1:
+            raise ValueError("callback_data is AddToCartCallbackFactory, quantity must be positive.")
+
+        if isinstance(callback_data, RemoveFromCartCallbackFactory) and quantity > 0:
+            raise ValueError("callback_data is RemoveFromCartCallbackFactory, quantity must be negative.")
