@@ -79,6 +79,7 @@ class Cart(BaseModel):
         ]
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
+    # TODO: Возможно это не метод корзины. Ну или скрытый метод.
     async def get_product_model_from_string(self, product_string_from_redis: str) -> ProductModel:
         """
         Метод преобразовывает сроку с данными из Redis в модель товара.
@@ -96,6 +97,7 @@ class Cart(BaseModel):
         }
         self.items = items
 
+    # TODO: Метод вообще не используется нигде.
     async def save_cart(self) -> None:
         """
         Метод сохраняет данные из атрибута items в Redis в виде строк.
@@ -125,7 +127,7 @@ class Cart(BaseModel):
         Метод добавляет в корзину новый товар или увеличивает количество уже существующего.
         """
         if await self.redis_connection.hexists(self.cart_name, callback_data.id):
-            await self.change_product_quantity(callback_data)
+            await self.change_product_quantity(callback_data, quantity=callback_data.quantity)
             logger.debug("Product %s incremented in cart", callback_data.name)
         else:
             await self.redis_connection.hset(
