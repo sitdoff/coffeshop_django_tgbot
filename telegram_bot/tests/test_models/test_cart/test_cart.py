@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+import pytest
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from fakeredis.aioredis import FakeRedis
 from filters.callback_factories import (
@@ -193,16 +194,20 @@ async def test_cart_remove_product_from_cart(cart: Cart, add_callbacks, remove_c
         ),
     }
 
-    # Удаляем продукты 7 раз, потому что у продукта 2 изначальне количество
-    # в фикстуре 2  добавляется сразу 2 товара
     await cart.remove_product_from_cart(remove_product1_callbackdata)
     await cart.remove_product_from_cart(remove_product1_callbackdata)
     await cart.remove_product_from_cart(remove_product1_callbackdata)
 
+    with pytest.raises(ValueError) as error:
+        await cart.remove_product_from_cart(remove_product1_callbackdata)
+    assert str(error.value) == "Product not exists in cart"
+
     await cart.remove_product_from_cart(remove_product2_callbackdata)
     await cart.remove_product_from_cart(remove_product2_callbackdata)
-    await cart.remove_product_from_cart(remove_product2_callbackdata)
-    await cart.remove_product_from_cart(remove_product2_callbackdata)
+
+    with pytest.raises(ValueError) as error:
+        await cart.remove_product_from_cart(remove_product2_callbackdata)
+    assert str(error.value) == "Product not exists in cart"
 
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 0
@@ -242,8 +247,7 @@ async def test_cart_change_product_quantity(cart: Cart, add_callbacks, remove_ca
     product_from_redis = AddToCartCallbackFactory.unpack_from_redis(string_product_from_redis)
     assert product_from_redis.quantity == 3
 
-    # А вот тут ни разу не правильная логика получается. Вроде как коллбэк для удаления, а количество увеличивается.
-    await cart.change_product_quantity(remove_product1_callbackdata)
+    await cart.change_product_quantity(remove_product1_callbackdata, quantity=-1)
     assert cart.items == {
         "1": ProductModel(
             id=1,
@@ -252,7 +256,7 @@ async def test_cart_change_product_quantity(cart: Cart, add_callbacks, remove_ca
             description=None,
             category=None,
             price=Decimal("10.00"),
-            quantity=4,
+            quantity=2,
             parent_id=None,
             keyboard=None,
             is_data_from_redis=True,
@@ -260,9 +264,9 @@ async def test_cart_change_product_quantity(cart: Cart, add_callbacks, remove_ca
     }
     string_product_from_redis: str = await redis_connection.hget(cart.cart_name, remove_product1_callbackdata.id)
     product_from_redis = RemoveFromCartCallbackFactory.unpack_from_redis(string_product_from_redis)
-    assert product_from_redis.quantity == 4
+    assert product_from_redis.quantity == 2
 
-    await cart.change_product_quantity(remove_product1_callbackdata, quantity=-3)
+    await cart.change_product_quantity(remove_product1_callbackdata, quantity=-1)
     assert cart.items == {
         "1": ProductModel(
             id=1,
@@ -320,8 +324,6 @@ async def test_cart__get_cart_data_from_redis(cart: Cart, add_callbacks, remove_
         str(add_product2_callbackdata.id): add_product2_callbackdata.get_product_str_for_redis(),
     }
 
-    # Удаляем 2 раза, потому что в фикстуре начальное количество равно 2
-    await cart.remove_product_from_cart(remove_product2_callbackdata)
     await cart.remove_product_from_cart(remove_product2_callbackdata)
 
     cart_data_from_redis = await cart._get_cart_data_from_redis()

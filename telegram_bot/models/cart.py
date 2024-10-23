@@ -143,16 +143,27 @@ class Cart(BaseModel):
         Метод уменьшает количество товара в корзине.
         """
         if int(callback_data.quantity) > 0:
-            await self.change_product_quantity(callback_data, quantity=-1)
+            await self.change_product_quantity(callback_data, quantity=callback_data.quantity * -1)
 
     async def change_product_quantity(
-        self, callback_data: AddToCartCallbackFactory | RemoveFromCartCallbackFactory, quantity: int = 1
+        self, callback_data: AddToCartCallbackFactory | RemoveFromCartCallbackFactory, quantity: int
     ) -> None:
         """
         Метод изменяет количество товара в корзине. Если по итогу количество становится равно или меньше нуля, то такой товар удаляется из корзины.
         """
+        # TODO: Выенести валидацию в отдельный метод и покрыть тестами
+        if isinstance(callback_data, AddToCartCallbackFactory) and quantity < 1:
+            raise ValueError("callback_data is AddToCartCallbackFactory, quantity must be positive.")
+
+        if isinstance(callback_data, RemoveFromCartCallbackFactory) and quantity > 0:
+            raise ValueError("callback_data is RemoveFromCartCallbackFactory, quantity must be negative.")
+
         string_product_from_redis: str = await self.redis_connection.hget(self.cart_name, callback_data.id)
-        product_from_redis = AddToCartCallbackFactory.unpack_from_redis(string_product_from_redis)
+
+        if string_product_from_redis is None:
+            raise ValueError("Product not exists in cart")
+
+        product_from_redis = callback_data.unpack_from_redis(string_product_from_redis)
         product_from_redis.quantity += quantity
         if product_from_redis.quantity <= 0:
             await self.redis_connection.hdel(
