@@ -14,8 +14,14 @@ from aiogram.types import (
     URLInputFile,
 )
 from config_data import constants
-from filters.callback_factories import CategoryCallbackFactory, EditCartCallbackFactory
+from filters.callback_factories import (
+    AddToCartCallbackFactory,
+    CategoryCallbackFactory,
+    EditCartCallbackFactory,
+    ProductCallbackFactory,
+)
 from lexicon.lexicon_ru import LEXICON_RU
+from models.cart import Cart
 from models.models import CategoryModel, ProductModel
 
 logger = logging.getLogger(__name__)
@@ -187,3 +193,75 @@ def pagination_keyboard(
         return InlineKeyboardMarkup(inline_keyboard=buttons)
 
     return keyboard
+
+
+async def _add_cart_button(
+    cart: Cart, buttons_list: list[list[InlineKeyboardButton]]
+) -> list[list[InlineKeyboardButton]]:
+    """
+    Функция добавляет кнопку корзины в инлайн-клавиатуру продукта.
+    """
+    cart_info = await cart.get_cart_info()
+    cart_button = InlineKeyboardButton(
+        text=LEXICON_RU["inline"]["cart"].substitute(total_cost=cart_info["total_cost"]),
+        callback_data="cart",
+    )
+    buttons_list = [
+        inline_button for inline_button in buttons_list if inline_button[0].callback_data != cart_button.callback_data
+    ]
+    buttons_list.append([cart_button])
+    return buttons_list
+
+
+async def _edit_product_button(
+    cart: Cart, buttons_list: list[list[InlineKeyboardButton]]
+) -> list[list[InlineKeyboardButton]]:
+    """
+    Функция добавляет информацию о количестве товара в корзине в инлайн-клавиатуру продукта.
+    """
+    product_button: InlineKeyboardButton = buttons_list[0][0]
+    current_product_id = AddToCartCallbackFactory.unpack(product_button.callback_data).id
+    current_product = cart.items.get(str(current_product_id))
+    product_button.text = LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(
+        count=current_product.quantity if not current_product is None else 0
+    )
+
+    return buttons_list
+
+
+async def edit_category_inline_keyboard(cart, keyboard_list: list[list[InlineKeyboardButton]]) -> InlineKeyboardMarkup:
+    """
+    Функция изменяет инлайн-клавиатуру категории, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
+    """
+    keyboard_list = await _add_cart_button(cart=cart, buttons_list=keyboard_list)
+    return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
+
+
+# TODO: Этот метод содержит логике, которая скорее относится к продукту, а не к корзине.
+async def edit_product_inline_keyboard(
+    cart: Cart, keyboard_list: list[list[InlineKeyboardButton]]
+) -> InlineKeyboardMarkup:
+    """
+    Метод изменяет инлайн-клавиатуру товара, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
+    """
+    # await self.get_items_from_redis()  # TODO Если синхронизировать корзину после каждого изменнения её содержимого, то тут можно убрать.
+    keyboard_list = await _add_cart_button(cart=cart, buttons_list=keyboard_list)
+    keyboard_list = await _edit_product_button(cart=cart, buttons_list=keyboard_list)
+    return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
+
+
+async def get_edit_cart_inline_keyboard(cart: Cart) -> InlineKeyboardMarkup:
+    """
+    Метод возвращает инлайн-клавиатуру при редактировании корзины.
+    """
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text=product.name,
+                callback_data=ProductCallbackFactory(product_id=product.id).pack(),
+            )
+        ]
+        for product in cart.items.values()
+    ]
+    buttons = await _add_cart_button(cart, buttons)
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

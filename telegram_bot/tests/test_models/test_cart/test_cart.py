@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from fakeredis.aioredis import FakeRedis
 from filters.callback_factories import (
@@ -27,21 +29,84 @@ async def test_cart_add_product_in_cartd(cart: Cart, add_callbacks, redis_connec
     await cart.add_product_in_cart(add_product1_callbackdata)
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 1
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=1,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     product1_in_cart = await redis_connection.hget(cart.cart_name, add_product1_callbackdata.id)
     assert product1_in_cart == add_product1_callbackdata.get_product_str_for_redis()
 
     await cart.add_product_in_cart(add_product2_callbackdata)
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 2
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=1,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+        "2": ProductModel(
+            id=2,
+            name="test_product_2",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=2,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     product2_in_cart = await redis_connection.hget(cart.cart_name, add_product2_callbackdata.id)
     assert product2_in_cart == add_product2_callbackdata.get_product_str_for_redis()
 
     await cart.add_product_in_cart(add_product1_callbackdata)
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 2
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=2,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+        "2": ProductModel(
+            id=2,
+            name="test_product_2",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=2,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     product1_in_cart = await redis_connection.hget(cart.cart_name, add_product1_callbackdata.id)
     assert product1_in_cart != add_product1_callbackdata.get_product_str_for_redis()
     add_product1_callbackdata.quantity += 1
@@ -50,7 +115,32 @@ async def test_cart_add_product_in_cartd(cart: Cart, add_callbacks, redis_connec
     await cart.add_product_in_cart(add_product2_callbackdata)
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 2
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=2,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+        "2": ProductModel(
+            id=2,
+            name="test_product_2",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=3,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     product2_in_cart = await redis_connection.hget(cart.cart_name, add_product2_callbackdata.id)
     assert product2_in_cart != add_product2_callbackdata.get_product_str_for_redis()
     add_product2_callbackdata.quantity += 1
@@ -75,7 +165,32 @@ async def test_cart_remove_product_from_cart(cart: Cart, add_callbacks, remove_c
 
     cart_in_redis = await redis_connection.hgetall(cart.cart_name)
     assert len(cart_in_redis) == 2
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=3,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+        "2": ProductModel(
+            id=2,
+            name="test_product_2",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=3,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
 
     # Удаляем продукты 6 раз, потому что у продукта 2 изначальне количество
     # в фикстуре 2 и в первый раз добавляется сразу 2 товара
@@ -105,7 +220,20 @@ async def test_cart_change_product_quantity(cart: Cart, add_callbacks, remove_ca
     assert product_from_redis.quantity == 1
 
     await cart.change_product_quantity(add_product1_callbackdata, quantity=2)
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=3,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
 
     string_product_from_redis: str = await redis_connection.hget(cart.cart_name, add_product1_callbackdata.id)
     product_from_redis = AddToCartCallbackFactory.unpack_from_redis(string_product_from_redis)
@@ -113,13 +241,39 @@ async def test_cart_change_product_quantity(cart: Cart, add_callbacks, remove_ca
 
     # А вот тут ни разу не правильная логика получается. Вроде как коллбэк для удаления, а количество увеличивается.
     await cart.change_product_quantity(remove_product1_callbackdata)
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=4,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     string_product_from_redis: str = await redis_connection.hget(cart.cart_name, remove_product1_callbackdata.id)
     product_from_redis = RemoveFromCartCallbackFactory.unpack_from_redis(string_product_from_redis)
     assert product_from_redis.quantity == 4
 
     await cart.change_product_quantity(remove_product1_callbackdata, quantity=-3)
-    assert cart.items == {}
+    assert cart.items == {
+        "1": ProductModel(
+            id=1,
+            name="test_product_1",
+            picture=None,
+            description=None,
+            category=None,
+            price=Decimal("10.00"),
+            quantity=1,
+            parent_id=None,
+            keyboard=None,
+            is_data_from_redis=True,
+        ),
+    }
     string_product_from_redis: str = await redis_connection.hget(cart.cart_name, remove_product1_callbackdata.id)
     product_from_redis = RemoveFromCartCallbackFactory.unpack_from_redis(string_product_from_redis)
     assert product_from_redis.quantity == 1
@@ -208,7 +362,10 @@ async def test_cart_get_items_from_redis(
 
     await cart.add_product_in_cart(add_product1_callbackdata)
     await cart.add_product_in_cart(add_product2_callbackdata)
+
+    cart.items = {}
     assert cart.items == {}
+
     await cart.get_items_from_redis()
 
     assert cart.items == {
@@ -261,7 +418,6 @@ async def test_cart_clear(
     await cart.add_product_in_cart(add_product1_callbackdata)
     await cart.add_product_in_cart(add_product2_callbackdata)
 
-    await cart.get_items_from_redis()
     cart_items_in_redis = await redis_connection.hgetall(cart.cart_name)
 
     assert cart.items != {}
@@ -298,7 +454,6 @@ async def test_cart_get_cart_info(cart: Cart, add_callbacks: dict[str, AddToCart
     assert cart_info == {"len": len(cart.items), "total_cost": cart.total_cost}
 
     await cart.add_product_in_cart(add_product2_callbackdata)
-    await cart.get_items_from_redis()
     cart_info = await cart.get_cart_info()
 
     assert cart_info == {"len": len(cart.items), "total_cost": cart.total_cost}
@@ -316,7 +471,6 @@ async def test_cart_model_dump(cart: Cart, add_callbacks: dict[str, AddToCartCal
     assert dump == {"items": {}, "total_cost": 0}
 
     await cart.add_product_in_cart(add_product1_callbackdata)
-    await cart.get_items_from_redis()
     dump = cart.model_dump()
     assert dump == {
         "items": {
@@ -332,7 +486,6 @@ async def test_cart_model_dump(cart: Cart, add_callbacks: dict[str, AddToCartCal
     }
 
     await cart.add_product_in_cart(add_product2_callbackdata)
-    await cart.get_items_from_redis()
     dump = cart.model_dump()
     assert dump == {
         "items": {
@@ -361,12 +514,10 @@ async def test_cart___len__(cart: Cart, add_callbacks):
     assert len(cart) == 0
 
     await cart.add_product_in_cart(add_product1_callbackdata)
-    await cart.get_items_from_redis()
 
     assert len(cart) == add_product1_callbackdata.quantity
 
     await cart.add_product_in_cart(add_product2_callbackdata)
-    await cart.get_items_from_redis()
 
     assert len(cart) == add_product1_callbackdata.quantity + add_product2_callbackdata.quantity
 
@@ -377,12 +528,10 @@ async def test_cart_total_cost(cart: Cart, add_callbacks):
     assert cart.total_cost == 0
 
     await cart.add_product_in_cart(add_product1_callbackdata)
-    await cart.get_items_from_redis()
 
     assert cart.total_cost == add_product1_callbackdata.price * add_product1_callbackdata.quantity
 
     await cart.add_product_in_cart(add_product2_callbackdata)
-    await cart.get_items_from_redis()
 
     assert (
         cart.total_cost
@@ -405,7 +554,6 @@ async def test_cart_get_cart_text(cart: Cart, add_callbacks):
     assert cart.get_cart_text() == "\n".join(reference)
 
     await cart.add_product_in_cart(add_product1_callbackdata)
-    await cart.get_items_from_redis()
 
     reference = [
         "`---------------------------------`",
@@ -419,7 +567,6 @@ async def test_cart_get_cart_text(cart: Cart, add_callbacks):
     assert cart.get_cart_text() == "\n".join(reference)
 
     await cart.add_product_in_cart(add_product2_callbackdata)
-    await cart.get_items_from_redis()
 
     reference = [
         "`---------------------------------`",
@@ -460,116 +607,113 @@ def test_cart_get_cart_inline_keyboard(cart: Cart):
     assert inline_keyboard_buttons[3][0].callback_data == "pass"
 
 
-async def test_cart__add_cart_button(cart: Cart, products: dict[int, ProductModel]):
-    product_1 = products.get("1")
-    product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
-
-    assert len(product_1_keyboard_buttons) == 3
-    assert len(product_1_keyboard_buttons[0]) == 1
-    assert len(product_1_keyboard_buttons[1]) == 2
-    assert len(product_1_keyboard_buttons[2]) == 1
-
-    product_1_keyboard_buttons = await cart._add_cart_button(product_1_keyboard_buttons)
-
-    assert len(product_1_keyboard_buttons) == 4
-    assert len(product_1_keyboard_buttons[0]) == 1
-    assert len(product_1_keyboard_buttons[1]) == 2
-    assert len(product_1_keyboard_buttons[2]) == 1
-    assert len(product_1_keyboard_buttons[3]) == 1
-
-    cart_info = await cart.get_cart_info()
-
-    assert isinstance(product_1_keyboard_buttons[3][0], InlineKeyboardButton)
-    assert product_1_keyboard_buttons[3][0].text == LEXICON_RU["inline"]["cart"].substitute(
-        total_cost=cart_info["total_cost"],
-        callback_data="cart",
-    )
-
-
-async def test_cart__edit_product_button(
-    cart: Cart, products: dict[int, ProductModel], add_callbacks: dict[str, AddToCartCallbackFactory]
-):
-    product_1 = products.get("1")
-    product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
-
-    assert len(product_1_keyboard_buttons[0]) == 1
-    assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["add_cart"]
-    assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
-
-    product_1_keyboard_buttons = await cart._edit_product_button(product_1_keyboard_buttons)
-
-    assert len(product_1_keyboard_buttons[0]) == 1
-    assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(count=0)
-    assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
-
-    await cart.add_product_in_cart(add_callbacks["1"])
-    await cart.get_items_from_redis()
-
-    product_1_keyboard_buttons = await cart._edit_product_button(product_1_keyboard_buttons)
-
-    assert len(product_1_keyboard_buttons[0]) == 1
-    assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(count=1)
-    assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
+# async def test_cart__add_cart_button(cart: Cart, products: dict[int, ProductModel]):
+#     product_1 = products.get("1")
+#     product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
+#
+#     assert len(product_1_keyboard_buttons) == 3
+#     assert len(product_1_keyboard_buttons[0]) == 1
+#     assert len(product_1_keyboard_buttons[1]) == 2
+#     assert len(product_1_keyboard_buttons[2]) == 1
+#
+#     product_1_keyboard_buttons = await cart._add_cart_button(product_1_keyboard_buttons)
+#
+#     assert len(product_1_keyboard_buttons) == 4
+#     assert len(product_1_keyboard_buttons[0]) == 1
+#     assert len(product_1_keyboard_buttons[1]) == 2
+#     assert len(product_1_keyboard_buttons[2]) == 1
+#     assert len(product_1_keyboard_buttons[3]) == 1
+#
+#     cart_info = await cart.get_cart_info()
+#
+#     assert isinstance(product_1_keyboard_buttons[3][0], InlineKeyboardButton)
+#     assert product_1_keyboard_buttons[3][0].text == LEXICON_RU["inline"]["cart"].substitute(
+#         total_cost=cart_info["total_cost"],
+#         callback_data="cart",
+#     )
 
 
-async def test_cart_get_edit_cart_inline_keyboard(cart: Cart, add_callbacks: dict[str, AddToCartCallbackFactory]):
-
-    def check_inline_keyboard(inline_keyboard: InlineKeyboardMarkup):
-        assert isinstance(inline_keyboard, InlineKeyboardMarkup)
-
-        buttons = inline_keyboard.inline_keyboard
-
-        for row in buttons:
-            for button in row:
-                assert isinstance(button, InlineKeyboardButton)
-
-        assert len(buttons) == len(cart.items) + 1
-
-    inline_keyboard = await cart.get_edit_cart_inline_keyboard()
-    check_inline_keyboard(inline_keyboard)
-
-    await cart.add_product_in_cart(add_callbacks["1"])
-    await cart.get_items_from_redis()
-
-    inline_keyboard = await cart.get_edit_cart_inline_keyboard()
-    check_inline_keyboard(inline_keyboard)
-
-    assert inline_keyboard.inline_keyboard[0][0].text == add_callbacks["1"].name
-    assert (
-        inline_keyboard.inline_keyboard[0][0].callback_data
-        == ProductCallbackFactory(product_id=add_callbacks["1"].id).pack()
-    )
-
-    await cart.add_product_in_cart(add_callbacks["2"])
-    await cart.get_items_from_redis()
-
-    inline_keyboard = await cart.get_edit_cart_inline_keyboard()
-    check_inline_keyboard(inline_keyboard)
-
-    assert inline_keyboard.inline_keyboard[1][0].text == add_callbacks["2"].name, "Button 2 text is wrong"
-    assert (
-        inline_keyboard.inline_keyboard[1][0].callback_data
-        == ProductCallbackFactory(product_id=add_callbacks["2"].id).pack()
-    )
+# async def test_cart__edit_product_button(
+#     cart: Cart, products: dict[int, ProductModel], add_callbacks: dict[str, AddToCartCallbackFactory]
+# ):
+#     product_1 = products.get("1")
+#     product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
+#
+#     assert len(product_1_keyboard_buttons[0]) == 1
+#     assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["add_cart"]
+#     assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
+#
+#     product_1_keyboard_buttons = await cart._edit_product_button(product_1_keyboard_buttons)
+#
+#     assert len(product_1_keyboard_buttons[0]) == 1
+#     assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(count=0)
+#     assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
+#
+#     await cart.add_product_in_cart(add_callbacks["1"])
+#
+#     product_1_keyboard_buttons = await cart._edit_product_button(product_1_keyboard_buttons)
+#
+#     assert len(product_1_keyboard_buttons[0]) == 1
+#     assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(count=1)
+#     assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
 
 
-async def test_cart_edit_category_inline_keyboard(cart: Cart, keyboard: InlineKeyboardMarkup):
-    buttons = keyboard.inline_keyboard
-    print(buttons)
+# async def test_cart_get_edit_cart_inline_keyboard(cart: Cart, add_callbacks: dict[str, AddToCartCallbackFactory]):
+#
+#     def check_inline_keyboard(inline_keyboard: InlineKeyboardMarkup):
+#         assert isinstance(inline_keyboard, InlineKeyboardMarkup)
+#
+#         buttons = inline_keyboard.inline_keyboard
+#
+#         for row in buttons:
+#             for button in row:
+#                 assert isinstance(button, InlineKeyboardButton)
+#
+#         assert len(buttons) == len(cart.items) + 1
+#
+#     inline_keyboard = await cart.get_edit_cart_inline_keyboard()
+#     check_inline_keyboard(inline_keyboard)
+#
+#     await cart.add_product_in_cart(add_callbacks["1"])
+#
+#     inline_keyboard = await cart.get_edit_cart_inline_keyboard()
+#     check_inline_keyboard(inline_keyboard)
+#
+#     assert inline_keyboard.inline_keyboard[0][0].text == add_callbacks["1"].name
+#     assert (
+#         inline_keyboard.inline_keyboard[0][0].callback_data
+#         == ProductCallbackFactory(product_id=add_callbacks["1"].id).pack()
+#     )
+#
+#     await cart.add_product_in_cart(add_callbacks["2"])
+#
+#     inline_keyboard = await cart.get_edit_cart_inline_keyboard()
+#     check_inline_keyboard(inline_keyboard)
+#
+#     assert inline_keyboard.inline_keyboard[1][0].text == add_callbacks["2"].name, "Button 2 text is wrong"
+#     assert (
+#         inline_keyboard.inline_keyboard[1][0].callback_data
+#         == ProductCallbackFactory(product_id=add_callbacks["2"].id).pack()
+#     )
 
-    assert len(buttons) == 7
 
-    keyboard = await cart.edit_category_inline_keyboard(buttons)
-    buttons = keyboard.inline_keyboard
+# async def test_cart_edit_category_inline_keyboard(cart: Cart, keyboard: InlineKeyboardMarkup):
+#     buttons = keyboard.inline_keyboard
+#     print(buttons)
+#
+#     assert len(buttons) == 7
+#
+#     keyboard = await cart.edit_category_inline_keyboard(buttons)
+#     buttons = keyboard.inline_keyboard
+#
+#     assert len(buttons) == 8
 
-    assert len(buttons) == 8
 
-
-async def test_cart_edit_product_inline_keyboard(cart: Cart, product_inline_keyboard: InlineKeyboardMarkup):
-    buttons = product_inline_keyboard.inline_keyboard
-    assert len(buttons) == 3
-
-    keyboard = await cart.edit_product_inline_keyboard(buttons)
-    buttons = keyboard.inline_keyboard
-
-    assert len(buttons) == 4
+# async def test_cart_edit_product_inline_keyboard(cart: Cart, product_inline_keyboard: InlineKeyboardMarkup):
+#     buttons = product_inline_keyboard.inline_keyboard
+#     assert len(buttons) == 3
+#
+#     keyboard = await cart.edit_product_inline_keyboard(buttons)
+#     buttons = keyboard.inline_keyboard
+#
+#     assert len(buttons) == 4

@@ -16,9 +16,11 @@ def remove_from_cart_callback_data():
     )
 
 
+@patch("handlers.callback_handlers.services.edit_product_inline_keyboard")
 @patch("handlers.callback_handlers.Cart")
 async def test_remove_from_cart_if_product_not_in_cart(
     Cart_mock: MagicMock,
+    edit_product_inline_keyboard_mock: AsyncMock,
     callback,
     extra,
     remove_from_cart_callback_data: RemoveFromCartCallbackFactory,
@@ -36,16 +38,20 @@ async def test_remove_from_cart_if_product_not_in_cart(
     cart_mock.get_items_from_redis.assert_awaited()
 
     cart_mock.remove_product_from_cart.assert_not_called()
-    cart_mock.edit_product_inline_keyboard.assert_not_called()
+
+    edit_product_inline_keyboard_mock.assert_not_called()
+
     callback.message.edit_reply_markup.assert_not_called()
 
     callback.answer.assert_called_once()
     callback.answer.assert_awaited()
 
 
+@patch("handlers.callback_handlers.services.edit_product_inline_keyboard")
 @patch("handlers.callback_handlers.Cart")
 async def test_remove_from_cart_if_product_in_cart(
     Cart_mock: MagicMock,
+    edit_product_inline_keyboard_mock: AsyncMock,
     callback,
     extra,
     remove_from_cart_callback_data: RemoveFromCartCallbackFactory,
@@ -57,22 +63,29 @@ async def test_remove_from_cart_if_product_in_cart(
 
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+
     cart_mock.get_items_from_redis.assert_called_once()
     cart_mock.get_items_from_redis.assert_awaited()
 
     cart_mock.remove_product_from_cart.assert_called_once()
     cart_mock.remove_product_from_cart.assert_awaited()
-    cart_mock.edit_product_inline_keyboard.assert_called_once()
-    cart_mock.edit_product_inline_keyboard.assert_awaited()
+
+    edit_product_inline_keyboard_mock.assert_called_once()
+    edit_product_inline_keyboard_mock.assert_awaited()
+    edit_product_inline_keyboard_mock.assert_called_with(cart_mock, callback.message.reply_markup.inline_keyboard)
+
     callback.message.edit_reply_markup.assert_called_once()
     callback.message.edit_reply_markup.assert_awaited()
+
     callback.answer.assert_called_once()
     callback.answer.assert_awaited()
 
 
+@patch("handlers.callback_handlers.services.edit_product_inline_keyboard")
 @patch("handlers.callback_handlers.Cart")
 async def test_remove_from_cart_if_product_quantity_is_0(
     Cart_mock: MagicMock,
+    edit_product_inline_keyboard_mock: AsyncMock,
     callback,
     extra,
     remove_from_cart_callback_data: RemoveFromCartCallbackFactory,
@@ -87,11 +100,14 @@ async def test_remove_from_cart_if_product_quantity_is_0(
 
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+
     cart_mock.get_items_from_redis.assert_called_once()
     cart_mock.get_items_from_redis.assert_awaited()
 
     cart_mock.remove_product_from_cart.assert_not_called()
-    cart_mock.edit_product_inline_keyboard.assert_not_called()
+
+    edit_product_inline_keyboard_mock.assert_not_called()
+
     callback.message.edit_reply_markup.assert_not_called()
 
     callback.answer.assert_called_once()

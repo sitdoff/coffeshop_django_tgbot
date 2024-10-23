@@ -8,11 +8,13 @@ from models.models import CategoryModel
 
 @patch("handlers.callback_handlers.cache_services.save_photo_file_id")
 @patch("handlers.callback_handlers.services.pagination_keyboard")
+@patch("handlers.callback_handlers.services.edit_category_inline_keyboard")
 @patch("handlers.callback_handlers.services.get_category_model_for_answer_callback")
 @patch("handlers.callback_handlers.Cart", spec=Cart)
 async def test_process_category_callback_without_callback_data(
     Cart_mock: MagicMock,
     get_category_model_for_answer_callback_mock: AsyncMock,
+    edit_category_inline_keyboard_mock: AsyncMock,
     pagination_keyboard_mock: MagicMock,
     save_photo_file_id_mock: AsyncMock,
     callback,
@@ -39,11 +41,13 @@ async def test_process_category_callback_without_callback_data(
 
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(extra["redis_connection"], callback.from_user.id)
+
     get_category_model_for_answer_callback_mock.assert_called_once()
     get_category_model_for_answer_callback_mock.assert_awaited()
     get_category_model_for_answer_callback_mock.assert_called_with(
         callback, extra["redis_connection"], extra["api_url"], None
     )
+
     pagination_keyboard_mock.assert_called_once()
     pagination_keyboard_mock.assert_called_with(
         keyboard=test_category.keyboard,
@@ -51,21 +55,29 @@ async def test_process_category_callback_without_callback_data(
         category_id=None,
         factory=CategoryCallbackFactory,
     )
-    cart_mock.edit_category_inline_keyboard.assert_called_once()
-    cart_mock.edit_category_inline_keyboard.assert_awaited()
+
+    edit_category_inline_keyboard_mock.assert_called_once()
+    edit_category_inline_keyboard_mock.assert_awaited()
+    edit_category_inline_keyboard_mock.assert_called_with(
+        cart=cart_mock, keyboard_list=pagination_keyboard_mock().inline_keyboard
+    )
+
     callback.message.edit_media.assert_called_once()
     callback.message.edit_media.assert_awaited()
+
     save_photo_file_id_mock.assert_called_once()
     save_photo_file_id_mock.assert_awaited()
 
 
 @patch("handlers.callback_handlers.cache_services.save_photo_file_id")
 @patch("handlers.callback_handlers.services.pagination_keyboard")
+@patch("handlers.callback_handlers.services.edit_category_inline_keyboard")
 @patch("handlers.callback_handlers.services.get_category_model_for_answer_callback")
 @patch("handlers.callback_handlers.Cart", spec=Cart)
 async def test_process_category_callback_with_callback_data(
     Cart_mock: MagicMock,
     get_category_model_for_answer_callback_mock: AsyncMock,
+    edit_category_inline_keyboard_mock: AsyncMock,
     pagination_keyboard_mock: MagicMock,
     save_photo_file_id_mock: AsyncMock,
     callback,
@@ -94,11 +106,13 @@ async def test_process_category_callback_with_callback_data(
 
     Cart_mock.assert_called_once()
     Cart_mock.assert_called_with(extra["redis_connection"], callback.from_user.id)
+
     get_category_model_for_answer_callback_mock.assert_called_once()
     get_category_model_for_answer_callback_mock.assert_awaited()
     get_category_model_for_answer_callback_mock.assert_called_with(
         callback, extra["redis_connection"], extra["api_url"], callback_data.category_id
     )
+
     pagination_keyboard_mock.assert_called_once()
     pagination_keyboard_mock.assert_called_with(
         keyboard=test_category.keyboard,
@@ -106,9 +120,15 @@ async def test_process_category_callback_with_callback_data(
         category_id=callback_data.category_id,
         factory=CategoryCallbackFactory,
     )
-    cart_mock.edit_category_inline_keyboard.assert_called_once()
-    cart_mock.edit_category_inline_keyboard.assert_awaited()
+
+    edit_category_inline_keyboard_mock.assert_called_once()
+    edit_category_inline_keyboard_mock.assert_awaited()
+    edit_category_inline_keyboard_mock.assert_called_with(
+        cart=cart_mock, keyboard_list=pagination_keyboard_mock().inline_keyboard
+    )
+
     callback.message.edit_media.assert_called_once()
     callback.message.edit_media.assert_awaited()
+
     save_photo_file_id_mock.assert_called_once()
     save_photo_file_id_mock.assert_awaited()

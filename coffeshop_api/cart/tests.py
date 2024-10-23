@@ -34,8 +34,8 @@ class TestCart(TestCase):
         cart = Cart()
         self.assertEqual(cart.cart, {"items": {}, "ordered": set()})
 
+    # TODO: надо сделать тест на создание корзины, когда передаются уже готовые данные
     def test_init_cart_with_data(self):
-        # TODO надо сделать тест на создание корзины, когда передаются уже готовые данные
         pass
 
     def test_cart_add_product(self):

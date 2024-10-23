@@ -3,7 +3,16 @@ from unittest.mock import MagicMock
 
 import pytest
 from aiogram.types import CallbackQuery, Message
-from tests.test_models.conftest import category_init_data, product_init_data
+from tests.test_models.conftest import (
+    add_callbacks,
+    cart,
+    category_init_data,
+    product,
+    product_init_data,
+    product_inline_keyboard,
+    products,
+    user_id,
+)
 
 
 @dataclass
