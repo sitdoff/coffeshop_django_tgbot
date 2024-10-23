@@ -6,7 +6,6 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from filters.callback_factories import (
     AddToCartCallbackFactory,
     EditCartCallbackFactory,
-    ProductCallbackFactory,
     RemoveFromCartCallbackFactory,
 )
 from lexicon.lexicon_ru import LEXICON_RU
@@ -79,23 +78,6 @@ class Cart(BaseModel):
             ],
         ]
         return InlineKeyboardMarkup(inline_keyboard=buttons)
-
-    # TODO: Delete
-    # async def get_edit_cart_inline_keyboard(self) -> InlineKeyboardMarkup:
-    #     """
-    #     Метод возвращает инлайн-клавиатуру при редактировании корзины.
-    #     """
-    #     buttons = [
-    #         [
-    #             InlineKeyboardButton(
-    #                 text=product.name,
-    #                 callback_data=ProductCallbackFactory(product_id=product.id).pack(),
-    #             )
-    #         ]
-    #         for product in self.items.values()
-    #     ]
-    #     buttons = await self._add_cart_button(buttons)
-    #     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
     async def get_product_model_from_string(self, product_string_from_redis: str) -> ProductModel:
         """
@@ -198,65 +180,6 @@ class Cart(BaseModel):
             "len": len(self.items),
             "total_cost": self.total_cost,
         }
-
-    # TODO: Delete
-    # async def edit_category_inline_keyboard(
-    #     self, keyboard_list: list[list[InlineKeyboardButton]]
-    # ) -> InlineKeyboardMarkup:
-    #     """
-    #     Метод изменяет инлайн-клавиатуру категории, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
-    #     """
-    #     # await self.get_items_from_redis()  # TODO Если синхронизировать корзину после каждого изменнения её содержимого, то тут можно убрать.
-    #     keyboard_list = await self._add_cart_button(buttons_list=keyboard_list)
-    #     return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
-
-    # TODO: Delete
-    # async def edit_product_inline_keyboard(
-    #     self, keyboard_list: list[list[InlineKeyboardButton]]
-    # ) -> InlineKeyboardMarkup:
-    #     """
-    #     Метод изменяет инлайн-клавиатуру товара, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
-    #     """
-    #     # await self.get_items_from_redis()  # TODO Если синхронизировать корзину после каждого изменнения её содержимого, то тут можно убрать.
-    #     keyboard_list = await self._add_cart_button(buttons_list=keyboard_list)
-    #     keyboard_list = await self._edit_product_button(keyboard_list)
-    #     return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
-
-    # TODO: Delete
-    # async def _add_cart_button(
-    #     self, buttons_list: list[list[InlineKeyboardButton]]
-    # ) -> list[list[InlineKeyboardButton]]:
-    #     """
-    #     Метод добавляет кнопку корзины в инлайн-клавиатуру продукта.
-    #     """
-    #     cart_info = await self.get_cart_info()
-    #     cart_button = InlineKeyboardButton(
-    #         text=LEXICON_RU["inline"]["cart"].substitute(total_cost=cart_info["total_cost"]),
-    #         callback_data="cart",
-    #     )
-    #     buttons_list = [
-    #         inline_button
-    #         for inline_button in buttons_list
-    #         if inline_button[0].callback_data != cart_button.callback_data
-    #     ]
-    #     buttons_list.append([cart_button])
-    #     return buttons_list
-
-    # TODO: Delete
-    # async def _edit_product_button(
-    #     self, buttons_list: list[list[InlineKeyboardButton]]
-    # ) -> list[list[InlineKeyboardButton]]:
-    #     """
-    #     Метод добавляет информацию о количестве товара в корзине в инлайн-клавиатуру продукта.
-    #     """
-    #     product_button: InlineKeyboardButton = buttons_list[0][0]
-    #     current_product_id = AddToCartCallbackFactory.unpack(product_button.callback_data).id
-    #     current_product = self.items.get(str(current_product_id))
-    #     product_button.text = LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(
-    #         count=current_product.quantity if not current_product is None else 0
-    #     )
-    #
-    #     return buttons_list
 
     def model_dump(self, **kwargs):
         """
