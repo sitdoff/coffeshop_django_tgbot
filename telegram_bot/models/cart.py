@@ -151,12 +151,7 @@ class Cart(BaseModel):
         """
         Метод изменяет количество товара в корзине. Если по итогу количество становится равно или меньше нуля, то такой товар удаляется из корзины.
         """
-        # TODO: Выенести валидацию в отдельный метод и покрыть тестами
-        if isinstance(callback_data, AddToCartCallbackFactory) and quantity < 1:
-            raise ValueError("callback_data is AddToCartCallbackFactory, quantity must be positive.")
-
-        if isinstance(callback_data, RemoveFromCartCallbackFactory) and quantity > 0:
-            raise ValueError("callback_data is RemoveFromCartCallbackFactory, quantity must be negative.")
+        self._validate_callback_data_and_quantity(callback_data, quantity)
 
         string_product_from_redis: str = await self.redis_connection.hget(self.cart_name, callback_data.id)
 
@@ -208,3 +203,14 @@ class Cart(BaseModel):
         Метод возвращает общее количетсво товаров в корзине.
         """
         return sum(item.quantity for item in self.items.values())
+
+    @staticmethod
+    def _validate_callback_data_and_quantity(
+        callback_data: AddToCartCallbackFactory | RemoveFromCartCallbackFactory, quantity: int
+    ) -> None:
+        # TODO: покрыть тестами
+        if isinstance(callback_data, AddToCartCallbackFactory) and quantity < 1:
+            raise ValueError("callback_data is AddToCartCallbackFactory, quantity must be positive.")
+
+        if isinstance(callback_data, RemoveFromCartCallbackFactory) and quantity > 0:
+            raise ValueError("callback_data is RemoveFromCartCallbackFactory, quantity must be negative.")
