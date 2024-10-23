@@ -46,8 +46,8 @@ async def process_category_callback(
         category_id=category_id,
         factory=CategoryCallbackFactory,
     )
-    keyboard_with_cart_button = await cart.edit_category_inline_keyboard(
-        keyboard_list=paginated_keyboard.inline_keyboard
+    keyboard_with_cart_button = await services.edit_category_inline_keyboard(
+        cart=cart, keyboard_list=paginated_keyboard.inline_keyboard
     )
     event = await callback.message.edit_media(
         media=category.picture,
@@ -76,7 +76,7 @@ async def process_product_callback(
 
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     keyboard = product.keyboard
-    keyboard = await cart.edit_product_inline_keyboard(keyboard_list=keyboard.inline_keyboard)
+    keyboard = await services.edit_product_inline_keyboard(cart, keyboard_list=keyboard.inline_keyboard)
 
     answer = await callback.message.edit_media(
         media=product.picture,
@@ -105,7 +105,7 @@ async def add_to_cart(callback: CallbackQuery, callback_data: AddToCartCallbackF
     logger.info("Callback data: %s", callback_data)
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart.add_product_in_cart(callback_data)
-    keyboard = await cart.edit_product_inline_keyboard(callback.message.reply_markup.inline_keyboard)
+    keyboard = await services.edit_product_inline_keyboard(cart, callback.message.reply_markup.inline_keyboard)
     if callback.message.reply_markup != keyboard:
         await callback.message.edit_reply_markup(reply_markup=keyboard)
     await callback.answer(text=LEXICON_RU["inline"]["added"])
@@ -127,7 +127,7 @@ async def remove_from_cart(
         await callback.answer(text=LEXICON_RU["inline"]["item_is_not_in_cart"])
     else:
         await cart.remove_product_from_cart(callback_data)
-        keyboard = await cart.edit_product_inline_keyboard(callback.message.reply_markup.inline_keyboard)
+        keyboard = await services.edit_product_inline_keyboard(cart, callback.message.reply_markup.inline_keyboard)
         if callback.message.reply_markup != keyboard:
             await callback.message.edit_reply_markup(reply_markup=keyboard)
         await callback.answer(text=LEXICON_RU["inline"]["removed"])
@@ -165,7 +165,7 @@ async def process_edit_cart_callback(
     logger.info("Callback data: %s", callback_data)
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
     await cart.get_items_from_redis()
-    keyboard = await cart.get_edit_cart_inline_keyboard()
+    keyboard = await services.get_edit_cart_inline_keyboard(cart)
     await callback.message.edit_reply_markup(
         reply_markup=services.pagination_keyboard(
             keyboard=keyboard,

@@ -58,8 +58,8 @@ def extra(redis_connection):
 
 
 @pytest.fixture
-def product1():
-    yield ProductModel(
+def product1(keyboard):
+    product = ProductModel(
         id=1,
         name="test product 1",
         description="test description 1",
@@ -69,11 +69,13 @@ def product1():
         quantity=1,
         picture="https://test.com/test.png",
     )
+    product.keyboard = keyboard
+    yield product
 
 
 @pytest.fixture
 def product2():
-    yield ProductModel(
+    product = ProductModel(
         id=2,
         name="test product 2",
         description="test description 1",
@@ -83,6 +85,8 @@ def product2():
         quantity=2,
         picture="https://test.com/test.png",
     )
+    product.keyboard = keyboard
+    yield product
 
 
 @pytest.fixture

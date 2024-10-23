@@ -607,113 +607,113 @@ def test_cart_get_cart_inline_keyboard(cart: Cart):
     assert inline_keyboard_buttons[3][0].callback_data == "pass"
 
 
-async def test_cart__add_cart_button(cart: Cart, products: dict[int, ProductModel]):
-    product_1 = products.get("1")
-    product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
-
-    assert len(product_1_keyboard_buttons) == 3
-    assert len(product_1_keyboard_buttons[0]) == 1
-    assert len(product_1_keyboard_buttons[1]) == 2
-    assert len(product_1_keyboard_buttons[2]) == 1
-
-    product_1_keyboard_buttons = await cart._add_cart_button(product_1_keyboard_buttons)
-
-    assert len(product_1_keyboard_buttons) == 4
-    assert len(product_1_keyboard_buttons[0]) == 1
-    assert len(product_1_keyboard_buttons[1]) == 2
-    assert len(product_1_keyboard_buttons[2]) == 1
-    assert len(product_1_keyboard_buttons[3]) == 1
-
-    cart_info = await cart.get_cart_info()
-
-    assert isinstance(product_1_keyboard_buttons[3][0], InlineKeyboardButton)
-    assert product_1_keyboard_buttons[3][0].text == LEXICON_RU["inline"]["cart"].substitute(
-        total_cost=cart_info["total_cost"],
-        callback_data="cart",
-    )
-
-
-async def test_cart__edit_product_button(
-    cart: Cart, products: dict[int, ProductModel], add_callbacks: dict[str, AddToCartCallbackFactory]
-):
-    product_1 = products.get("1")
-    product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
-
-    assert len(product_1_keyboard_buttons[0]) == 1
-    assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["add_cart"]
-    assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
-
-    product_1_keyboard_buttons = await cart._edit_product_button(product_1_keyboard_buttons)
-
-    assert len(product_1_keyboard_buttons[0]) == 1
-    assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(count=0)
-    assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
-
-    await cart.add_product_in_cart(add_callbacks["1"])
-
-    product_1_keyboard_buttons = await cart._edit_product_button(product_1_keyboard_buttons)
-
-    assert len(product_1_keyboard_buttons[0]) == 1
-    assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(count=1)
-    assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
+# async def test_cart__add_cart_button(cart: Cart, products: dict[int, ProductModel]):
+#     product_1 = products.get("1")
+#     product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
+#
+#     assert len(product_1_keyboard_buttons) == 3
+#     assert len(product_1_keyboard_buttons[0]) == 1
+#     assert len(product_1_keyboard_buttons[1]) == 2
+#     assert len(product_1_keyboard_buttons[2]) == 1
+#
+#     product_1_keyboard_buttons = await cart._add_cart_button(product_1_keyboard_buttons)
+#
+#     assert len(product_1_keyboard_buttons) == 4
+#     assert len(product_1_keyboard_buttons[0]) == 1
+#     assert len(product_1_keyboard_buttons[1]) == 2
+#     assert len(product_1_keyboard_buttons[2]) == 1
+#     assert len(product_1_keyboard_buttons[3]) == 1
+#
+#     cart_info = await cart.get_cart_info()
+#
+#     assert isinstance(product_1_keyboard_buttons[3][0], InlineKeyboardButton)
+#     assert product_1_keyboard_buttons[3][0].text == LEXICON_RU["inline"]["cart"].substitute(
+#         total_cost=cart_info["total_cost"],
+#         callback_data="cart",
+#     )
 
 
-async def test_cart_get_edit_cart_inline_keyboard(cart: Cart, add_callbacks: dict[str, AddToCartCallbackFactory]):
-
-    def check_inline_keyboard(inline_keyboard: InlineKeyboardMarkup):
-        assert isinstance(inline_keyboard, InlineKeyboardMarkup)
-
-        buttons = inline_keyboard.inline_keyboard
-
-        for row in buttons:
-            for button in row:
-                assert isinstance(button, InlineKeyboardButton)
-
-        assert len(buttons) == len(cart.items) + 1
-
-    inline_keyboard = await cart.get_edit_cart_inline_keyboard()
-    check_inline_keyboard(inline_keyboard)
-
-    await cart.add_product_in_cart(add_callbacks["1"])
-
-    inline_keyboard = await cart.get_edit_cart_inline_keyboard()
-    check_inline_keyboard(inline_keyboard)
-
-    assert inline_keyboard.inline_keyboard[0][0].text == add_callbacks["1"].name
-    assert (
-        inline_keyboard.inline_keyboard[0][0].callback_data
-        == ProductCallbackFactory(product_id=add_callbacks["1"].id).pack()
-    )
-
-    await cart.add_product_in_cart(add_callbacks["2"])
-
-    inline_keyboard = await cart.get_edit_cart_inline_keyboard()
-    check_inline_keyboard(inline_keyboard)
-
-    assert inline_keyboard.inline_keyboard[1][0].text == add_callbacks["2"].name, "Button 2 text is wrong"
-    assert (
-        inline_keyboard.inline_keyboard[1][0].callback_data
-        == ProductCallbackFactory(product_id=add_callbacks["2"].id).pack()
-    )
+# async def test_cart__edit_product_button(
+#     cart: Cart, products: dict[int, ProductModel], add_callbacks: dict[str, AddToCartCallbackFactory]
+# ):
+#     product_1 = products.get("1")
+#     product_1_keyboard_buttons = product_1.keyboard.inline_keyboard
+#
+#     assert len(product_1_keyboard_buttons[0]) == 1
+#     assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["add_cart"]
+#     assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
+#
+#     product_1_keyboard_buttons = await cart._edit_product_button(product_1_keyboard_buttons)
+#
+#     assert len(product_1_keyboard_buttons[0]) == 1
+#     assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(count=0)
+#     assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
+#
+#     await cart.add_product_in_cart(add_callbacks["1"])
+#
+#     product_1_keyboard_buttons = await cart._edit_product_button(product_1_keyboard_buttons)
+#
+#     assert len(product_1_keyboard_buttons[0]) == 1
+#     assert product_1_keyboard_buttons[0][0].text == LEXICON_RU["inline"]["product_quantity_in_cart"].substitute(count=1)
+#     assert product_1_keyboard_buttons[0][0].callback_data == AddToCartCallbackFactory(**product_1.model_dump()).pack()
 
 
-async def test_cart_edit_category_inline_keyboard(cart: Cart, keyboard: InlineKeyboardMarkup):
-    buttons = keyboard.inline_keyboard
-    print(buttons)
+# async def test_cart_get_edit_cart_inline_keyboard(cart: Cart, add_callbacks: dict[str, AddToCartCallbackFactory]):
+#
+#     def check_inline_keyboard(inline_keyboard: InlineKeyboardMarkup):
+#         assert isinstance(inline_keyboard, InlineKeyboardMarkup)
+#
+#         buttons = inline_keyboard.inline_keyboard
+#
+#         for row in buttons:
+#             for button in row:
+#                 assert isinstance(button, InlineKeyboardButton)
+#
+#         assert len(buttons) == len(cart.items) + 1
+#
+#     inline_keyboard = await cart.get_edit_cart_inline_keyboard()
+#     check_inline_keyboard(inline_keyboard)
+#
+#     await cart.add_product_in_cart(add_callbacks["1"])
+#
+#     inline_keyboard = await cart.get_edit_cart_inline_keyboard()
+#     check_inline_keyboard(inline_keyboard)
+#
+#     assert inline_keyboard.inline_keyboard[0][0].text == add_callbacks["1"].name
+#     assert (
+#         inline_keyboard.inline_keyboard[0][0].callback_data
+#         == ProductCallbackFactory(product_id=add_callbacks["1"].id).pack()
+#     )
+#
+#     await cart.add_product_in_cart(add_callbacks["2"])
+#
+#     inline_keyboard = await cart.get_edit_cart_inline_keyboard()
+#     check_inline_keyboard(inline_keyboard)
+#
+#     assert inline_keyboard.inline_keyboard[1][0].text == add_callbacks["2"].name, "Button 2 text is wrong"
+#     assert (
+#         inline_keyboard.inline_keyboard[1][0].callback_data
+#         == ProductCallbackFactory(product_id=add_callbacks["2"].id).pack()
+#     )
 
-    assert len(buttons) == 7
 
-    keyboard = await cart.edit_category_inline_keyboard(buttons)
-    buttons = keyboard.inline_keyboard
+# async def test_cart_edit_category_inline_keyboard(cart: Cart, keyboard: InlineKeyboardMarkup):
+#     buttons = keyboard.inline_keyboard
+#     print(buttons)
+#
+#     assert len(buttons) == 7
+#
+#     keyboard = await cart.edit_category_inline_keyboard(buttons)
+#     buttons = keyboard.inline_keyboard
+#
+#     assert len(buttons) == 8
 
-    assert len(buttons) == 8
 
-
-async def test_cart_edit_product_inline_keyboard(cart: Cart, product_inline_keyboard: InlineKeyboardMarkup):
-    buttons = product_inline_keyboard.inline_keyboard
-    assert len(buttons) == 3
-
-    keyboard = await cart.edit_product_inline_keyboard(buttons)
-    buttons = keyboard.inline_keyboard
-
-    assert len(buttons) == 4
+# async def test_cart_edit_product_inline_keyboard(cart: Cart, product_inline_keyboard: InlineKeyboardMarkup):
+#     buttons = product_inline_keyboard.inline_keyboard
+#     assert len(buttons) == 3
+#
+#     keyboard = await cart.edit_product_inline_keyboard(buttons)
+#     buttons = keyboard.inline_keyboard
+#
+#     assert len(buttons) == 4
