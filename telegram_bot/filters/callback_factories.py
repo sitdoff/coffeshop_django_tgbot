@@ -80,9 +80,9 @@ class AddToCartCallbackFactory(UnpackFromRedisMixin, CallbackData, prefix="item"
 
     id: int
     name: str
-    price: condecimal(ge=0, max_digits=10, decimal_places=2)
-    quantity: conint(ge=1)
-    cost: condecimal(ge=0, max_digits=10, decimal_places=2)  # Возможно этот отрибут не нужен. Но пока пусть будет.
+    price: condecimal(ge=0, max_digits=10, decimal_places=2)  # type: ignore
+    quantity: conint(ge=1)  # type: ignore
+    cost: condecimal(ge=0, max_digits=10, decimal_places=2)  # type: ignore # Возможно этот отрибут не нужен. Но пока пусть будет.
 
     def get_product_str_for_redis(
         self, template: str = "id:name:price:quantity:cost", separator: str | None = None
@@ -105,9 +105,9 @@ class RemoveFromCartCallbackFactory(UnpackFromRedisMixin, CallbackData, prefix="
 
     id: int
     name: str
-    price: condecimal(ge=0, max_digits=10, decimal_places=2)
-    quantity: conint(ge=0) = 1
-    cost: condecimal(ge=0, max_digits=10, decimal_places=2)
+    price: condecimal(ge=0, max_digits=10, decimal_places=2)  # type: ignore
+    quantity: conint(ge=0) = 1  # type: ignore
+    cost: condecimal(ge=0, max_digits=10, decimal_places=2)  # type: ignore
 
 
 class EditCartCallbackFactory(CallbackData, prefix="edit_cart"):
