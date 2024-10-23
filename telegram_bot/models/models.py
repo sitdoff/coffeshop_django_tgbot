@@ -9,7 +9,6 @@ from aiogram.types import (
     InputMediaPhoto,
     URLInputFile,
 )
-from config_data.constants import PHOTO_FILE_ID_HASH_NAME
 from filters.callback_factories import (
     AddToCartCallbackFactory,
     CategoryCallbackFactory,
@@ -18,7 +17,7 @@ from filters.callback_factories import (
 )
 from keyboards.callback_keyboards import set_product_button_text
 from lexicon.lexicon_ru import LEXICON_RU
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 logger = getLogger(__name__)
 
@@ -135,19 +134,6 @@ class CategoryModel(BaseModel):
         super().__init__(**data)
         self.picture = self.get_picture(data)
         self.keyboard = self.get_category_inline_keyboard(data)
-
-    # @field_validator("id", mode="before")
-    # def validate_id(cls, value: Any) -> int:
-    #     """
-    #     Валидатор значения id модели. Строки переводятся в целые числа.
-    #     Если значение нельзя перевести в целое число, то выбрасывается исключение.
-    #     """
-    #     if isinstance(value, str):
-    #         try:
-    #             return int(value)
-    #         except ValueError:
-    #             raise ValueError("id must be an integer or a string representing an integer")
-    #     return value
 
     def get_category_inline_keyboard(self, data: dict) -> InlineKeyboardMarkup:
         """

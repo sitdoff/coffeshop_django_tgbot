@@ -7,7 +7,6 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import FSInputFile, Message, ReplyKeyboardRemove
 from keyboards.callback_keyboards import get_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
-from middlewares.callback_middlewares import SavePhotoFileId
 from models.cart import Cart
 from services import cache_services, services
 

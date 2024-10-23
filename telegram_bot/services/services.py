@@ -6,17 +6,13 @@ import redis.asyncio as redis
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import (
     CallbackQuery,
-    FSInputFile,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    InputMediaPhoto,
     Message,
-    URLInputFile,
 )
 from config_data import constants
 from filters.callback_factories import (
     AddToCartCallbackFactory,
-    CategoryCallbackFactory,
     EditCartCallbackFactory,
     ProductCallbackFactory,
 )
@@ -237,14 +233,12 @@ async def edit_category_inline_keyboard(cart, keyboard_list: list[list[InlineKey
     return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
 
 
-# TODO: Этот метод содержит логике, которая скорее относится к продукту, а не к корзине.
 async def edit_product_inline_keyboard(
     cart: Cart, keyboard_list: list[list[InlineKeyboardButton]]
 ) -> InlineKeyboardMarkup:
     """
-    Метод изменяет инлайн-клавиатуру товара, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
+    Функция изменяет инлайн-клавиатуру товара, добавляя в неё кнопку корзины и информацию о количетсве товара в корзине.
     """
-    # await self.get_items_from_redis()  # TODO Если синхронизировать корзину после каждого изменнения её содержимого, то тут можно убрать.
     keyboard_list = await _add_cart_button(cart=cart, buttons_list=keyboard_list)
     keyboard_list = await _edit_product_button(cart=cart, buttons_list=keyboard_list)
     return InlineKeyboardMarkup(inline_keyboard=keyboard_list)
@@ -252,7 +246,7 @@ async def edit_product_inline_keyboard(
 
 async def get_edit_cart_inline_keyboard(cart: Cart) -> InlineKeyboardMarkup:
     """
-    Метод возвращает инлайн-клавиатуру при редактировании корзины.
+    Функция возвращает инлайн-клавиатуру при редактировании корзины.
     """
     buttons = [
         [

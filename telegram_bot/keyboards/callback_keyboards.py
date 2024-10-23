@@ -1,7 +1,6 @@
 import logging
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from filters.callback_factories import CategoryCallbackFactory, ProductCallbackFactory
 from lexicon.lexicon_ru import LEXICON_RU
 
 logger = logging.getLogger(__name__)
