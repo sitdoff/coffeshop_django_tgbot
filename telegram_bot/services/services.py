@@ -44,11 +44,12 @@ async def get_auth_token(message: Message | CallbackQuery) -> str:
 
 
 # TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def delete_auth_token(message: Message, redis_connection: redis.Redis) -> None:
+async def delete_auth_token(message: Message) -> None:
     """
     Удаляет токен аутентификации из Redis.
     """
-    await redis_connection.delete(f"token:{message.from_user.id}")
+    async with get_redis_connection() as redis_connection:
+        await redis_connection.delete(f"token:{message.from_user.id}")
 
 
 # TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
