@@ -13,12 +13,12 @@ async def test_get_category_model_for_answer_callback_if_category_id_is_None(
     response_payload = category_init_data
 
     with aioresponses() as mock_response:
-        with patch("services.services.get_redis_connection"):
+        with patch("services.services.get_redis_connection") as get_redis_connection_mock:
+            get_redis_connection_mock.return_value = extra["redis_connection"]
+
             url = f"{extra['api_url']}/categories/"
             mock_response.get(url, status=200, payload=response_payload)
-            result: CategoryModel = await get_category_model_for_answer_callback(
-                callback, extra["redis_connection"], extra["api_url"]
-            )
+            result: CategoryModel = await get_category_model_for_answer_callback(callback, extra["api_url"])
 
     assert isinstance(result, CategoryModel)
     assert result.id == category_init_data["id"]
@@ -35,13 +35,13 @@ async def test_get_category_model_for_answer_callback(callback: CallbackQuery, e
     response_payload = category_init_data
 
     with aioresponses() as mock_response:
-        with patch("services.services.get_redis_connection"):
+        with patch("services.services.get_redis_connection") as get_redis_connection_mock:
+            get_redis_connection_mock.return_value = extra["redis_connection"]
+
             url = f"{extra['api_url']}/categories/1/"
             print(url)
             mock_response.get(url, status=200, payload=response_payload)
-            result: CategoryModel = await get_category_model_for_answer_callback(
-                callback, extra["redis_connection"], extra["api_url"], 1
-            )
+            result: CategoryModel = await get_category_model_for_answer_callback(callback, extra["api_url"], 1)
 
     assert isinstance(result, CategoryModel)
     assert result.id == category_init_data["id"]

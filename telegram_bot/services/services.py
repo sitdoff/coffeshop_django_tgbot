@@ -76,7 +76,6 @@ async def authorize_user(
 
 async def get_category_model_for_answer_callback(
     callback: CallbackQuery,
-    redis_connection: redis.Redis,
     api_url: str,
     category_id: str | int | None = None,
 ) -> CategoryModel:
@@ -101,11 +100,12 @@ async def get_category_model_for_answer_callback(
             response_data = await response.json()
             # logger.debug("Response data is %s", response_data)
 
-    if await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name")):
-        logger.info("Photo file id exists in Redis")
-        photo_file_id = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name"))
-        logger.info("Photo file id is %s", photo_file_id)
-        response_data["picture"] = photo_file_id
+    async with get_redis_connection() as redis_connection:
+        if await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name")):
+            logger.info("Photo file id exists in Redis")
+            photo_file_id = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name"))
+            logger.info("Photo file id is %s", photo_file_id)
+            response_data["picture"] = photo_file_id
 
     category = CategoryModel(**response_data)
 
