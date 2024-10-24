@@ -91,6 +91,7 @@ async def get_category_model_for_answer_callback(
     headers = {
         "Authorization": f"Token {await get_auth_token(callback)}",
     }
+    logger.debug("Headers are %s", headers)
     logger.debug("Callback data is %s", callback.data)
 
     async with aiohttp.ClientSession() as session:

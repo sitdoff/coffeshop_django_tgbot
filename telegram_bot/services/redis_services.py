@@ -24,7 +24,11 @@ class RedisSengleton:
         if not hasattr(self, "_redis_pool"):
             # TODO: Попробовать сделать так, чтобы можно было просто распаковать словарь из модели конфига
             # примерно так ConnectionPool(**redis_config.dict())
-            self._redis_pool = ConnectionPool(host=redis_config.redis_host, port=redis_config.redis_port)
+            self._redis_pool = ConnectionPool(
+                host=redis_config.redis_host,
+                port=redis_config.redis_port,
+                decode_responses=True,
+            )
         return self._redis_pool
 
     async def get_pool(self):
