@@ -8,7 +8,7 @@ from config_data.config import Config, load_config
 from handlers import callback_handlers, command_handlers
 from keyboards.set_main_menu import set_main_menu
 from lexicon.lexicon_ru import LEXICON_RU
-from services.redis_services import redis_connection_pool
+from services.redis_services import redis_singleton
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ async def main():
     logging.info(LEXICON_RU["system"]["redis_connection_created"])
 
     # Init redis connection pool.
-    await redis_connection_pool.init_pool(config.redis)
+    await redis_singleton.init_pool(config.redis)
     logging.info(LEXICON_RU["system"]["redis_pool_created"])
 
     # Create Bot
