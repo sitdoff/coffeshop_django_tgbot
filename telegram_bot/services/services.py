@@ -25,11 +25,13 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def set_auth_token(token: str, message: Message, redis_connection: redis.Redis) -> None:
+async def set_auth_token(token: str, message: Message) -> None:
     """
     Записывает токен аутентификации в Redis.
     """
-    await redis_connection.set(f"token:{message.from_user.id}", token)
+    # await redis_connection.set(f"token:{message.from_user.id}", token)
+    async with get_redis_connection() as redis_connection:
+        await redis_connection.set(f"token:{message.from_user.id}", token)
 
 
 # TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
@@ -68,7 +70,7 @@ async def authorize_user(
         ) as response:
             response_data = await response.json()
             token = response_data["token"]
-            await set_auth_token(token, message, redis_connection)
+            await set_auth_token(token, message)
     return token
 
 
