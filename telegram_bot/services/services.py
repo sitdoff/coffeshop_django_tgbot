@@ -53,9 +53,7 @@ async def delete_auth_token(message: Message) -> None:
 
 
 # TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def authorize_user(
-    message: Message, redis_connection: redis.Redis, session: aiohttp.ClientSession, api_url: str
-) -> str:
+async def authorize_user(message: Message, session: aiohttp.ClientSession, api_url: str) -> str:
     """
     Возвращает токен аутентификации.
 

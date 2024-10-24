@@ -17,7 +17,6 @@ async def test_authorize_user_if_token_exists(message: Message, extra: dict):
             assert (
                 await authorize_user(
                     message,
-                    extra["redis_connection"],
                     session,
                     extra["api_url"],
                 )
@@ -37,6 +36,13 @@ async def test_authorize_user_if_token_not_exists(message: Message, extra: dict)
             async with ClientSession() as session:
                 mock_response.post(f"{extra["api_url"]}/users/auth/telegram/", status=200, payload={"token": token})
 
-                assert await authorize_user(message, extra["redis_connection"], session, extra["api_url"]) == token
+                assert (
+                    await authorize_user(
+                        message,
+                        session,
+                        extra["api_url"],
+                    )
+                    == token
+                )
 
         assert await get_auth_token(message) == token  # Теперь токен есть
