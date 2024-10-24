@@ -11,7 +11,7 @@ async def test_authorize_user_if_token_exists(message: Message, extra: dict):
     with patch("services.services.get_redis_connection") as get_redis_connection_mock:
         get_redis_connection_mock.return_value = extra["redis_connection"]
 
-        await set_auth_token(token, message, extra["redis_connection"])  # Устанавливаем токен в Redis
+        await set_auth_token(token, message)  # Устанавливаем токен в Redis
 
         async with ClientSession() as session:
             assert (
