@@ -39,8 +39,7 @@ async def get_auth_token(message: Message | CallbackQuery) -> str:
     """
     Возвращает токен аутентификации из Redis.
     """
-    redis_connection = await get_redis_connection()
-    async with redis_connection:
+    async with get_redis_connection() as redis_connection:
         return await redis_connection.get(f"token:{message.from_user.id}")
 
 
