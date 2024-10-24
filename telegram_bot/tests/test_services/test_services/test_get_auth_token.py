@@ -1,6 +1,9 @@
+from unittest.mock import AsyncMock, patch
+
 from aiogram.types import Message
 from conftest import Events
 from fakeredis.aioredis import FakeRedis
+from redis.asyncio import ConnectionPool
 from services.services import get_auth_token
 
 
@@ -9,11 +12,14 @@ async def test_get_auth_token_with_message(events: Events, redis_connection: Fak
     key = f"token:{event.from_user.id}"
     token = "this_is_token"
 
-    assert await get_auth_token(event, redis_connection) == None
+    with patch("services.services.get_redis_connection") as get_redis_connection_mock:
+        get_redis_connection_mock.return_value = redis_connection
+        assert await get_auth_token(event) == None
 
-    await redis_connection.set(key, token)
+        await redis_connection.set(key, token)
+        await redis_connection.get(key) == token
 
-    assert (await get_auth_token(event, redis_connection)) == token
+        assert (await get_auth_token(event)) == token
 
 
 async def test_get_auth_token_with_callback(events: Events, redis_connection: FakeRedis):
@@ -21,8 +27,11 @@ async def test_get_auth_token_with_callback(events: Events, redis_connection: Fa
     key = f"token:{event.from_user.id}"
     token = "this_is_token"
 
-    assert await get_auth_token(event, redis_connection) == None
+    with patch("services.services.get_redis_connection") as get_redis_connection_mock:
+        get_redis_connection_mock.return_value = redis_connection
 
-    await redis_connection.set(key, token)
+        assert await get_auth_token(event) == None
 
-    assert (await get_auth_token(event, redis_connection)) == token
+        await redis_connection.set(key, token)
+
+        assert (await get_auth_token(event)) == token
