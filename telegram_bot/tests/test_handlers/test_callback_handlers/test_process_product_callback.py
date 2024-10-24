@@ -37,7 +37,7 @@ async def test_process_product_callback(
     get_product_model_for_answer_callback_mock.assert_called_once()
     get_product_model_for_answer_callback_mock.assert_awaited()
     get_product_model_for_answer_callback_mock.assert_called_with(
-        callback, extra["redis_connection"], extra["api_url"], product_callback_data.product_id
+        callback, extra["api_url"], product_callback_data.product_id
     )
 
     Cart_mock.assert_called_once()
