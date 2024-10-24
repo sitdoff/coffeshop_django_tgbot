@@ -37,9 +37,7 @@ async def process_category_callback(
 
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
 
-    category = await services.get_category_model_for_answer_callback(
-        callback, extra["redis_connection"], extra["api_url"], category_id
-    )
+    category = await services.get_category_model_for_answer_callback(callback, extra["api_url"], category_id)
     paginated_keyboard = services.pagination_keyboard(
         keyboard=category.keyboard,
         page=callback_data.page if callback_data else 1,
@@ -69,9 +67,7 @@ async def process_product_callback(
     logger.info("Callback: %s", callback.data)
     logger.info("Product callback data: %s", callback_data)
 
-    product = await services.get_product_model_for_answer_callback(
-        callback, extra["redis_connection"], extra["api_url"], callback_data.product_id
-    )
+    product = await services.get_product_model_for_answer_callback(callback, extra["api_url"], callback_data.product_id)
     logger.debug("Data for answer: %s", product)
 
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
