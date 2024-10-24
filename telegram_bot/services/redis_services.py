@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from config_data.config import RedisConfig
 from redis.asyncio import ConnectionPool, Redis
 
@@ -36,10 +38,14 @@ redis_singleton = RedisSengleton()
 
 
 # TODO: Покрыть тестами
-async def get_redis_connection() -> Redis:
+@asynccontextmanager
+async def get_redis_connection():
     """
-    Функция берёт соединение из пула и возвращает его.
+    Функция генератор преобоазованная в асинхронный контекстный менеджер. Возвращает соединение Redis из пула.
     """
     connection_pool: ConnectionPool = await redis_singleton.get_pool()
-    connection = await Redis(connection_pool=connection_pool)
-    return connection
+    redis_connection = Redis(connection_pool=connection_pool)
+    try:
+        yield redis_connection
+    finally:
+        await redis_connection.close()
