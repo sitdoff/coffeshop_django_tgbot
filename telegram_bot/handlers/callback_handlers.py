@@ -51,7 +51,7 @@ async def process_category_callback(
         media=category.picture,
         reply_markup=keyboard_with_cart_button,
     )
-    await cache_services.save_photo_file_id(event, extra["redis_connection"])
+    await cache_services.save_photo_file_id(event)
 
 
 @router.callback_query(ProductCallbackFactory.filter())
@@ -78,7 +78,7 @@ async def process_product_callback(
         media=product.picture,
         reply_markup=keyboard,
     )
-    await cache_services.save_photo_file_id(answer, extra["redis_connection"])
+    await cache_services.save_photo_file_id(answer)
 
 
 @router.callback_query(F.data == "pass")
@@ -144,7 +144,7 @@ async def process_cart_callback(callback: CallbackQuery, extra: dict[str, Any]):
     photo = await cache_services.get_photo_file_id("cart") or InputMediaPhoto(media=FSInputFile("images/cart.jpg"))
     photo.caption = caption
     answer = await callback.message.edit_media(media=photo, reply_markup=keyboard)
-    await cache_services.save_photo_file_id(answer, extra["redis_connection"], key="cart")
+    await cache_services.save_photo_file_id(answer, key="cart")
 
 
 @router.callback_query(EditCartCallbackFactory.filter())
@@ -189,4 +189,4 @@ async def process_cart_clear_callback(callback: CallbackQuery, extra: dict[str, 
         ),
         reply_markup=await get_start_keyboard(),
     )
-    await cache_services.save_photo_file_id(answer, extra["redis_connection"], key="clear_cart")
+    await cache_services.save_photo_file_id(answer, key="clear_cart")

@@ -49,7 +49,7 @@ async def process_start_command(
             reply_markup=await get_start_keyboard(),
         )
         # logger.debug("Message is %s", message)
-        await cache_services.save_photo_file_id(event, extra["redis_connection"])
+        await cache_services.save_photo_file_id(event)
     else:
         logger.error(f"User {message.from_user.username}:{message.from_user.id} can't start bot. Token is {token}.")
         await message.answer(LEXICON_RU["system"]["wrong"], reply_markup=ReplyKeyboardRemove())
@@ -78,4 +78,4 @@ async def process_cart_command(message: Message, extra: dict[str, Any]):
         caption=caption,
         reply_markup=cart.get_cart_inline_keyboard(),
     )
-    await cache_services.save_photo_file_id(event, extra["redis_connection"])
+    await cache_services.save_photo_file_id(event)
