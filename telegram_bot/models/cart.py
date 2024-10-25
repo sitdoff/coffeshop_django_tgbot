@@ -193,7 +193,8 @@ class Cart(BaseModel):
         """
         Метод возвращает словарь со строками из Redis.
         """
-        return await self.redis_connection.hgetall(self.cart_name)
+        async with self.redis_connection_provider() as redis_connection:
+            return await redis_connection.hgetall(self.cart_name)
 
     async def get_cart_info(self) -> dict[Literal["len", "total_cost"], Any]:
         """
