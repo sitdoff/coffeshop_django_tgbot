@@ -1,4 +1,6 @@
+from contextlib import asynccontextmanager
 from decimal import Decimal
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup

@@ -1,6 +1,6 @@
 import logging
 from decimal import Decimal
-from typing import Any, Literal
+from typing import Any, Callable, Literal
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from filters.callback_factories import (
@@ -12,6 +12,7 @@ from lexicon.lexicon_ru import LEXICON_RU
 from models.models import ProductModel
 from pydantic import BaseModel, Field
 from redis.asyncio import Redis
+from services.redis_services import get_redis_connection
 
 logger = logging.getLogger(__name__)
 
@@ -25,15 +26,24 @@ class Cart(BaseModel):
     user_id: int = Field(exclude=True)
     cart_name: str = Field(exclude=True)
     redis_connection: Redis = Field(exclude=True)
+    redis_connection_provider: Callable = Field(exclude=True)
 
     class Config:
         arbitrary_types_allowed = True
 
-    def __init__(self, redis_connection: Redis, user_id: int):
-        super().__init__(redis_connection=redis_connection, user_id=user_id, cart_name=f"cart:{user_id}")
+    def __init__(
+        self, redis_connection: Redis, user_id: int, redis_connection_provider: Callable = get_redis_connection
+    ):
+        super().__init__(
+            redis_connection=redis_connection,
+            user_id=user_id,
+            cart_name=f"cart:{user_id}",
+            redis_connection_provider=redis_connection_provider,
+        )
         self.redis_connection = redis_connection
         self.user_id = user_id
         self.cart_name = f"cart:{self.user_id}"
+        self.redis_connection_provider = redis_connection_provider
 
     @property
     def total_cost(self):
@@ -102,10 +112,11 @@ class Cart(BaseModel):
         """
         Метод сохраняет данные из атрибута items в Redis в виде строк.
         """
-        for key, value in self.items.items():
-            await self.redis_connection.hset(
-                self.cart_name, key, AddToCartCallbackFactory(**value.model_dump()).get_product_str_for_redis()
-            )
+        async with self.redis_connection_provider() as redis_connection:
+            for key, value in self.items.items():
+                await redis_connection.hset(
+                    self.cart_name, key, AddToCartCallbackFactory(**value.model_dump()).get_product_str_for_redis()
+                )
 
     async def clear(self) -> None:
         """
