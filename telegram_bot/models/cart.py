@@ -130,8 +130,9 @@ class Cart(BaseModel):
         """
         Метод проверяет существование в Redis корзины с заданным именем.
         """
-        if await self.redis_connection.exists(self.cart_name):
-            return True
+        async with self.redis_connection_provider() as redis_connection:
+            if await redis_connection.exists(self.cart_name):
+                return True
         return False
 
     async def add_product_in_cart(self, callback_data: AddToCartCallbackFactory) -> None:
