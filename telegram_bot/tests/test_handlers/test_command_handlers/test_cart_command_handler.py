@@ -40,7 +40,7 @@ async def test_process_cart_command(
     cart.get_cart_inline_keyboard.assert_called_once()
 
     get_photo_file_id_mock.assert_called_once()
-    get_photo_file_id_mock.assert_called_with(cart_get_cart_text_mock.return_value, extra["redis_connection"])
+    get_photo_file_id_mock.assert_called_with(cart_get_cart_text_mock.return_value)
     get_photo_file_id_mock.assert_awaited()
 
     message.delete.assert_called_once()

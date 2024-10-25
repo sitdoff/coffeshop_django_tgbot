@@ -40,9 +40,9 @@ async def process_start_command(
     logger.debug(f"User: {message.from_user.username}:{message.from_user.id}. Auth token: {token}")
 
     if token:
-        photo = await cache_services.get_photo_file_id(
-            LEXICON_RU["commands"]["start"], extra["redis_connection"]
-        ) or FSInputFile("images/welcome.jpg")
+        photo = await cache_services.get_photo_file_id(LEXICON_RU["commands"]["start"]) or FSInputFile(
+            "images/welcome.jpg"
+        )
         event = await message.answer_photo(
             photo=photo,
             caption=LEXICON_RU["commands"]["start"],
@@ -71,7 +71,7 @@ async def process_cart_command(message: Message, extra: dict[str, Any]):
     cart = Cart(redis_connection=extra["redis_connection"], user_id=message.from_user.id)
     await cart.get_items_from_redis()
     caption = cart.get_cart_text()
-    photo = await cache_services.get_photo_file_id(caption, extra["redis_connection"]) or FSInputFile("images/cart.jpg")
+    photo = await cache_services.get_photo_file_id(caption) or FSInputFile("images/cart.jpg")
     await message.delete()
     event = await message.answer_photo(
         photo=photo,

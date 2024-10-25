@@ -27,7 +27,7 @@ async def test_process_cart_callback(
     cart_mock.get_cart_text.assert_called_once()
     get_photo_file_id_mock.assert_called_once()
     get_photo_file_id_mock.assert_awaited()
-    get_photo_file_id_mock.assert_called_with("cart", extra["redis_connection"])
+    get_photo_file_id_mock.assert_called_with("cart")
     callback.message.edit_media.assert_called_once()
     callback.message.edit_media.assert_awaited()
     save_photo_file_id_mock.assert_called_once()

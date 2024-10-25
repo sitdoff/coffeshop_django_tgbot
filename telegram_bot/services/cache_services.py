@@ -3,15 +3,17 @@ import logging
 from aiogram.types import CallbackQuery, InputMediaPhoto, Message
 from config_data import constants
 from redis.asyncio import Redis
+from services.redis_services import get_redis_connection
 
 logger = logging.getLogger(__name__)
 
 
-async def get_photo_file_id(key: str, redis_connection: Redis) -> InputMediaPhoto | None:
+async def get_photo_file_id(key: str) -> InputMediaPhoto | None:
     """
     Возвращает file_id изображения из Redis.
     """
-    result = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, key)
+    async with get_redis_connection() as redis_connection:
+        result = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, key)
     if not result is None:
         logger.info("File ID found in Redis with key %s", key)
         logger.info("File ID %s got from Redis", result)

@@ -141,9 +141,7 @@ async def process_cart_callback(callback: CallbackQuery, extra: dict[str, Any]):
     keyboard = cart.get_cart_inline_keyboard()
     await cart.get_items_from_redis()
     caption = cart.get_cart_text()
-    photo = await cache_services.get_photo_file_id("cart", extra["redis_connection"]) or InputMediaPhoto(
-        media=FSInputFile("images/cart.jpg")
-    )
+    photo = await cache_services.get_photo_file_id("cart") or InputMediaPhoto(media=FSInputFile("images/cart.jpg"))
     photo.caption = caption
     answer = await callback.message.edit_media(media=photo, reply_markup=keyboard)
     await cache_services.save_photo_file_id(answer, extra["redis_connection"], key="cart")
@@ -180,9 +178,7 @@ async def process_cart_clear_callback(callback: CallbackQuery, extra: dict[str, 
     logger.info("Handler for clear cart")
     logger.info("Callback: %s", callback.data)
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
-    photo = await cache_services.get_photo_file_id("clear_cart", extra["redis_connection"]) or FSInputFile(
-        "images/cart.jpg"
-    )
+    photo = await cache_services.get_photo_file_id("clear_cart") or FSInputFile("images/cart.jpg")
     photo.caption = LEXICON_RU["messages"]["cart_is_empty"]
     await cart.clear()
     answer = await callback.message.edit_media(
