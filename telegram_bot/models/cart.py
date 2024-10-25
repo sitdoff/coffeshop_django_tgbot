@@ -168,24 +168,25 @@ class Cart(BaseModel):
         """
         self._validate_callback_data_and_quantity(callback_data, quantity)
 
-        string_product_from_redis: str = await self.redis_connection.hget(self.cart_name, callback_data.id)
+        async with self.redis_connection_provider() as redis_connection:
+            string_product_from_redis: str = await redis_connection.hget(self.cart_name, callback_data.id)
 
-        if string_product_from_redis is None:
-            raise ValueError("Product not exists in cart")
+            if string_product_from_redis is None:
+                raise ValueError("Product not exists in cart")
 
-        product_from_redis = callback_data.unpack_from_redis(string_product_from_redis)
-        product_from_redis.quantity += quantity
-        if product_from_redis.quantity <= 0:
-            await self.redis_connection.hdel(
-                self.cart_name,
-                callback_data.id,
-            )
-        else:
-            await self.redis_connection.hset(
-                name=self.cart_name,
-                key=callback_data.id,
-                value=product_from_redis.get_product_str_for_redis(),
-            )
+            product_from_redis = callback_data.unpack_from_redis(string_product_from_redis)
+            product_from_redis.quantity += quantity
+            if product_from_redis.quantity <= 0:
+                await redis_connection.hdel(
+                    self.cart_name,
+                    callback_data.id,
+                )
+            else:
+                await redis_connection.hset(
+                    name=self.cart_name,
+                    key=callback_data.id,
+                    value=product_from_redis.get_product_str_for_redis(),
+                )
         await self.get_items_from_redis()
 
     async def _get_cart_data_from_redis(self) -> dict:
