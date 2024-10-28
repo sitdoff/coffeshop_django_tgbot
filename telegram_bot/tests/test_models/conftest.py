@@ -117,7 +117,6 @@ def cart(redis_connection, user_id):
         yield redis_connection
 
     crt = Cart(
-        redis_connection=redis_connection,
         user_id=user_id,
         redis_connection_provider=redis_connection_provider,
     )

@@ -41,7 +41,7 @@ async def test_process_product_callback(
     )
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    Cart_mock.assert_called_with(user_id=callback.from_user.id)
 
     edit_product_inline_keyboard_mock.assert_called_once()
     edit_product_inline_keyboard_mock.assert_awaited()

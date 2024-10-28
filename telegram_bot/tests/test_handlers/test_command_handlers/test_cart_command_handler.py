@@ -30,7 +30,7 @@ async def test_process_cart_command(
     await process_cart_command(message, extra)
 
     Cart_mock.assert_called()
-    Cart_mock.assert_called_with(extra["redis_connection"], message.from_user.id)
+    Cart_mock.assert_called_with(message.from_user.id)
 
     cart.get_items_from_redis.assert_called_once()
     cart.get_items_from_redis.assert_awaited()

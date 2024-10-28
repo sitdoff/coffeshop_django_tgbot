@@ -40,7 +40,7 @@ async def test_process_category_callback_without_callback_data(
     await process_category_callback(callback, extra, None)
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(extra["redis_connection"], callback.from_user.id)
+    Cart_mock.assert_called_with(callback.from_user.id)
 
     get_category_model_for_answer_callback_mock.assert_called_once()
     get_category_model_for_answer_callback_mock.assert_awaited()
@@ -103,7 +103,7 @@ async def test_process_category_callback_with_callback_data(
     await process_category_callback(callback, extra, callback_data)
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(extra["redis_connection"], callback.from_user.id)
+    Cart_mock.assert_called_with(callback.from_user.id)
 
     get_category_model_for_answer_callback_mock.assert_called_once()
     get_category_model_for_answer_callback_mock.assert_awaited()

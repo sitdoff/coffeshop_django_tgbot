@@ -68,7 +68,7 @@ async def process_cart_command(message: Message, extra: dict[str, Any]):
     """
     Хэндлер для обработки команды /cart.
     """
-    cart = Cart(redis_connection=extra["redis_connection"], user_id=message.from_user.id)
+    cart = Cart(user_id=message.from_user.id)
     await cart.get_items_from_redis()
     caption = cart.get_cart_text()
     photo = await cache_services.get_photo_file_id(caption) or FSInputFile("images/cart.jpg")

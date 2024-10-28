@@ -25,22 +25,17 @@ class Cart(BaseModel):
     items: dict[str | int, ProductModel] = {}
     user_id: int = Field(exclude=True)
     cart_name: str = Field(exclude=True)
-    redis_connection: Redis = Field(exclude=True)
     redis_connection_provider: Callable = Field(exclude=True)
 
     class Config:
         arbitrary_types_allowed = True
 
-    def __init__(
-        self, redis_connection: Redis, user_id: int, redis_connection_provider: Callable = get_redis_connection
-    ):
+    def __init__(self, user_id: int, redis_connection_provider: Callable = get_redis_connection):
         super().__init__(
-            redis_connection=redis_connection,
             user_id=user_id,
             cart_name=f"cart:{user_id}",
             redis_connection_provider=redis_connection_provider,
         )
-        self.redis_connection = redis_connection
         self.user_id = user_id
         self.cart_name = f"cart:{self.user_id}"
         self.redis_connection_provider = redis_connection_provider
