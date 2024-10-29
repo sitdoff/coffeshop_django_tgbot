@@ -41,11 +41,11 @@ class Cart(BaseModel):
         self.redis_connection_provider = redis_connection_provider
 
     @property
-    def total_cost(self):
+    def total_cost(self) -> Decimal:
         """
         Свойство возвращает общую стоимость всех товаров в корзине.
         """
-        return sum(Decimal(item.cost) for item in self.items.values())
+        return Decimal(sum(Decimal(item.cost) for item in self.items.values()))
 
     def get_cart_text(self):
         """
