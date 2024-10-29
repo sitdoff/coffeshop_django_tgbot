@@ -3,15 +3,17 @@ import logging
 from aiogram.types import CallbackQuery, InputMediaPhoto, Message
 from config_data import constants
 from redis.asyncio import Redis
+from services.redis_services import get_redis_connection
 
 logger = logging.getLogger(__name__)
 
 
-async def get_photo_file_id(key: str, redis_connection: Redis) -> InputMediaPhoto | None:
+async def get_photo_file_id(key: str) -> InputMediaPhoto | None:
     """
     Возвращает file_id изображения из Redis.
     """
-    result = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, key)
+    async with get_redis_connection() as redis_connection:
+        result = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, key)
     if not result is None:
         logger.info("File ID found in Redis with key %s", key)
         logger.info("File ID %s got from Redis", result)
@@ -20,7 +22,7 @@ async def get_photo_file_id(key: str, redis_connection: Redis) -> InputMediaPhot
     return None
 
 
-async def save_photo_file_id(event: Message | CallbackQuery, redis_connection: Redis, key: str | None = None) -> None:
+async def save_photo_file_id(event: Message | CallbackQuery, key: str | None = None) -> None:
     """
     Сохраняет file id изображения в Redis.
 
@@ -41,17 +43,18 @@ async def save_photo_file_id(event: Message | CallbackQuery, redis_connection: R
     logger.debug("Key is %s", key)
     logger.debug("File ID is %s", file_id)
     if all([key, file_id]):
-        is_key_exist = await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, key)
-        logger.debug("Is key exist %s", is_key_exist)
-        try:
-            if not is_key_exist:
-                await redis_connection.hset(constants.PHOTO_FILE_ID_HASH_NAME, key, file_id)
-                logger.info("File ID saved in Redis with key %s", key)
-            else:
-                logger.info("Key %s already exists", key)
-        # TODO слишком широкий диапазон перехватываемых ошибок. Надо сузить до разумного минимума
-        except Exception as e:
-            logger.error(str(e))
+        async with get_redis_connection() as redis_connection:
+            is_key_exist = await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, key)
+            logger.debug("Is key exist %s", is_key_exist)
+            try:
+                if not is_key_exist:
+                    await redis_connection.hset(constants.PHOTO_FILE_ID_HASH_NAME, key, file_id)
+                    logger.info("File ID saved in Redis with key %s", key)
+                else:
+                    logger.info("Key %s already exists", key)
+            # TODO слишком широкий диапазон перехватываемых ошибок. Надо сузить до разумного минимума
+            except Exception as e:
+                logger.error(str(e))
     else:
         logger.error("Key is %s", key)
         logger.error("File ID is %s", file_id)

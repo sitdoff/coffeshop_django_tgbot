@@ -1,3 +1,6 @@
+from contextlib import asynccontextmanager
+from unittest.mock import AsyncMock
+
 import pytest
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from fakeredis.aioredis import FakeRedis
@@ -9,6 +12,7 @@ from filters.callback_factories import (
 from lexicon.lexicon_ru import LEXICON_RU
 from models.cart import Cart
 from models.models import CategoryModel, ProductModel
+from services.redis_services import get_redis_connection
 
 
 @pytest.fixture
@@ -108,11 +112,15 @@ def user_id():
 
 @pytest.fixture
 def cart(redis_connection, user_id):
-    cart = Cart(
-        redis_connection=redis_connection,
+    @asynccontextmanager
+    async def redis_connection_provider():
+        yield redis_connection
+
+    crt = Cart(
         user_id=user_id,
+        redis_connection_provider=redis_connection_provider,
     )
-    yield cart
+    yield crt
 
 
 @pytest.fixture

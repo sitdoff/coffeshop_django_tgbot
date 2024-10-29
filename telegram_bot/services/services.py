@@ -19,41 +19,48 @@ from filters.callback_factories import (
 from lexicon.lexicon_ru import LEXICON_RU
 from models.cart import Cart
 from models.models import CategoryModel, ProductModel
+from services.redis_services import get_redis_connection
 
 logger = logging.getLogger(__name__)
 
 
-async def set_auth_token(token: str, message: Message, redis_connection: redis.Redis) -> None:
+# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
+async def set_auth_token(token: str, message: Message) -> None:
     """
     Записывает токен аутентификации в Redis.
     """
-    await redis_connection.set(f"token:{message.from_user.id}", token)
+    # await redis_connection.set(f"token:{message.from_user.id}", token)
+    async with get_redis_connection() as redis_connection:
+        await redis_connection.set(f"token:{message.from_user.id}", token)
 
 
-async def get_auth_token(message: Message | CallbackQuery, redis_connection: redis.Redis) -> str:
+# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
+async def get_auth_token(message: Message | CallbackQuery) -> str:
     """
     Возвращает токен аутентификации из Redis.
     """
-    return await redis_connection.get(f"token:{message.from_user.id}")
+    async with get_redis_connection() as redis_connection:
+        return await redis_connection.get(f"token:{message.from_user.id}")
 
 
-async def delete_auth_token(message: Message, redis_connection: redis.Redis) -> None:
+# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
+async def delete_auth_token(message: Message) -> None:
     """
     Удаляет токен аутентификации из Redis.
     """
-    await redis_connection.delete(f"token:{message.from_user.id}")
+    async with get_redis_connection() as redis_connection:
+        await redis_connection.delete(f"token:{message.from_user.id}")
 
 
-async def authorize_user(
-    message: Message, redis_connection: redis.Redis, session: aiohttp.ClientSession, api_url: str
-) -> str:
+# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
+async def authorize_user(message: Message, session: aiohttp.ClientSession, api_url: str) -> str:
     """
     Возвращает токен аутентификации.
 
     Сначала проверяет наличие токена пользователя в Redis. Если его нет в Redis,
     то отправляет запрос API на получение токена. Полученный от API токен записывает в Redis.
     """
-    token = await get_auth_token(message, redis_connection)
+    token = await get_auth_token(message)
     if not token:
         async with session.post(
             f"{api_url}/users/auth/telegram/",
@@ -61,13 +68,12 @@ async def authorize_user(
         ) as response:
             response_data = await response.json()
             token = response_data["token"]
-            await set_auth_token(token, message, redis_connection)
+            await set_auth_token(token, message)
     return token
 
 
 async def get_category_model_for_answer_callback(
     callback: CallbackQuery,
-    redis_connection: redis.Redis,
     api_url: str,
     category_id: str | int | None = None,
 ) -> CategoryModel:
@@ -83,8 +89,9 @@ async def get_category_model_for_answer_callback(
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {await get_auth_token(callback, redis_connection)}",
+        "Authorization": f"Token {await get_auth_token(callback)}",
     }
+    logger.debug("Headers are %s", headers)
     logger.debug("Callback data is %s", callback.data)
 
     async with aiohttp.ClientSession() as session:
@@ -92,11 +99,12 @@ async def get_category_model_for_answer_callback(
             response_data = await response.json()
             # logger.debug("Response data is %s", response_data)
 
-    if await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name")):
-        logger.info("Photo file id exists in Redis")
-        photo_file_id = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name"))
-        logger.info("Photo file id is %s", photo_file_id)
-        response_data["picture"] = photo_file_id
+    async with get_redis_connection() as redis_connection:
+        if await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name")):
+            logger.info("Photo file id exists in Redis")
+            photo_file_id = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name"))
+            logger.info("Photo file id is %s", photo_file_id)
+            response_data["picture"] = photo_file_id
 
     category = CategoryModel(**response_data)
 
@@ -105,7 +113,6 @@ async def get_category_model_for_answer_callback(
 
 async def get_product_model_for_answer_callback(
     callback,
-    redis_connection: redis.Redis,
     api_url: str,
     product_id: str | int | None,
 ) -> ProductModel:
@@ -118,7 +125,7 @@ async def get_product_model_for_answer_callback(
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {await get_auth_token(callback, redis_connection)}",
+        "Authorization": f"Token {await get_auth_token(callback)}",
     }
 
     async with aiohttp.ClientSession() as session:
@@ -126,11 +133,13 @@ async def get_product_model_for_answer_callback(
             response_data = await response.json()
             logger.debug("Response data is %s", response_data)
 
-    if await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name")):
-        logger.info("Photo file id exists in Redis")
-        photo_file_id = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name"))
-        logger.info("Photo file id is %s", photo_file_id)
-        response_data["picture"] = photo_file_id
+    async with get_redis_connection() as redis_connection:
+        if await redis_connection.hexists(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name")):
+            logger.info("Photo file id exists in Redis")
+            photo_file_id = await redis_connection.hget(constants.PHOTO_FILE_ID_HASH_NAME, response_data.get("name"))
+            logger.info("Photo file id is %s", photo_file_id)
+            response_data["picture"] = photo_file_id
+
     product = ProductModel(**response_data)
 
     return product

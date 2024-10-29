@@ -1,4 +1,6 @@
+from contextlib import asynccontextmanager
 from decimal import Decimal
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -15,8 +17,7 @@ from models.models import ProductModel
 
 
 def test_cart_init_with_valid_data(redis_connection, user_id):
-    cart = Cart(redis_connection=redis_connection, user_id=user_id)
-    assert cart.redis_connection is redis_connection
+    cart = Cart(user_id=user_id)
     assert cart.user_id == user_id
     assert cart.cart_name == f"cart:{user_id}"
     assert cart.items == {}

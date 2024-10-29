@@ -35,11 +35,9 @@ async def process_category_callback(
     logger.info("Callback: %s", callback.data)
     logger.info("Callback data: %s", callback_data)
 
-    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    cart = Cart(user_id=callback.from_user.id)
 
-    category = await services.get_category_model_for_answer_callback(
-        callback, extra["redis_connection"], extra["api_url"], category_id
-    )
+    category = await services.get_category_model_for_answer_callback(callback, extra["api_url"], category_id)
     paginated_keyboard = services.pagination_keyboard(
         keyboard=category.keyboard,
         page=callback_data.page if callback_data else 1,
@@ -53,7 +51,7 @@ async def process_category_callback(
         media=category.picture,
         reply_markup=keyboard_with_cart_button,
     )
-    await cache_services.save_photo_file_id(event, extra["redis_connection"])
+    await cache_services.save_photo_file_id(event)
 
 
 @router.callback_query(ProductCallbackFactory.filter())
@@ -69,12 +67,10 @@ async def process_product_callback(
     logger.info("Callback: %s", callback.data)
     logger.info("Product callback data: %s", callback_data)
 
-    product = await services.get_product_model_for_answer_callback(
-        callback, extra["redis_connection"], extra["api_url"], callback_data.product_id
-    )
+    product = await services.get_product_model_for_answer_callback(callback, extra["api_url"], callback_data.product_id)
     logger.debug("Data for answer: %s", product)
 
-    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    cart = Cart(user_id=callback.from_user.id)
     keyboard = product.keyboard
     keyboard = await services.edit_product_inline_keyboard(cart, keyboard_list=keyboard.inline_keyboard)
 
@@ -82,7 +78,7 @@ async def process_product_callback(
         media=product.picture,
         reply_markup=keyboard,
     )
-    await cache_services.save_photo_file_id(answer, extra["redis_connection"])
+    await cache_services.save_photo_file_id(answer)
 
 
 @router.callback_query(F.data == "pass")
@@ -145,12 +141,10 @@ async def process_cart_callback(callback: CallbackQuery, extra: dict[str, Any]):
     keyboard = cart.get_cart_inline_keyboard()
     await cart.get_items_from_redis()
     caption = cart.get_cart_text()
-    photo = await cache_services.get_photo_file_id("cart", extra["redis_connection"]) or InputMediaPhoto(
-        media=FSInputFile("images/cart.jpg")
-    )
+    photo = await cache_services.get_photo_file_id("cart") or InputMediaPhoto(media=FSInputFile("images/cart.jpg"))
     photo.caption = caption
     answer = await callback.message.edit_media(media=photo, reply_markup=keyboard)
-    await cache_services.save_photo_file_id(answer, extra["redis_connection"], key="cart")
+    await cache_services.save_photo_file_id(answer, key="cart")
 
 
 @router.callback_query(EditCartCallbackFactory.filter())
@@ -184,9 +178,7 @@ async def process_cart_clear_callback(callback: CallbackQuery, extra: dict[str, 
     logger.info("Handler for clear cart")
     logger.info("Callback: %s", callback.data)
     cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
-    photo = await cache_services.get_photo_file_id("clear_cart", extra["redis_connection"]) or FSInputFile(
-        "images/cart.jpg"
-    )
+    photo = await cache_services.get_photo_file_id("clear_cart") or FSInputFile("images/cart.jpg")
     photo.caption = LEXICON_RU["messages"]["cart_is_empty"]
     await cart.clear()
     answer = await callback.message.edit_media(
@@ -197,4 +189,4 @@ async def process_cart_clear_callback(callback: CallbackQuery, extra: dict[str, 
         ),
         reply_markup=await get_start_keyboard(),
     )
-    await cache_services.save_photo_file_id(answer, extra["redis_connection"], key="clear_cart")
+    await cache_services.save_photo_file_id(answer, key="clear_cart")

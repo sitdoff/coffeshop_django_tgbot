@@ -40,13 +40,11 @@ async def test_process_category_callback_without_callback_data(
     await process_category_callback(callback, extra, None)
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(extra["redis_connection"], callback.from_user.id)
+    Cart_mock.assert_called_with(callback.from_user.id)
 
     get_category_model_for_answer_callback_mock.assert_called_once()
     get_category_model_for_answer_callback_mock.assert_awaited()
-    get_category_model_for_answer_callback_mock.assert_called_with(
-        callback, extra["redis_connection"], extra["api_url"], None
-    )
+    get_category_model_for_answer_callback_mock.assert_called_with(callback, extra["api_url"], None)
 
     pagination_keyboard_mock.assert_called_once()
     pagination_keyboard_mock.assert_called_with(
@@ -105,12 +103,12 @@ async def test_process_category_callback_with_callback_data(
     await process_category_callback(callback, extra, callback_data)
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(extra["redis_connection"], callback.from_user.id)
+    Cart_mock.assert_called_with(callback.from_user.id)
 
     get_category_model_for_answer_callback_mock.assert_called_once()
     get_category_model_for_answer_callback_mock.assert_awaited()
     get_category_model_for_answer_callback_mock.assert_called_with(
-        callback, extra["redis_connection"], extra["api_url"], callback_data.category_id
+        callback, extra["api_url"], callback_data.category_id
     )
 
     pagination_keyboard_mock.assert_called_once()

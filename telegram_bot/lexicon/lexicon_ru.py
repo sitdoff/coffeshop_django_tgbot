@@ -10,6 +10,7 @@ LEXICON_RU: dict[Literal["system", "commands", "inline", "messages"], Any] = {
         "api_config_loaded": "API config loaded.",
         "redis_config_loaded": "Redis config loaded.",
         "redis_connection_created": "Redis connection created.",
+        "redis_pool_created": "Redis connection pool created.",
         "workflow_data_updated": "Workflow data updated.",
         "main_menu_set": "Main menu installed.",
         "routers_registred": "Routers registred.",
