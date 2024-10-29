@@ -28,6 +28,7 @@ class RedisSengleton:
                 host=redis_config.redis_host,
                 port=redis_config.redis_port,
                 decode_responses=True,
+                client_name="telegram_bot_redissengleton",
             )
         return self._redis_pool
 
@@ -48,7 +49,7 @@ async def get_redis_connection():
     Функция генератор преобоазованная в асинхронный контекстный менеджер. Возвращает соединение Redis из пула.
     """
     connection_pool: ConnectionPool = await redis_singleton.get_pool()
-    redis_connection = Redis(connection_pool=connection_pool)
+    redis_connection = Redis(connection_pool=connection_pool, client_name="")
     try:
         yield redis_connection
     finally:
