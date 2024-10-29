@@ -57,7 +57,7 @@ class Cart(BaseModel):
         text += f"`{LEXICON_RU['messages']['cart_text_head']:^33}`\n"
         text += line
         for product in self.items.values():
-            text += f"`{product.name:<20s} {product.quantity:^2d} {product.cost:>7s} {LEXICON_RU['messages']['rub_symbol']}`\n"
+            text += f"`{product.name:<20s} {product.quantity:^2d} {product.cost:>7} {LEXICON_RU['messages']['rub_symbol']}`\n"
         text += line
         text += f"`{LEXICON_RU['messages']['cart_info']} {self.total_cost:>26} {LEXICON_RU['messages']['rub_symbol']}`"
         return text

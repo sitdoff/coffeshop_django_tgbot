@@ -57,16 +57,16 @@ def test_product_model_init_if_data_from_redis(product_init_data):
 
 def test_product_model_cost_property(product_init_data):
     product = ProductModel(**product_init_data)
-    assert product.cost == str(Decimal(product.price) * product.quantity)
+    assert product.cost == product.price * product.quantity
 
     product_init_data["quantity"] = 10
     product = ProductModel(**product_init_data)
-    assert product.cost == str(Decimal(product.price) * product.quantity)
+    assert product.cost == product.price * product.quantity
 
     product_init_data["quantity"] = None
     product_init_data["is_data_from_redis"] = True
     product = ProductModel(**product_init_data)
-    assert product.cost == str(Decimal(product.price))
+    assert product.cost == product.price
 
 
 def test_product_model_model_dump(product_init_data):
@@ -77,7 +77,7 @@ def test_product_model_model_dump(product_init_data):
         "name": "test_product",
         "price": Decimal("10.00"),
         "quantity": 10,
-        "cost": "100.00",
+        "cost": Decimal("100.00"),
     }
 
 
