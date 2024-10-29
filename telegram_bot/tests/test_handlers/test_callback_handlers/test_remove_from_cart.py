@@ -33,7 +33,7 @@ async def test_remove_from_cart_if_product_not_in_cart(
     await remove_from_cart(callback, remove_from_cart_callback_data, extra)
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    Cart_mock.assert_called_with(user_id=callback.from_user.id)
     cart_mock.get_items_from_redis.assert_called_once()
     cart_mock.get_items_from_redis.assert_awaited()
 
@@ -62,7 +62,7 @@ async def test_remove_from_cart_if_product_in_cart(
     await remove_from_cart(callback, remove_from_cart_callback_data, extra)
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    Cart_mock.assert_called_with(user_id=callback.from_user.id)
 
     cart_mock.get_items_from_redis.assert_called_once()
     cart_mock.get_items_from_redis.assert_awaited()
@@ -99,7 +99,7 @@ async def test_remove_from_cart_if_product_quantity_is_0(
     await remove_from_cart(callback, remove_from_cart_callback_data, extra)
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    Cart_mock.assert_called_with(user_id=callback.from_user.id)
 
     cart_mock.get_items_from_redis.assert_called_once()
     cart_mock.get_items_from_redis.assert_awaited()

@@ -99,7 +99,7 @@ async def add_to_cart(callback: CallbackQuery, callback_data: AddToCartCallbackF
     logger.info("Handler for add cart")
     logger.info("Callback: %s", callback.data)
     logger.info("Callback data: %s", callback_data)
-    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    cart = Cart(user_id=callback.from_user.id)
     await cart.add_product_in_cart(callback_data)
     keyboard = await services.edit_product_inline_keyboard(cart, callback.message.reply_markup.inline_keyboard)
     if callback.message.reply_markup != keyboard:
@@ -117,7 +117,7 @@ async def remove_from_cart(
     logger.info("Handler for remove from cart")
     logger.info("Callback: %s", callback.data)
     logger.info("Callback data: %s", callback_data)
-    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    cart = Cart(user_id=callback.from_user.id)
     await cart.get_items_from_redis()
     if str(callback_data.id) not in cart.items or cart.items[str(callback_data.id)].quantity <= 0:
         await callback.answer(text=LEXICON_RU["inline"]["item_is_not_in_cart"])
@@ -137,7 +137,7 @@ async def process_cart_callback(callback: CallbackQuery, extra: dict[str, Any]):
     logger.info("Handler for cart button")
     logger.info("Callback: %s", callback.data)
 
-    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    cart = Cart(user_id=callback.from_user.id)
     keyboard = cart.get_cart_inline_keyboard()
     await cart.get_items_from_redis()
     caption = cart.get_cart_text()
@@ -157,7 +157,7 @@ async def process_edit_cart_callback(
     logger.info("Handler for edit cart")
     logger.info("Callback: %s", callback.data)
     logger.info("Callback data: %s", callback_data)
-    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    cart = Cart(user_id=callback.from_user.id)
     await cart.get_items_from_redis()
     keyboard = await services.get_edit_cart_inline_keyboard(cart)
     await callback.message.edit_reply_markup(
@@ -177,7 +177,7 @@ async def process_cart_clear_callback(callback: CallbackQuery, extra: dict[str, 
     """
     logger.info("Handler for clear cart")
     logger.info("Callback: %s", callback.data)
-    cart = Cart(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    cart = Cart(user_id=callback.from_user.id)
     photo = await cache_services.get_photo_file_id("clear_cart") or FSInputFile("images/cart.jpg")
     photo.caption = LEXICON_RU["messages"]["cart_is_empty"]
     await cart.clear()
