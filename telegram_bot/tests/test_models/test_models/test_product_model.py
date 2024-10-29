@@ -81,6 +81,12 @@ def test_product_model_model_dump(product_init_data):
     }
 
 
+def test_product_model_model_dump_json(product_init_data):
+    product_init_data["quantity"] = 10
+    product = ProductModel(**product_init_data)
+    assert product.model_dump_json() == '{"id":1,"name":"test_product","price":"10.00","quantity":10}'
+
+
 def test_product_model_get_product_inline_keyboard(product_init_data, product_inline_keyboard):
     product = ProductModel(**product_init_data)
     assert product.get_product_inline_keyboard(product_init_data) == product_inline_keyboard
