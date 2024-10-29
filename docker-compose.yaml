@@ -3,7 +3,7 @@
 # Файлы по типу entrypoint.sh и whait-for-it.sh надо копировать в папку проекта руками.
 services:
     db:
-        image: postgres
+        image: postgres:16.4
         environment:
             POSTGRES_DB: ${POSTGRES_DB}
             POSTGRES_USER: ${POSTGRES_USER}
