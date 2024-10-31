@@ -13,12 +13,12 @@ async def test_get_auth_token_with_message(events: Events, redis_connection: Fak
 
     with patch("services.services.get_redis_connection") as get_redis_connection_mock:
         get_redis_connection_mock.return_value = redis_connection
-        assert await get_auth_token(event) == None
+        assert await get_auth_token(event.from_user.id) == None
 
         await redis_connection.set(key, token)
         await redis_connection.get(key) == token
 
-        assert (await get_auth_token(event)) == token
+        assert (await get_auth_token(event.from_user.id)) == token
 
 
 async def test_get_auth_token_with_callback(events: Events, redis_connection: FakeRedis):
@@ -29,8 +29,8 @@ async def test_get_auth_token_with_callback(events: Events, redis_connection: Fa
     with patch("services.services.get_redis_connection") as get_redis_connection_mock:
         get_redis_connection_mock.return_value = redis_connection
 
-        assert await get_auth_token(event) == None
+        assert await get_auth_token(event.from_user.id) == None
 
         await redis_connection.set(key, token)
 
-        assert (await get_auth_token(event)) == token
+        assert (await get_auth_token(event.from_user.id)) == token

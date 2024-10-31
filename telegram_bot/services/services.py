@@ -24,21 +24,20 @@ from services.redis_services import get_redis_connection
 logger = logging.getLogger(__name__)
 
 
-async def set_auth_token(token: str, id: int) -> None:
+async def set_auth_token(token: str, user_id: int) -> None:
     """
     Записывает токен аутентификации в Redis.
     """
     async with get_redis_connection() as redis_connection:
-        await redis_connection.set(f"token:{id}", token)
+        await redis_connection.set(f"token:{user_id}", token)
 
 
-# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def get_auth_token(message: Message | CallbackQuery) -> str:
+async def get_auth_token(user_id: int) -> str:
     """
     Возвращает токен аутентификации из Redis.
     """
     async with get_redis_connection() as redis_connection:
-        return await redis_connection.get(f"token:{message.from_user.id}")
+        return await redis_connection.get(f"token:{user_id}")
 
 
 # TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
@@ -58,7 +57,7 @@ async def authorize_user(message: Message, session: aiohttp.ClientSession, api_u
     Сначала проверяет наличие токена пользователя в Redis. Если его нет в Redis,
     то отправляет запрос API на получение токена. Полученный от API токен записывает в Redis.
     """
-    token = await get_auth_token(message)
+    token = await get_auth_token(message.from_user.id)
     if not token:
         async with session.post(
             f"{api_url}/users/auth/telegram/",
@@ -87,7 +86,7 @@ async def get_category_model_for_answer_callback(
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {await get_auth_token(callback)}",
+        "Authorization": f"Token {await get_auth_token(callback.from_user.id)}",
     }
     logger.debug("Headers are %s", headers)
     logger.debug("Callback data is %s", callback.data)
@@ -110,7 +109,7 @@ async def get_category_model_for_answer_callback(
 
 
 async def get_product_model_for_answer_callback(
-    callback,
+    callback: CallbackQuery,
     api_url: str,
     product_id: str | int | None,
 ) -> ProductModel:
@@ -123,7 +122,7 @@ async def get_product_model_for_answer_callback(
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {await get_auth_token(callback)}",
+        "Authorization": f"Token {await get_auth_token(callback.from_user.id)}",
     }
 
     async with aiohttp.ClientSession() as session:
