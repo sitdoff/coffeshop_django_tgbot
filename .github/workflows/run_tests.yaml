@@ -14,9 +14,6 @@ jobs:
             DJANGO_SETTINGS_MODULE: "core.settings.test"
 
         steps:
-            - name: Check environment variables
-              run: echo $DJANGO_SETTINGS_MODULE
-
             - name: Checkout
               uses: actions/checkout@v4
 
@@ -29,9 +26,6 @@ jobs:
               run: |
                   pip install --upgrade pip
                   pip install -r requirements.txt
-
-            - name: Check environment variables
-              run: echo $DJANGO_SETTINGS_MODULE
 
             - name: Run django migrations
               run: python ./coffeshop_api/manage.py makemigrations && python ./coffeshop_api/manage.py migrate
