@@ -40,13 +40,12 @@ async def get_auth_token(user_id: int) -> str:
         return await redis_connection.get(f"token:{user_id}")
 
 
-# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def delete_auth_token(message: Message) -> None:
+async def delete_auth_token(user_id: int) -> None:
     """
     Удаляет токен аутентификации из Redis.
     """
     async with get_redis_connection() as redis_connection:
-        await redis_connection.delete(f"token:{message.from_user.id}")
+        await redis_connection.delete(f"token:{user_id}")
 
 
 # TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
