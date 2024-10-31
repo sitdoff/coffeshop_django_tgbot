@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from aiogram.types import CallbackQuery, Message
+from events import Events
 from tests.test_models.conftest import (
     add_callbacks,
     cart,
@@ -13,13 +14,6 @@ from tests.test_models.conftest import (
     products,
     user_id,
 )
-
-
-@dataclass
-class Events:
-    def __init__(self, message: Message, callback: CallbackQuery):
-        self.message = message
-        self.callback = callback
 
 
 @pytest.fixture
