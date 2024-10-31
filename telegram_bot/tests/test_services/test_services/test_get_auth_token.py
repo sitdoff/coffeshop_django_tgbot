@@ -1,10 +1,9 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 from aiogram.types import Message
-from conftest import Events
 from fakeredis.aioredis import FakeRedis
-from redis.asyncio import ConnectionPool
 from services.services import get_auth_token
+from tests.test_services.events import Events
 
 
 async def test_get_auth_token_with_message(events: Events, redis_connection: FakeRedis):
