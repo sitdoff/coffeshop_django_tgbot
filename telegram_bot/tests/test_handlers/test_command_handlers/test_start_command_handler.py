@@ -63,9 +63,9 @@ async def test_process_start_command_when_user_already_exist(
     message: AsyncMock,
     extra: dict,
 ):
-    async def authorize_user_mock_side_effect(message, session, api_url):
+    async def authorize_user_mock_side_effect(user_id, session, api_url):
         token = "token"
-        await extra["redis_connection"].set(f"token:{message.from_user.id}", token)
+        await extra["redis_connection"].set(f"token:{user_id}", token)
 
     authorize_user_mock.side_effect = authorize_user_mock_side_effect
 

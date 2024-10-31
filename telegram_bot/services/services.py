@@ -48,23 +48,22 @@ async def delete_auth_token(user_id: int) -> None:
         await redis_connection.delete(f"token:{user_id}")
 
 
-# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def authorize_user(message: Message, session: aiohttp.ClientSession, api_url: str) -> str:
+async def authorize_user(user_id: int, session: aiohttp.ClientSession, api_url: str) -> str:
     """
     Возвращает токен аутентификации.
 
     Сначала проверяет наличие токена пользователя в Redis. Если его нет в Redis,
     то отправляет запрос API на получение токена. Полученный от API токен записывает в Redis.
     """
-    token = await get_auth_token(message.from_user.id)
+    token = await get_auth_token(user_id)
     if not token:
         async with session.post(
             f"{api_url}/users/auth/telegram/",
-            json={"telegram_id": message.from_user.id},
+            json={"telegram_id": user_id},
         ) as response:
             response_data = await response.json()
             token = response_data["token"]
-            await set_auth_token(token, message.from_user.id)
+            await set_auth_token(token, user_id)
     return token
 
 

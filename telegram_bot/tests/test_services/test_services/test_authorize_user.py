@@ -16,7 +16,7 @@ async def test_authorize_user_if_token_exists(message: Message, extra: dict):
         async with ClientSession() as session:
             assert (
                 await authorize_user(
-                    message,
+                    message.from_user.id,
                     session,
                     extra["api_url"],
                 )
@@ -38,7 +38,7 @@ async def test_authorize_user_if_token_not_exists(message: Message, extra: dict)
 
                 assert (
                     await authorize_user(
-                        message,
+                        message.from_user.id,
                         session,
                         extra["api_url"],
                     )
