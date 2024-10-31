@@ -12,6 +12,9 @@ jobs:
         env:
             DJANGO_SETTINGS_MODULE: "core.settings.test"
         steps:
+            - name: Check environment variables
+              run: echo $DJANGO_SETTINGS_MODULE
+
             - name: Checkout
               uses: actions/checkout@v4
 
@@ -29,7 +32,7 @@ jobs:
               run: echo $DJANGO_SETTINGS_MODULE
 
             - name: Run django migrations
-              run: python ./coffeshop_api/manage.py migrate
+              run: python ./coffeshop_api/manage.py makemigrations && python ./coffeshop_api/manage.py migrate
 
             - name: Run django tests
               run: python ./coffeshop_api/manage.py test ./coffeshop_api/
