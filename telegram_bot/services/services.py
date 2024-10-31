@@ -24,14 +24,12 @@ from services.redis_services import get_redis_connection
 logger = logging.getLogger(__name__)
 
 
-# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def set_auth_token(token: str, message: Message) -> None:
+async def set_auth_token(token: str, id: int) -> None:
     """
     Записывает токен аутентификации в Redis.
     """
-    # await redis_connection.set(f"token:{message.from_user.id}", token)
     async with get_redis_connection() as redis_connection:
-        await redis_connection.set(f"token:{message.from_user.id}", token)
+        await redis_connection.set(f"token:{id}", token)
 
 
 # TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
@@ -68,7 +66,7 @@ async def authorize_user(message: Message, session: aiohttp.ClientSession, api_u
         ) as response:
             response_data = await response.json()
             token = response_data["token"]
-            await set_auth_token(token, message)
+            await set_auth_token(token, message.from_user.id)
     return token
 
 

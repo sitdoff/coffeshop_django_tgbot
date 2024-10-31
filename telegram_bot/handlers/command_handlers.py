@@ -31,7 +31,7 @@ async def process_start_command(
             logger.debug(f"Response status: {response.status}, response data: {response_data}")
 
         if response.status == 201:
-            await services.set_auth_token(response_data["token"], message)
+            await services.set_auth_token(response_data["token"], message.from_user.id)
             logger.info("Successfully. The user has been created.")
         if response.status == 400:
             await services.authorize_user(message, session, extra["api_url"])
