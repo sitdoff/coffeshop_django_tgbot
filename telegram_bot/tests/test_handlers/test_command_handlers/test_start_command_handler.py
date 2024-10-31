@@ -26,9 +26,11 @@ async def test_process_start_command_when_user_not_exist(
 
     set_auth_token_mock.side_effect = set_auth_token_mock_side_effect
 
-    with aioresponses() as mock_response:
-        mock_response.post("http://web:8000/users/create/", status=201, payload={"token": "12345"})
-        await process_start_command(message, extra)
+    with patch("handlers.command_handlers.get_redis_connection") as mocked_get_redis_connetion:
+        mocked_get_redis_connetion.return_value = extra["redis_connection"]
+        with aioresponses() as mock_response:
+            mock_response.post("http://web:8000/users/create/", status=201, payload={"token": "12345"})
+            await process_start_command(message, extra)
 
     set_auth_token_mock.assert_called()
     set_auth_token_mock.assert_called_with("12345", message)
@@ -68,19 +70,21 @@ async def test_process_start_command_when_user_already_exist(
     authorize_user_mock.side_effect = authorize_user_mock_side_effect
 
     with patch("handlers.command_handlers.aiohttp.client._BaseRequestContextManager") as mock_session_post:
-        with aioresponses() as mock_response:
+        with patch("handlers.command_handlers.get_redis_connection") as mocked_get_redis_connetion:
+            mocked_get_redis_connetion.return_value = extra["redis_connection"]
+            with aioresponses() as mock_response:
 
-            async def mock_aenter(*args, **kwargs):
-                return mock_response
+                async def mock_aenter(*args, **kwargs):
+                    return mock_response
 
-            async def mock_aexit(*args, **kwargs):
-                return
+                async def mock_aexit(*args, **kwargs):
+                    return
 
-            mock_session_post.__aenter__ = mock_aenter
-            mock_session_post.__aexit__ = mock_aexit
+                mock_session_post.__aenter__ = mock_aenter
+                mock_session_post.__aexit__ = mock_aexit
 
-            mock_response.post("http://web:8000/users/create/", status=400, payload={"token": "12345"})
-            await process_start_command(message, extra)
+                mock_response.post("http://web:8000/users/create/", status=400, payload={"token": "12345"})
+                await process_start_command(message, extra)
 
     authorize_user_mock.assert_called()
     authorize_user_mock.assert_awaited()
@@ -107,9 +111,11 @@ async def test_process_start_command_if_token_not_exist(
     message: AsyncMock,
     extra: dict,
 ):
-    with aioresponses() as mock_response:
-        mock_response.post("http://web:8000/users/create/", status=None, payload={"token": "12345"})
-        await process_start_command(message, extra)
+    with patch("handlers.command_handlers.get_redis_connection") as mocked_get_redis_connetion:
+        mocked_get_redis_connetion.return_value = extra["redis_connection"]
+        with aioresponses() as mock_response:
+            mock_response.post("http://web:8000/users/create/", status=None, payload={"token": "12345"})
+            await process_start_command(message, extra)
 
     message.answer.assert_called()
     message.answer.assert_awaited()

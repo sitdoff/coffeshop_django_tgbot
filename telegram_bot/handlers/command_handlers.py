@@ -9,6 +9,7 @@ from keyboards.callback_keyboards import get_start_keyboard
 from lexicon.lexicon_ru import LEXICON_RU
 from models.cart import Cart
 from services import cache_services, services
+from services.redis_services import get_redis_connection
 
 router: Router = Router()
 
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 @router.message(CommandStart())
 async def process_start_command(
     message: Message,
-    extra: dict[Literal["redis_connection", "api_url"], Any],
+    extra: dict[Literal["api_url"], Any],
 ):
     """
     Хэндлер для обработки команды /start.
@@ -36,7 +37,9 @@ async def process_start_command(
             await services.authorize_user(message, session, extra["api_url"])
             logger.info(f"Unsuccessful. Error message: {response_data.get('error')}")
 
-    token = await extra["redis_connection"].get(f"token:{message.from_user.id}")
+    async with get_redis_connection() as redis_connection:
+        token = await redis_connection.get(f"token:{message.from_user.id}")
+
     logger.debug(f"User: {message.from_user.username}:{message.from_user.id}. Auth token: {token}")
 
     if token:

@@ -32,7 +32,7 @@ async def test_add_to_cart_if_callback_keyboard_was_edited(
     await add_to_cart(callback, add_to_cart_callback_data, extra)
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    Cart_mock.assert_called_with(user_id=callback.from_user.id)
 
     cart_mock.add_product_in_cart.assert_called_once()
     cart_mock.add_product_in_cart.assert_awaited()
@@ -69,7 +69,7 @@ async def test_add_to_cart_if_callback_keyboard_was_not_edited(
     await add_to_cart(callback, add_to_cart_callback_data, extra)
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    Cart_mock.assert_called_with(user_id=callback.from_user.id)
 
     cart_mock.add_product_in_cart.assert_called_once()
     cart_mock.add_product_in_cart.assert_awaited()

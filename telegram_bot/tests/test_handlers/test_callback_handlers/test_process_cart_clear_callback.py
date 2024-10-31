@@ -23,7 +23,7 @@ async def test_process_cart_clear_callback(
     await process_cart_clear_callback(callback, extra)
 
     Cart_mock.assert_called_once()
-    Cart_mock.assert_called_with(redis_connection=extra["redis_connection"], user_id=callback.from_user.id)
+    Cart_mock.assert_called_with(user_id=callback.from_user.id)
     get_photo_file_id_mock.assert_called_once()
     get_photo_file_id_mock.assert_awaited()
     cart_mock.clear.assert_called_once()

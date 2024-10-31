@@ -17,7 +17,7 @@ from filters.callback_factories import (
 )
 from keyboards.callback_keyboards import set_product_button_text
 from lexicon.lexicon_ru import LEXICON_RU
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, condecimal
 
 logger = getLogger(__name__)
 
@@ -32,7 +32,7 @@ class ProductModel(BaseModel):
     picture: InputMediaPhoto | str | None = Field(default=None, exclude=True)
     description: str | None = Field(default=None, exclude=True)
     category: str | None = Field(default=None, exclude=True)
-    price: Decimal
+    price: condecimal(gt=1, max_digits=5, decimal_places=2)  # pyright: ignore[reportInvalidTypeForm]
     quantity: int | None = 1
     parent_id: int | None = Field(default=None, exclude=True)
     keyboard: InlineKeyboardMarkup | None = Field(default=None, exclude=True)
@@ -47,13 +47,13 @@ class ProductModel(BaseModel):
             self.keyboard = self.get_product_inline_keyboard(data)
 
     @property
-    def cost(self) -> str | None:
+    def cost(self) -> Decimal:
         """
         Свойство возвращает общую стоимость товаров.
         """
         if self.quantity is None:
-            return str(Decimal(self.price))
-        return str(Decimal(self.price) * self.quantity)
+            return Decimal(self.price)
+        return Decimal(self.price) * self.quantity
 
     def model_dump(self, **kwargs: Any) -> dict:
         """

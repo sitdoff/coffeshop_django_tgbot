@@ -1,14 +1,13 @@
 import asyncio
 import logging
 
-import redis.asyncio as redis
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from config_data.config import Config, load_config
 from handlers import callback_handlers, command_handlers
 from keyboards.set_main_menu import set_main_menu
 from lexicon.lexicon_ru import LEXICON_RU
-from services.redis_services import redis_singleton
+from services.redis_services import get_redis_connection, redis_singleton
 
 logger = logging.getLogger(__name__)
 
@@ -24,17 +23,12 @@ async def main():
     config: Config = load_config()
     logging.info(LEXICON_RU["system"]["config_loaded"])
 
-    # Get Redis connection.
-    redis_connection: redis.Redis = await redis.Redis(
-        host=config.redis.redis_host,
-        port=config.redis.redis_port,
-        decode_responses=True,
-    )
-    logging.info(f"Ping Redis: {await redis_connection.ping()}")
-    logging.info(LEXICON_RU["system"]["redis_connection_created"])
-
     # Init redis connection pool.
     await redis_singleton.init_pool(config.redis)
+    async with get_redis_connection() as redis_connection:
+        ping_redis_result = await redis_connection.ping()
+        assert ping_redis_result is True
+        logging.info(f"Ping Redis: {ping_redis_result}")
     logging.info(LEXICON_RU["system"]["redis_pool_created"])
 
     # Create Bot
@@ -57,7 +51,6 @@ async def main():
     dp.workflow_data.update(
         {
             "extra": {
-                "redis_connection": redis_connection,
                 "api_url": config.api.get_api_url(),
             }
         }
