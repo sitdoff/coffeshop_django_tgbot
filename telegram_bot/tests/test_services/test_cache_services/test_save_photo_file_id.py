@@ -5,8 +5,7 @@ from aiogram.types import CallbackQuery, Message
 from config_data import constants
 from fakeredis.aioredis import FakeRedis
 from services.cache_services import save_photo_file_id
-
-from telegram_bot.tests.test_services.events import Events
+from tests.test_services.events import Events
 
 
 def get_params_form_message(message: Message) -> tuple[Message, str, str]:
