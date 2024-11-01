@@ -25,7 +25,7 @@ class RedisSengleton:
             self._redis_pool = ConnectionPool(**redis_config.model_dump())
         return self._redis_pool
 
-    async def get_pool(self):
+    def get_pool(self):
         """
         Метод возвращает уже существующий пул соединений.
         """
@@ -41,7 +41,7 @@ async def get_redis_connection():
     """
     Функция генератор преобоазованная в асинхронный контекстный менеджер. Возвращает соединение Redis из пула.
     """
-    connection_pool: ConnectionPool = await redis_singleton.get_pool()
+    connection_pool: ConnectionPool = redis_singleton.get_pool()
     redis_connection = Redis(connection_pool=connection_pool, client_name="")
     try:
         yield redis_connection
