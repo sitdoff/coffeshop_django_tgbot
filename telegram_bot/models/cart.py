@@ -220,7 +220,6 @@ class Cart(BaseModel):
     def _validate_callback_data_and_quantity(
         callback_data: AddToCartCallbackFactory | RemoveFromCartCallbackFactory, quantity: int
     ) -> None:
-        # TODO: покрыть тестами
         if isinstance(callback_data, AddToCartCallbackFactory) and quantity < 1:
             raise ValueError("callback_data is AddToCartCallbackFactory, quantity must be positive.")
 
