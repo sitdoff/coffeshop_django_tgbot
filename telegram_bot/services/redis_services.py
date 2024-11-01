@@ -17,7 +17,7 @@ class RedisSengleton:
             cls._instance = super(RedisSengleton, cls).__new__(cls)
         return cls._instance
 
-    async def init_pool(self, redis_config: RedisConfig):
+    def init_pool(self, redis_config: RedisConfig):
         """
         Метод создаёт и возвращает пул соединений.
         """
