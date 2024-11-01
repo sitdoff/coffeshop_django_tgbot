@@ -5,7 +5,6 @@ from services.services import edit_category_inline_keyboard
 
 async def test_cart_edit_category_inline_keyboard(cart: Cart, keyboard: InlineKeyboardMarkup):
     buttons = keyboard.inline_keyboard
-    print(buttons)
 
     assert len(buttons) == 7
 
