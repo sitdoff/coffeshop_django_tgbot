@@ -22,14 +22,7 @@ class RedisSengleton:
         Метод создаёт и возвращает пул соединений.
         """
         if not hasattr(self, "_redis_pool"):
-            # TODO: Попробовать сделать так, чтобы можно было просто распаковать словарь из модели конфига
-            # примерно так ConnectionPool(**redis_config.dict())
-            self._redis_pool = ConnectionPool(
-                host=redis_config.redis_host,
-                port=redis_config.redis_port,
-                decode_responses=True,
-                client_name="telegram_bot_redissengleton",
-            )
+            self._redis_pool = ConnectionPool(**redis_config.model_dump())
         return self._redis_pool
 
     async def get_pool(self):

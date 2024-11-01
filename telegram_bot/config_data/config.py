@@ -1,6 +1,7 @@
 import logging
 
 from lexicon.lexicon_ru import LEXICON_RU
+from pydantic import Field
 from pydantic.types import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -21,13 +22,18 @@ class ApiConfig(BaseSettings):
     Класс с настройками доступа к API.
     """
 
-    api_protocol: str
-    api_host: str
-    api_port: int
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    protocol: str
+    host: str
+    port: int
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        env_prefix="API_",
+    )
 
     def get_api_url(self) -> str:
-        return f"{self.api_protocol}://{self.api_host}:{self.api_port}"
+        return f"{self.protocol}://{self.host}:{self.port}"
 
 
 class RedisConfig(BaseSettings):
@@ -35,10 +41,17 @@ class RedisConfig(BaseSettings):
     Класс с настроками доступа к Redis.
     """
 
-    redis_host: str
-    redis_port: int
+    host: str
+    port: int
+    decode_responses: bool = True
+    client_name: str = "telegram_bot_redissengleton"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        env_prefix="REDIS_",
+    )
 
 
 class Config(BaseSettings):
