@@ -34,9 +34,30 @@ class TestCart(TestCase):
         cart = Cart()
         self.assertEqual(cart.cart, {"items": {}, "ordered": set()})
 
-    # TODO: надо сделать тест на создание корзины, когда передаются уже готовые данные
     def test_init_cart_with_data(self):
-        pass
+        cart = Cart(
+            {
+                "cart": {
+                    "items": {
+                        self.product1.pk: {
+                            "product_id": self.product1.pk,
+                            "product_name": self.product1.name,
+                            "price": Decimal(self.product1.price),
+                            "quantity": 1,
+                            "cost": Decimal(self.product1.price),
+                        }
+                    },
+                },
+                "ordered": {self.product1.pk},
+            }
+        )
+
+        self.assertEqual(cart.cart["items"][self.product1.pk]["product_id"], self.product1.pk)
+        self.assertEqual(cart.cart["items"][self.product1.pk]["product_name"], self.product1.name)
+        self.assertEqual(cart.cart["items"][self.product1.pk]["price"], self.product1.price)
+        self.assertEqual(cart.cart["items"][self.product1.pk]["quantity"], 1)
+        self.assertEqual(cart.cart["items"][self.product1.pk]["cost"], self.product1.price)
+        self.assertEqual(cart.cart["ordered"], {self.product1.pk})
 
     def test_cart_add_product(self):
         """
