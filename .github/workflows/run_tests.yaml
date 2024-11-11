@@ -28,7 +28,9 @@ jobs:
                   pip install -r requirements.txt
 
             - name: Run django migrations
-              run: python ./coffeshop_api/manage.py makemigrations && python ./coffeshop_api/manage.py migrate
+              run: |
+                  python ./coffeshop_api/manage.py makemigrations
+                  python ./coffeshop_api/manage.py migrate
 
             - name: Run django tests
               run: python ./coffeshop_api/manage.py test ./coffeshop_api/

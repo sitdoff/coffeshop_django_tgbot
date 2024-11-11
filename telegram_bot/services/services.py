@@ -24,51 +24,46 @@ from services.redis_services import get_redis_connection
 logger = logging.getLogger(__name__)
 
 
-# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def set_auth_token(token: str, message: Message) -> None:
+async def set_auth_token(token: str, user_id: int) -> None:
     """
     Записывает токен аутентификации в Redis.
     """
-    # await redis_connection.set(f"token:{message.from_user.id}", token)
     async with get_redis_connection() as redis_connection:
-        await redis_connection.set(f"token:{message.from_user.id}", token)
+        await redis_connection.set(f"token:{user_id}", token)
 
 
-# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def get_auth_token(message: Message | CallbackQuery) -> str:
+async def get_auth_token(user_id: int) -> str:
     """
     Возвращает токен аутентификации из Redis.
     """
     async with get_redis_connection() as redis_connection:
-        return await redis_connection.get(f"token:{message.from_user.id}")
+        return await redis_connection.get(f"token:{user_id}")
 
 
-# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def delete_auth_token(message: Message) -> None:
+async def delete_auth_token(user_id: int) -> None:
     """
     Удаляет токен аутентификации из Redis.
     """
     async with get_redis_connection() as redis_connection:
-        await redis_connection.delete(f"token:{message.from_user.id}")
+        await redis_connection.delete(f"token:{user_id}")
 
 
-# TODO: Наверное не стоит передевать всё сообщение. Достаточно только id
-async def authorize_user(message: Message, session: aiohttp.ClientSession, api_url: str) -> str:
+async def authorize_user(user_id: int, session: aiohttp.ClientSession, api_url: str) -> str:
     """
     Возвращает токен аутентификации.
 
     Сначала проверяет наличие токена пользователя в Redis. Если его нет в Redis,
     то отправляет запрос API на получение токена. Полученный от API токен записывает в Redis.
     """
-    token = await get_auth_token(message)
+    token = await get_auth_token(user_id)
     if not token:
         async with session.post(
             f"{api_url}/users/auth/telegram/",
-            json={"telegram_id": message.from_user.id},
+            json={"telegram_id": user_id},
         ) as response:
             response_data = await response.json()
             token = response_data["token"]
-            await set_auth_token(token, message)
+            await set_auth_token(token, user_id)
     return token
 
 
@@ -89,7 +84,7 @@ async def get_category_model_for_answer_callback(
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {await get_auth_token(callback)}",
+        "Authorization": f"Token {await get_auth_token(callback.from_user.id)}",
     }
     logger.debug("Headers are %s", headers)
     logger.debug("Callback data is %s", callback.data)
@@ -112,7 +107,7 @@ async def get_category_model_for_answer_callback(
 
 
 async def get_product_model_for_answer_callback(
-    callback,
+    callback: CallbackQuery,
     api_url: str,
     product_id: str | int | None,
 ) -> ProductModel:
@@ -125,7 +120,7 @@ async def get_product_model_for_answer_callback(
     logger.debug("Url is %s", url)
 
     headers = {
-        "Authorization": f"Token {await get_auth_token(callback)}",
+        "Authorization": f"Token {await get_auth_token(callback.from_user.id)}",
     }
 
     async with aiohttp.ClientSession() as session:

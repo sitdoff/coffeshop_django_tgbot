@@ -11,12 +11,12 @@ async def test_authorize_user_if_token_exists(message: Message, extra: dict):
     with patch("services.services.get_redis_connection") as get_redis_connection_mock:
         get_redis_connection_mock.return_value = extra["redis_connection"]
 
-        await set_auth_token(token, message)  # Устанавливаем токен в Redis
+        await set_auth_token(token, message.from_user.id)  # Устанавливаем токен в Redis
 
         async with ClientSession() as session:
             assert (
                 await authorize_user(
-                    message,
+                    message.from_user.id,
                     session,
                     extra["api_url"],
                 )
@@ -29,7 +29,7 @@ async def test_authorize_user_if_token_not_exists(message: Message, extra: dict)
     with patch("services.services.get_redis_connection") as get_redis_connection_mock:
         get_redis_connection_mock.return_value = extra["redis_connection"]
 
-        assert await get_auth_token(message) is None  # Токена в Redis нет
+        assert await get_auth_token(message.from_user.id) is None  # Токена в Redis нет
 
         with aioresponses() as mock_response:
 
@@ -38,11 +38,11 @@ async def test_authorize_user_if_token_not_exists(message: Message, extra: dict)
 
                 assert (
                     await authorize_user(
-                        message,
+                        message.from_user.id,
                         session,
                         extra["api_url"],
                     )
                     == token
                 )
 
-        assert await get_auth_token(message) == token  # Теперь токен есть
+        assert await get_auth_token(message.from_user.id) == token  # Теперь токен есть

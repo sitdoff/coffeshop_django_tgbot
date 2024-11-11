@@ -20,9 +20,9 @@ async def test_process_start_command_when_user_not_exist(
     message: AsyncMock,
     extra: dict,
 ):
-    async def set_auth_token_mock_side_effect(token, message):
+    async def set_auth_token_mock_side_effect(token, id):
         token = "token"
-        await extra["redis_connection"].set(f"token:{message.from_user.id}", token)
+        await extra["redis_connection"].set(f"token:{id}", token)
 
     set_auth_token_mock.side_effect = set_auth_token_mock_side_effect
 
@@ -33,7 +33,7 @@ async def test_process_start_command_when_user_not_exist(
             await process_start_command(message, extra)
 
     set_auth_token_mock.assert_called()
-    set_auth_token_mock.assert_called_with("12345", message)
+    set_auth_token_mock.assert_called_with("12345", message.from_user.id)
     set_auth_token_mock.assert_awaited()
     get_photo_file_id_mock.assert_called()
     get_photo_file_id_mock.assert_called_with(LEXICON_RU["commands"]["start"])
@@ -63,9 +63,9 @@ async def test_process_start_command_when_user_already_exist(
     message: AsyncMock,
     extra: dict,
 ):
-    async def authorize_user_mock_side_effect(message, session, api_url):
+    async def authorize_user_mock_side_effect(user_id, session, api_url):
         token = "token"
-        await extra["redis_connection"].set(f"token:{message.from_user.id}", token)
+        await extra["redis_connection"].set(f"token:{user_id}", token)
 
     authorize_user_mock.side_effect = authorize_user_mock_side_effect
 

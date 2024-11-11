@@ -135,7 +135,6 @@ class Cart(BaseModel):
         Метод добавляет в корзину новый товар или увеличивает количество уже существующего.
         """
         async with self.redis_connection_provider() as redis_connection:
-            # TODO: Возможно стоит выести проверку существования товара в Redis в метод change_product_quantity
             if await redis_connection.hexists(self.cart_name, callback_data.id):
                 await self.change_product_quantity(callback_data, quantity=callback_data.quantity)
                 logger.debug("Product %s incremented in cart", callback_data.name)
@@ -220,7 +219,6 @@ class Cart(BaseModel):
     def _validate_callback_data_and_quantity(
         callback_data: AddToCartCallbackFactory | RemoveFromCartCallbackFactory, quantity: int
     ) -> None:
-        # TODO: покрыть тестами
         if isinstance(callback_data, AddToCartCallbackFactory) and quantity < 1:
             raise ValueError("callback_data is AddToCartCallbackFactory, quantity must be positive.")
 

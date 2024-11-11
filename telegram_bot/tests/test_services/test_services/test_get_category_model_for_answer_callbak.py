@@ -39,7 +39,6 @@ async def test_get_category_model_for_answer_callback(callback: CallbackQuery, e
             get_redis_connection_mock.return_value = extra["redis_connection"]
 
             url = f"{extra['api_url']}/categories/1/"
-            print(url)
             mock_response.get(url, status=200, payload=response_payload)
             result: CategoryModel = await get_category_model_for_answer_callback(callback, extra["api_url"], 1)
 

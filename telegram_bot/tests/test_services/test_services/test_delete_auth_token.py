@@ -18,6 +18,6 @@ async def test_delete_auth_token(message: Message, redis_connection: FakeRedis):
 
         assert await redis_connection.exists(key) == 1
 
-        await delete_auth_token(message)
+        await delete_auth_token(message.from_user.id)
 
         assert await redis_connection.exists(key) == 0

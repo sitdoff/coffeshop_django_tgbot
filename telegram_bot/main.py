@@ -24,7 +24,7 @@ async def main():
     logging.info(LEXICON_RU["system"]["config_loaded"])
 
     # Init redis connection pool.
-    await redis_singleton.init_pool(config.redis)
+    redis_singleton.init_pool(config.redis)
     async with get_redis_connection() as redis_connection:
         ping_redis_result = await redis_connection.ping()
         assert ping_redis_result is True
