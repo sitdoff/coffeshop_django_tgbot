@@ -4,7 +4,6 @@ from config_data.config import RedisConfig
 from redis.asyncio import ConnectionPool, Redis
 
 
-# TODO: Покрыть тестами
 class RedisSengleton:
     """
     Класс предоставляет пул соединений с Redis.
@@ -35,7 +34,6 @@ class RedisSengleton:
 redis_singleton = RedisSengleton()
 
 
-# TODO: Покрыть тестами
 @asynccontextmanager
 async def get_redis_connection():
     """
